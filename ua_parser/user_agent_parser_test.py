@@ -33,29 +33,33 @@ import yaml
 import user_agent_parser
 
 TEST_RESOURCES_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                  '../../test_resources')
+                                  '../uap-core')
 
 
 class ParseTest(unittest.TestCase):
     def testBrowserscopeStrings(self):
         self.runUserAgentTestsFromYAML(os.path.join(
-            TEST_RESOURCES_DIR, 'test_user_agent_parser.yaml'))
+            TEST_RESOURCES_DIR, 'tests/test_ua.yaml'))
 
     def testBrowserscopeStringsOS(self):
         self.runOSTestsFromYAML(os.path.join(
-            TEST_RESOURCES_DIR, 'test_user_agent_parser_os.yaml'))
+            TEST_RESOURCES_DIR, 'tests/test_os.yaml'))
 
     def testStringsOS(self):
         self.runOSTestsFromYAML(os.path.join(
-            TEST_RESOURCES_DIR, 'additional_os_tests.yaml'))
+            TEST_RESOURCES_DIR, 'test_resources/additional_os_tests.yaml'))
 
     def testStringsDevice(self):
         self.runDeviceTestsFromYAML(os.path.join(
-            TEST_RESOURCES_DIR, 'test_device.yaml'))
+            TEST_RESOURCES_DIR, 'tests/test_device.yaml'))
+
+    def testStringsDeviceBrandModel(self):
+        self.runDeviceTestsFromYAML(os.path.join(
+            TEST_RESOURCES_DIR, 'tests/test_device_brandmodel.yaml'))
 
     def testMozillaStrings(self):
         self.runUserAgentTestsFromYAML(os.path.join(
-            TEST_RESOURCES_DIR, 'firefox_user_agent_strings.yaml'))
+            TEST_RESOURCES_DIR, 'test_resources/firefox_user_agent_strings.yaml'))
 
     # NOTE: The YAML file used here is one output by makePGTSComparisonYAML()
     # below, as opposed to the pgts_browser_list-orig.yaml file.  The -orig
@@ -65,13 +69,15 @@ class ParseTest(unittest.TestCase):
     # reconcile the differences between the two YAML files.
     def testPGTSStrings(self):
         self.runUserAgentTestsFromYAML(os.path.join(
-            TEST_RESOURCES_DIR, 'pgts_browser_list.yaml'))
+            TEST_RESOURCES_DIR, 'test_resources/pgts_browser_list.yaml'))
 
     def testParseAll(self):
         user_agent_string = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; fr; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5,gzip(gfe),gzip(gfe)'
         expected = {
           'device': {
-            'family': 'Other'
+            'family': 'Other',
+            'brand': None,
+            'model': None
           },
           'os': {
             'family': 'Mac OS X',
@@ -198,15 +204,21 @@ class ParseTest(unittest.TestCase):
 
             # The expected results
             expected = {
-              'family': test_case['family']
+              'family': test_case['family'],
+              'brand': test_case['brand'],
+              'model': test_case['model']
             }
 
             result = user_agent_parser.ParseDevice(user_agent_string, **kwds)
             self.assertEqual(result, expected,
-                u"UA: {0}\n expected<{1}> != actual<{2}>".format(
+                u"UA: {0}\n expected<{1} {2} {3}> != actual<{4} {5} {6}>".format(
                     user_agent_string,
                     expected['family'],
-                    result['family']))
+                    expected['brand'],
+                    expected['model'],
+                    result['family'],
+                    result['brand'],
+                    result['model']))
 
 
 class GetFiltersTest(unittest.TestCase):
