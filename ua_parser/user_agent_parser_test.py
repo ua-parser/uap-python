@@ -53,10 +53,6 @@ class ParseTest(unittest.TestCase):
         self.runDeviceTestsFromYAML(os.path.join(
             TEST_RESOURCES_DIR, 'tests/test_device.yaml'))
 
-    def testStringsDeviceBrandModel(self):
-        self.runDeviceTestsFromYAML(os.path.join(
-            TEST_RESOURCES_DIR, 'tests/test_device_brandmodel.yaml'))
-
     def testMozillaStrings(self):
         self.runUserAgentTestsFromYAML(os.path.join(
             TEST_RESOURCES_DIR, 'test_resources/firefox_user_agent_strings.yaml'))
