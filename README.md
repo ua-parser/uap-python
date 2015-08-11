@@ -3,7 +3,7 @@ A python implementation of the UA Parser (https://github.com/ua-parser, formerly
 
 ##Build Status
 
-[![Build Status](https://travis-ci.org/nmische/uap-python.svg)](https://travis-ci.org/nmische/uap-python)
+[![Build Status](https://travis-ci.org/ua-parser/uap-python.svg)](https://travis-ci.org/ua-parser/uap-python)
 
 ##Installing
 
