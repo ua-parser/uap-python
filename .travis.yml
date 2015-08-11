@@ -7,7 +7,7 @@ python:
   - "3.4"
   
 before_install:
-  - cp regexes.yaml py/ua_parser/regexes.yaml
+  - cp uap-core/regexes.yaml ua_parser/regexes.yaml
 
 install:
   - pip install .
