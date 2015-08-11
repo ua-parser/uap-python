@@ -1,6 +1,10 @@
 #uap-python
 A python implementation of the UA Parser (https://github.com/ua-parser, formerly https://github.com/tobie/ua-parser)
 
+##Build Status
+
+[![Build Status](https://travis-ci.org/nmische/uap-python.svg)](https://travis-ci.org/nmische/uap-python)
+
 ##Installing
 
 In the top-level directory run:
