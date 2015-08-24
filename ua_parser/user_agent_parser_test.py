@@ -92,8 +92,10 @@ class ParseTest(unittest.TestCase):
         }
 
         result = user_agent_parser.Parse(user_agent_string)
-        self.assertEqual(result, expected,
-            u"UA: {0}\n expected<{1}> != actual<{2}>".format(user_agent_string, expected, result))
+        self.assertEqual(
+            result, expected,
+            u"UA: %s\n expected<%s> != actual<%s>"% (user_agent_string, expected, result)
+        )
 
     # Make a YAML file for manual comparsion with pgts_browser_list-orig.yaml
     def makePGTSComparisonYAML(self):
