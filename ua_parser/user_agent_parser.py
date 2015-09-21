@@ -169,7 +169,7 @@ class DeviceParser(object):
           if index < len(group):
             return group[index]
           return ''
-          
+
         _string = re.sub(r'\$(\d)', _repl, string)
         _string = re.sub(r'^\s+|\s+$', '', _string)
         if _string == '':
@@ -179,7 +179,7 @@ class DeviceParser(object):
     def Parse(self, user_agent_string):
         device, brand, model = None, None, None
         match = self.user_agent_re.search(user_agent_string)
-        if match:            
+        if match:
             if self.device_replacement:
                 device = self.MultiReplace(self.device_replacement, match)
             else:
@@ -442,9 +442,9 @@ if not UA_PARSER_YAML:
 else:
     import yaml
 
-    yamlFile = open(UA_PARSER_YAML)
-    regexes = yaml.load(yamlFile)
-    yamlFile.close()
+    with open(UA_PARSER_YAML) as yamlFile:
+        regexes = yaml.safe_load(yamlFile)
+
 
 # If UA_PARSER_YAML is not specified, load regexes from regexes.json before
 # falling back to yaml format
@@ -458,7 +458,7 @@ if regexes is None:
         import yaml
 
         with open(yamlPath) as fp:
-            regexes = yaml.load(fp)
+            regexes = yaml.safe_load(fp)
 
 
 USER_AGENT_PARSERS = []
