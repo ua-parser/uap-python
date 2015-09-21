@@ -18,7 +18,6 @@
 
 __author__ = 'Lindsey Simon <elsigh@gmail.com>'
 
-import json
 import os
 import re
 
@@ -451,15 +450,15 @@ else:
 # falling back to yaml format
 if regexes is None:
     try:
-        json_file = open(json_path)
-        regexes = json.loads(json_file.read())
-        json_file.close()
+        import json
+
+        with open(json_path) as fp:
+            regexes = json.load(fp)
     except IOError:
         import yaml
 
-        yamlFile = open(yamlPath)
-        regexes = yaml.load(yamlFile)
-        yamlFile.close()
+        with open(yamlPath) as fp:
+            regexes = yaml.load(fp)
 
 
 USER_AGENT_PARSERS = []
