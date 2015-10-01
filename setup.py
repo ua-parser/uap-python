@@ -2,6 +2,7 @@
 from setuptools import setup
 from setuptools.command.develop import develop as _develop
 from setuptools.command.sdist import sdist as _sdist
+from setuptools.command.install import install as _install
 
 
 def install_regexes():
@@ -37,6 +38,11 @@ class sdist(_sdist):
         _sdist.run(self)
 
 
+class install(_install):
+    def run(self):
+        install_regexes()
+        _install.run(self)
+
 setup(
     name='ua-parser',
     version='0.5.0',
@@ -50,10 +56,12 @@ setup(
     url='https://github.com/ua-parser/uap-python',
     include_package_data=True,
     package_data={'ua_parser': ['regexes.yaml', 'regexes.json']},
+    setup_requires=['pyyaml'],
     install_requires=['pyyaml'],
     cmdclass={
         'develop': develop,
         'sdist': sdist,
+        'install': install,
     },
     classifiers=[
         'Development Status :: 4 - Beta',
