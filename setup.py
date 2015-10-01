@@ -20,7 +20,7 @@ def install_regexes():
     import json
     import yaml
     json_dest = yaml_dest.replace('.yaml', '.json')
-    regexes = yaml.load(open(yaml_dest))
+    regexes = yaml.safe_load(open(yaml_dest))
     with open(json_dest, "w") as f:
         json.dump(regexes, f)
 
