@@ -72,31 +72,31 @@ class ParseTest(unittest.TestCase):
     def testParseAll(self):
         user_agent_string = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; fr; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5,gzip(gfe),gzip(gfe)'
         expected = {
-          'device': {
-            'family': 'Other',
-            'brand': None,
-            'model': None
-          },
-          'os': {
-            'family': 'Mac OS X',
-            'major': '10',
-            'minor': '4',
-            'patch': None,
-            'patch_minor': None
-          },
-          'user_agent': {
-            'family': 'Firefox',
-            'major': '3',
-            'minor': '5',
-            'patch': '5'
-          },
-          'string': user_agent_string
+            'device': {
+                'family': 'Other',
+                'brand': None,
+                'model': None
+            },
+            'os': {
+                'family': 'Mac OS X',
+                'major': '10',
+                'minor': '4',
+                'patch': None,
+                'patch_minor': None
+            },
+            'user_agent': {
+                'family': 'Firefox',
+                'major': '3',
+                'minor': '5',
+                'patch': '5'
+            },
+            'string': user_agent_string
         }
 
         result = user_agent_parser.Parse(user_agent_string)
-        self.assertEqual(result, expected,
+        self.assertEqual(
+            result, expected,
             "UA: {0}\n expected<{1}> != actual<{2}>".format(user_agent_string, expected, result))
-
     # Make a YAML file for manual comparsion with pgts_browser_list-orig.yaml
     def makePGTSComparisonYAML(self):
         import codecs
@@ -146,11 +146,12 @@ class ParseTest(unittest.TestCase):
 
             result = {}
             result = user_agent_parser.ParseUserAgent(user_agent_string, **kwds)
-            self.assertEqual(result, expected,
-                    "UA: {0}\n expected<{1}, {2}, {3}, {4}> != actual<{5}, {6}, {7}, {8}>".format(\
-                            user_agent_string,
-                            expected['family'], expected['major'], expected['minor'], expected['patch'],
-                            result['family'], result['major'], result['minor'], result['patch']))
+            self.assertEqual(
+                result, expected,
+                "UA: {0}\n expected<{1}, {2}, {3}, {4}> != actual<{5}, {6}, {7}, {8}>".format(
+                    user_agent_string,
+                    expected['family'], expected['major'], expected['minor'], expected['patch'],
+                    result['family'], result['major'], result['minor'], result['patch']))
 
     def runOSTestsFromYAML(self, file_name):
         yamlFile = open(os.path.join(TEST_RESOURCES_DIR, file_name))
@@ -166,27 +167,28 @@ class ParseTest(unittest.TestCase):
 
             # The expected results
             expected = {
-              'family': test_case['family'],
-              'major': test_case['major'],
-              'minor': test_case['minor'],
-              'patch': test_case['patch'],
-              'patch_minor': test_case['patch_minor']
+                'family': test_case['family'],
+                'major': test_case['major'],
+                'minor': test_case['minor'],
+                'patch': test_case['patch'],
+                'patch_minor': test_case['patch_minor']
             }
 
             result = user_agent_parser.ParseOS(user_agent_string, **kwds)
-            self.assertEqual(result, expected,
-                    "UA: {0}\n expected<{1} {2} {3} {4} {5}> != actual<{6} {7} {8} {9} {10}>".format(\
-                            user_agent_string,
-                            expected['family'],
-                            expected['major'],
-                            expected['minor'],
-                            expected['patch'],
-                            expected['patch_minor'],
-                            result['family'],
-                            result['major'],
-                            result['minor'],
-                            result['patch'],
-                            result['patch_minor']))
+            self.assertEqual(
+                result, expected,
+                "UA: {0}\n expected<{1} {2} {3} {4} {5}> != actual<{6} {7} {8} {9} {10}>".format(
+                    user_agent_string,
+                    expected['family'],
+                    expected['major'],
+                    expected['minor'],
+                    expected['patch'],
+                    expected['patch_minor'],
+                    result['family'],
+                    result['major'],
+                    result['minor'],
+                    result['patch'],
+                    result['patch_minor']))
 
     def runDeviceTestsFromYAML(self, file_name):
         yamlFile = open(os.path.join(TEST_RESOURCES_DIR, file_name))
@@ -202,13 +204,14 @@ class ParseTest(unittest.TestCase):
 
             # The expected results
             expected = {
-              'family': test_case['family'],
-              'brand': test_case['brand'],
-              'model': test_case['model']
+                'family': test_case['family'],
+                'brand': test_case['brand'],
+                'model': test_case['model']
             }
 
             result = user_agent_parser.ParseDevice(user_agent_string, **kwds)
-            self.assertEqual(result, expected,
+            self.assertEqual(
+                result, expected,
                 "UA: {0}\n expected<{1} {2} {3}> != actual<{4} {5} {6}>".format(
                     user_agent_string,
                     expected['family'],
@@ -223,23 +226,25 @@ class GetFiltersTest(unittest.TestCase):
     def testGetFiltersNoMatchesGiveEmptyDict(self):
         user_agent_string = 'foo'
         filters = user_agent_parser.GetFilters(
-                user_agent_string, js_user_agent_string=None)
+            user_agent_string, js_user_agent_string=None)
         self.assertEqual({}, filters)
 
     def testGetFiltersJsUaPassedThrough(self):
         user_agent_string = 'foo'
         filters = user_agent_parser.GetFilters(
-                user_agent_string, js_user_agent_string='bar')
+            user_agent_string, js_user_agent_string='bar')
         self.assertEqual({'js_user_agent_string': 'bar'}, filters)
 
     def testGetFiltersJsUserAgentFamilyAndVersions(self):
-        user_agent_string = ('Mozilla/4.0 (compatible; MSIE 8.0; '
-                'Windows NT 5.1; Trident/4.0; GTB6; .NET CLR 2.0.50727; '
-                '.NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)')
+        user_agent_string = (
+            'Mozilla/4.0 (compatible; MSIE 8.0; '
+            'Windows NT 5.1; Trident/4.0; GTB6; .NET CLR 2.0.50727; '
+            '.NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)')
         filters = user_agent_parser.GetFilters(
-                user_agent_string, js_user_agent_string='bar',
-                js_user_agent_family='foo')
-        self.assertEqual({'js_user_agent_string': 'bar',
+            user_agent_string, js_user_agent_string='bar',
+            js_user_agent_family='foo')
+        self.assertEqual({
+            'js_user_agent_string': 'bar',
             'js_user_agent_family': 'foo'}, filters)
 
 
