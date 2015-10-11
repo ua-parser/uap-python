@@ -1,2 +1,2 @@
-include ua_parser/regexes.yaml
+include README.md
 include ua_parser/regexes.json

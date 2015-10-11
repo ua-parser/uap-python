@@ -434,20 +434,19 @@ regexes = None
 if not UA_PARSER_YAML:
     try:
         from pkg_resources import resource_filename
-        yamlPath = resource_filename(__name__, 'regexes.yaml')
         json_path = resource_filename(__name__, 'regexes.json')
     except ImportError:
-        yamlPath = os.path.join(ROOT_DIR, 'regexes.yaml')
         json_path = os.path.join(ROOT_DIR, 'regexes.json')
 else:
+    # This will raise an ImportError if missing, obviously since it's no
+    # longer a requirement
     import yaml
 
     with open(UA_PARSER_YAML) as yamlFile:
         regexes = yaml.safe_load(yamlFile)
 
 
-# If UA_PARSER_YAML is not specified, load regexes from regexes.json before
-# falling back to yaml format
+# If UA_PARSER_YAML is not specified, load regexes from regexes.json
 if regexes is None:
     try:
         import json
@@ -455,10 +454,7 @@ if regexes is None:
         with open(json_path) as fp:
             regexes = json.load(fp)
     except IOError:
-        import yaml
-
-        with open(yamlPath) as fp:
-            regexes = yaml.safe_load(fp)
+        pass
 
 
 USER_AGENT_PARSERS = []
