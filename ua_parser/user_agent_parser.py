@@ -448,13 +448,10 @@ else:
 
 # If UA_PARSER_YAML is not specified, load regexes from regexes.json
 if regexes is None:
-    try:
-        import json
+    import json
 
-        with open(json_path) as fp:
-            regexes = json.load(fp)
-    except IOError:
-        pass
+    with open(json_path) as fp:
+        regexes = json.load(fp)
 
 
 USER_AGENT_PARSERS = []
