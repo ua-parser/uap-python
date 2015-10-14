@@ -2,6 +2,7 @@
 from setuptools import setup
 from setuptools.command.develop import develop as _develop
 from setuptools.command.sdist import sdist as _sdist
+from setuptools.command.install import install as _install
 
 
 def install_regexes():
@@ -20,7 +21,7 @@ def install_regexes():
     import json
     import yaml
     json_dest = yaml_dest.replace('.yaml', '.json')
-    regexes = yaml.load(open(yaml_dest))
+    regexes = yaml.safe_load(open(yaml_dest))
     with open(json_dest, "w") as f:
         json.dump(regexes, f)
 
@@ -37,9 +38,14 @@ class sdist(_sdist):
         _sdist.run(self)
 
 
+class install(_install):
+    def run(self):
+        install_regexes()
+        _install.run(self)
+
 setup(
     name='ua-parser',
-    version='0.4.1',
+    version='0.5.0',
     description="Python port of Browserscope's user agent parser",
     author='PBS',
     author_email='no-reply@pbs.org',
@@ -50,10 +56,12 @@ setup(
     url='https://github.com/ua-parser/uap-python',
     include_package_data=True,
     package_data={'ua_parser': ['regexes.yaml', 'regexes.json']},
+    setup_requires=['pyyaml'],
     install_requires=['pyyaml'],
     cmdclass={
         'develop': develop,
         'sdist': sdist,
+        'install': install,
     },
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -64,5 +72,14 @@ setup(
         'Programming Language :: Python',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Software Development :: Libraries :: Python Modules',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
     ],
 )
