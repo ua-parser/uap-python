@@ -15,10 +15,12 @@ test:
 	@#python ua_parser/user_agent_parser_test.py ParseTest.testStringsDeviceBrandModel
 
 clean:
-	@rm ua_parser/user_agent_parser.pyc\
+	@rm -f ua_parser/user_agent_parser.pyc\
 	   ua_parser/regexes.yaml\
 	   ua_parser/regexes.json
 	@rm -rf tmp\
-	   ua_parser.egg-info
+	   ua_parser.egg-info\
+	   dist\
+	   build
 
 .PHONY: all clean
