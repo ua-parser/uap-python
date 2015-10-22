@@ -23,6 +23,8 @@ or like:
 """
 
 
+from __future__ import unicode_literals
+
 __author__ = 'slamm@google.com (Stephen Lamm)'
 
 import os
@@ -93,7 +95,7 @@ class ParseTest(unittest.TestCase):
 
         result = user_agent_parser.Parse(user_agent_string)
         self.assertEqual(result, expected,
-            u"UA: {0}\n expected<{1}> != actual<{2}>".format(user_agent_string, expected, result))
+            "UA: {0}\n expected<{1}> != actual<{2}>".format(user_agent_string, expected, result))
 
     # Make a YAML file for manual comparsion with pgts_browser_list-orig.yaml
     def makePGTSComparisonYAML(self):
@@ -116,7 +118,7 @@ class ParseTest(unittest.TestCase):
 
             # Escape any double-quotes in the UA string
             user_agent_string = re.sub(r'"', '\\"', user_agent_string)
-            print >> outfile, '    - user_agent_string: "' + unicode(user_agent_string) + '"' + "\n" +\
+            print >> outfile, '    - user_agent_string: "' + user_agent_string + '"' + "\n" +\
                               '      family: "' + family + "\"\n" +\
                               "      major: " + ('' if (major is None) else "'" + major + "'") + "\n" +\
                               "      minor: " + ('' if (minor is None) else "'" + minor + "'") + "\n" +\
@@ -145,7 +147,7 @@ class ParseTest(unittest.TestCase):
             result = {}
             result = user_agent_parser.ParseUserAgent(user_agent_string, **kwds)
             self.assertEqual(result, expected,
-                    u"UA: {0}\n expected<{1}, {2}, {3}, {4}> != actual<{5}, {6}, {7}, {8}>".format(\
+                    "UA: {0}\n expected<{1}, {2}, {3}, {4}> != actual<{5}, {6}, {7}, {8}>".format(\
                             user_agent_string,
                             expected['family'], expected['major'], expected['minor'], expected['patch'],
                             result['family'], result['major'], result['minor'], result['patch']))
@@ -173,7 +175,7 @@ class ParseTest(unittest.TestCase):
 
             result = user_agent_parser.ParseOS(user_agent_string, **kwds)
             self.assertEqual(result, expected,
-                    u"UA: {0}\n expected<{1} {2} {3} {4} {5}> != actual<{6} {7} {8} {9} {10}>".format(\
+                    "UA: {0}\n expected<{1} {2} {3} {4} {5}> != actual<{6} {7} {8} {9} {10}>".format(\
                             user_agent_string,
                             expected['family'],
                             expected['major'],
@@ -207,7 +209,7 @@ class ParseTest(unittest.TestCase):
 
             result = user_agent_parser.ParseDevice(user_agent_string, **kwds)
             self.assertEqual(result, expected,
-                u"UA: {0}\n expected<{1} {2} {3}> != actual<{4} {5} {6}>".format(
+                "UA: {0}\n expected<{1} {2} {3}> != actual<{4} {5} {6}>".format(
                     user_agent_string,
                     expected['family'],
                     expected['brand'],
