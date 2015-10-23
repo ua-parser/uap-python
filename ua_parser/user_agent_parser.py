@@ -84,7 +84,9 @@ class UserAgentParser(object):
 
 
 class OSParser(object):
-    def __init__(self, pattern, os_replacement=None, os_v1_replacement=None, os_v2_replacement=None):
+    def __init__(self, pattern, os_replacement=None,
+                 os_v1_replacement=None, os_v2_replacement=None,
+                 os_v3_replacement=None, os_v4_replacement=None):
         """Initialize UserAgentParser.
 
         Args:
@@ -92,12 +94,16 @@ class OSParser(object):
           os_replacement: a string to override the matched os (optional)
           os_v1_replacement: a string to override the matched v1 (optional)
           os_v2_replacement: a string to override the matched v2 (optional)
+          os_v3_replacement: a string to override the matched v3 (optional)
+          os_v4_replacement: a string to override the matched v4 (optional)
         """
         self.pattern = pattern
         self.user_agent_re = re.compile(self.pattern)
         self.os_replacement = os_replacement
         self.os_v1_replacement = os_v1_replacement
         self.os_v2_replacement = os_v2_replacement
+        self.os_v3_replacement = os_v3_replacement
+        self.os_v4_replacement = os_v4_replacement
 
     def MatchSpans(self, user_agent_string):
         match_spans = []
@@ -129,10 +135,15 @@ class OSParser(object):
             elif match.lastindex and match.lastindex >= 3:
                 os_v2 = match.group(3)
 
-            if match.lastindex and match.lastindex >= 4:
+            if self.os_v3_replacement:
+                os_v3 = self.os_v3_replacement
+            elif match.lastindex and match.lastindex >= 4:
                 os_v3 = match.group(4)
-                if match.lastindex >= 5:
-                    os_v4 = match.group(5)
+
+            if self.os_v4_replacement:
+                os_v4 = self.os_v4_replacement
+            elif match.lastindex and match.lastindex >= 5:
+                os_v4 = match.group(5)
 
         return os, os_v1, os_v2, os_v3, os_v4
 
@@ -503,10 +514,20 @@ for _os_parser in regexes['os_parsers']:
     if 'os_v2_replacement' in _os_parser:
         _os_v2_replacement = _os_parser['os_v2_replacement']
 
+    _os_v3_replacement = None
+    if 'os_v3_replacement' in _os_parser:
+        _os_v3_replacement = _os_parser['os_v3_replacement']
+
+    _os_v4_replacement = None
+    if 'os_v4_replacement' in _os_parser:
+        _os_v4_replacement = _os_parser['os_v4_replacement']
+
     OS_PARSERS.append(OSParser(_regex,
                                _os_replacement,
                                _os_v1_replacement,
-                               _os_v2_replacement))
+                               _os_v2_replacement,
+                               _os_v3_replacement,
+                               _os_v4_replacement))
 
 
 DEVICE_PARSERS = []
@@ -534,4 +555,3 @@ for _device_parser in regexes['device_parsers']:
                                        _device_replacement,
                                        _brand_replacement,
                                        _model_replacement))
-
