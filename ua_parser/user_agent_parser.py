@@ -158,9 +158,9 @@ class DeviceParser(object):
         """
         self.pattern = pattern
         if regex_flag == 'i':
-          self.user_agent_re = re.compile(self.pattern, re.IGNORECASE)
+            self.user_agent_re = re.compile(self.pattern, re.IGNORECASE)
         else:
-          self.user_agent_re = re.compile(self.pattern)
+            self.user_agent_re = re.compile(self.pattern)
         self.device_replacement = device_replacement
         self.brand_replacement = brand_replacement
         self.model_replacement = model_replacement
@@ -175,11 +175,11 @@ class DeviceParser(object):
 
     def MultiReplace(self, string, match):
         def _repl(m):
-          index = int(m.group(1)) - 1
-          group = match.groups()
-          if index < len(group):
-            return group[index]
-          return ''
+            index = int(m.group(1)) - 1
+            group = match.groups()
+            if index < len(group):
+                return group[index]
+            return ''
 
         _string = re.sub(r'\$(\d)', _repl, string)
         _string = re.sub(r'^\s+|\s+$', '', _string)
@@ -261,8 +261,10 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
     # Override for Chrome Frame IFF Chrome is enabled.
     if 'js_user_agent_string' in jsParseBits:
         js_user_agent_string = jsParseBits['js_user_agent_string']
-        if (js_user_agent_string and js_user_agent_string.find('Chrome/') > -1 and
-            user_agent_string.find('chromeframe') > -1):
+        if (
+            js_user_agent_string and js_user_agent_string.find('Chrome/') > -1 and
+            user_agent_string.find('chromeframe') > -1
+        ):
             jsOverride = {}
             jsOverride = ParseUserAgent(js_user_agent_string)
             family = 'Chrome Frame (%s %s)' % (family, v1)
@@ -314,7 +316,7 @@ def ParseDevice(user_agent_string):
         if device:
             break
 
-    if device == None:
+    if device is None:
         device = 'Other'
 
     return {
@@ -381,8 +383,10 @@ def ParseWithJSOverrides(user_agent_string,
                 break
 
     # Override for Chrome Frame IFF Chrome is enabled.
-    if (js_user_agent_string and js_user_agent_string.find('Chrome/') > -1 and
-        user_agent_string.find('chromeframe') > -1):
+    if (
+        js_user_agent_string and js_user_agent_string.find('Chrome/') > -1 and
+        user_agent_string.find('chromeframe') > -1
+    ):
         family = 'Chrome Frame (%s %s)' % (family, v1)
         ua_dict = ParseUserAgent(js_user_agent_string)
         v1 = ua_dict['major']
@@ -438,11 +442,11 @@ def GetFilters(user_agent_string, js_user_agent_string=None,
     """
     filters = {}
     filterdict = {
-      'js_user_agent_string': js_user_agent_string,
-      'js_user_agent_family': js_user_agent_family,
-      'js_user_agent_v1': js_user_agent_v1,
-      'js_user_agent_v2': js_user_agent_v2,
-      'js_user_agent_v3': js_user_agent_v3
+        'js_user_agent_string': js_user_agent_string,
+        'js_user_agent_family': js_user_agent_family,
+        'js_user_agent_v1': js_user_agent_v1,
+        'js_user_agent_v2': js_user_agent_v2,
+        'js_user_agent_v3': js_user_agent_v3
     }
     for key, value in filterdict.items():
         if value is not None and value != '':

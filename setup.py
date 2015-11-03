@@ -11,7 +11,7 @@ def install_regexes():
     yaml_src = os.path.join(cwd, 'uap-core', 'regexes.yaml')
     if not os.path.exists(yaml_src):
         raise RuntimeError(
-                  'Unable to find regexes.yaml, should be at %r' % yaml_src)
+            'Unable to find regexes.yaml, should be at %r' % yaml_src)
 
     print('Converting regexes.yaml to regexes.json...')
     import json
