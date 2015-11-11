@@ -9,7 +9,7 @@ A python implementation of the UA Parser (https://github.com/ua-parser, formerly
 
 In the top-level directory run:
 ```
-make Makefile
+$ make
 ```
 
 ##Getting Started
