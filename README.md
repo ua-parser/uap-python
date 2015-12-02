@@ -10,7 +10,7 @@ A python implementation of the UA Parser (https://github.com/ua-parser, formerly
 ### Install via pip
 Just run:
 ```
-$ pip install ua-parse
+$ pip install ua-parser
 ```
 
 ### Manual install
