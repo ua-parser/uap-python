@@ -8,13 +8,9 @@ A python implementation of the UA Parser (https://github.com/ua-parser, formerly
 ##Installing
 
 ### Install via pip
-First, check that you've got the correct dependencies. For example, on Ubuntu:
+Just run:
 ```
-$ apt-get install libyaml libyaml-dev python-dev
-```
-Then, just run:
-```
-$ pip install pyyaml ua-parser user-agents
+$ pip install ua-parse
 ```
 
 ### Manual install
