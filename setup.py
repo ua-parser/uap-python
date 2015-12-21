@@ -46,6 +46,7 @@ class build_regexes(Command):
             fp.write(b'# instead, re-run `setup.py build_regexes` #\n')
             fp.write(b'############################################\n')
             fp.write(b'\n')
+            fp.write(b'from __future__ import absolute_import\n')
             fp.write(b'from .user_agent_parser import (\n')
             fp.write(b'    UserAgentParser, DeviceParser, OSParser,\n')
             fp.write(b')\n')

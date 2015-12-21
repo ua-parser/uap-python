@@ -16,6 +16,8 @@
 
 """Python implementation of the UA parser."""
 
+from __future__ import absolute_import
+
 __author__ = 'Lindsey Simon <elsigh@gmail.com>'
 
 import os

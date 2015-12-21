@@ -23,7 +23,7 @@ or like:
 """
 
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 __author__ = 'slamm@google.com (Stephen Lamm)'
 
