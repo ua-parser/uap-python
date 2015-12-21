@@ -2,6 +2,7 @@
 *.egg-info/
 .eggs/
 .cache/
+.tox/
 build/
 dist/
 tmp/
