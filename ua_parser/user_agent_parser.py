@@ -21,15 +21,6 @@ __author__ = 'Lindsey Simon <elsigh@gmail.com>'
 import os
 import re
 
-# pip may copy regexes.yaml to different places depending on the OS.
-# For example, on Mac pip copies regexes.yaml to the folder where
-# user_agent_parser.py lives where as Fedora leaves regexes.yaml to "data" dir
-# See https://github.com/tobie/ua-parser/issues/209 for the complete discussion
-
-ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
-DATA_DIR = os.path.abspath(os.path.join(ROOT_DIR, '..', 'data'))
-regex_dir = ROOT_DIR if os.path.exists(os.path.join(ROOT_DIR, 'regexes.yaml')) else DATA_DIR
-
 
 class UserAgentParser(object):
     def __init__(self, pattern, family_replacement=None, v1_replacement=None, v2_replacement=None):
@@ -455,107 +446,103 @@ def GetFilters(user_agent_string, js_user_agent_string=None,
 
 
 # Build the list of user agent parsers from YAML
-UA_PARSER_YAML = os.getenv("UA_PARSER_YAML")
-regexes = None
-
-if not UA_PARSER_YAML:
-    try:
-        from pkg_resources import resource_filename
-        json_path = resource_filename(__name__, 'regexes.json')
-    except ImportError:
-        json_path = os.path.join(ROOT_DIR, 'regexes.json')
-else:
+UA_PARSER_YAML = os.environ.get("UA_PARSER_YAML")
+if UA_PARSER_YAML:
     # This will raise an ImportError if missing, obviously since it's no
     # longer a requirement
     import yaml
+    try:
+        # Try and use libyaml bindings if available since faster
+        from yaml import CSafeLoader as SafeLoader
+    except ImportError:
+        from yaml import SafeLoader
 
-    with open(UA_PARSER_YAML) as yamlFile:
-        regexes = yaml.safe_load(yamlFile)
+    with open(UA_PARSER_YAML) as fp:
+        regexes = yaml.load(fp, Loader=SafeLoader)
 
+    USER_AGENT_PARSERS = []
+    for _ua_parser in regexes['user_agent_parsers']:
+        _regex = _ua_parser['regex']
 
-# If UA_PARSER_YAML is not specified, load regexes from regexes.json
-if regexes is None:
-    import json
+        _family_replacement = None
+        if 'family_replacement' in _ua_parser:
+            _family_replacement = _ua_parser['family_replacement']
 
-    with open(json_path) as fp:
-        regexes = json.load(fp)
+        _v1_replacement = None
+        if 'v1_replacement' in _ua_parser:
+            _v1_replacement = _ua_parser['v1_replacement']
 
+        _v2_replacement = None
+        if 'v2_replacement' in _ua_parser:
+            _v2_replacement = _ua_parser['v2_replacement']
 
-USER_AGENT_PARSERS = []
-for _ua_parser in regexes['user_agent_parsers']:
-    _regex = _ua_parser['regex']
+        USER_AGENT_PARSERS.append(UserAgentParser(_regex,
+                                                  _family_replacement,
+                                                  _v1_replacement,
+                                                  _v2_replacement))
 
-    _family_replacement = None
-    if 'family_replacement' in _ua_parser:
-        _family_replacement = _ua_parser['family_replacement']
+    OS_PARSERS = []
+    for _os_parser in regexes['os_parsers']:
+        _regex = _os_parser['regex']
 
-    _v1_replacement = None
-    if 'v1_replacement' in _ua_parser:
-        _v1_replacement = _ua_parser['v1_replacement']
+        _os_replacement = None
+        if 'os_replacement' in _os_parser:
+            _os_replacement = _os_parser['os_replacement']
 
-    _v2_replacement = None
-    if 'v2_replacement' in _ua_parser:
-        _v2_replacement = _ua_parser['v2_replacement']
+        _os_v1_replacement = None
+        if 'os_v1_replacement' in _os_parser:
+            _os_v1_replacement = _os_parser['os_v1_replacement']
 
-    USER_AGENT_PARSERS.append(UserAgentParser(_regex,
-                                              _family_replacement,
-                                              _v1_replacement,
-                                              _v2_replacement))
+        _os_v2_replacement = None
+        if 'os_v2_replacement' in _os_parser:
+            _os_v2_replacement = _os_parser['os_v2_replacement']
 
-OS_PARSERS = []
-for _os_parser in regexes['os_parsers']:
-    _regex = _os_parser['regex']
+        _os_v3_replacement = None
+        if 'os_v3_replacement' in _os_parser:
+            _os_v3_replacement = _os_parser['os_v3_replacement']
 
-    _os_replacement = None
-    if 'os_replacement' in _os_parser:
-        _os_replacement = _os_parser['os_replacement']
+        _os_v4_replacement = None
+        if 'os_v4_replacement' in _os_parser:
+            _os_v4_replacement = _os_parser['os_v4_replacement']
 
-    _os_v1_replacement = None
-    if 'os_v1_replacement' in _os_parser:
-        _os_v1_replacement = _os_parser['os_v1_replacement']
+        OS_PARSERS.append(OSParser(_regex,
+                                   _os_replacement,
+                                   _os_v1_replacement,
+                                   _os_v2_replacement,
+                                   _os_v3_replacement,
+                                   _os_v4_replacement))
 
-    _os_v2_replacement = None
-    if 'os_v2_replacement' in _os_parser:
-        _os_v2_replacement = _os_parser['os_v2_replacement']
+    DEVICE_PARSERS = []
+    for _device_parser in regexes['device_parsers']:
+        _regex = _device_parser['regex']
 
-    _os_v3_replacement = None
-    if 'os_v3_replacement' in _os_parser:
-        _os_v3_replacement = _os_parser['os_v3_replacement']
+        _regex_flag = None
+        if 'regex_flag' in _device_parser:
+            _regex_flag = _device_parser['regex_flag']
 
-    _os_v4_replacement = None
-    if 'os_v4_replacement' in _os_parser:
-        _os_v4_replacement = _os_parser['os_v4_replacement']
+        _device_replacement = None
+        if 'device_replacement' in _device_parser:
+            _device_replacement = _device_parser['device_replacement']
 
-    OS_PARSERS.append(OSParser(_regex,
-                               _os_replacement,
-                               _os_v1_replacement,
-                               _os_v2_replacement,
-                               _os_v3_replacement,
-                               _os_v4_replacement))
+        _brand_replacement = None
+        if 'brand_replacement' in _device_parser:
+            _brand_replacement = _device_parser['brand_replacement']
 
+        _model_replacement = None
+        if 'model_replacement' in _device_parser:
+            _model_replacement = _device_parser['model_replacement']
 
-DEVICE_PARSERS = []
-for _device_parser in regexes['device_parsers']:
-    _regex = _device_parser['regex']
+        DEVICE_PARSERS.append(DeviceParser(_regex,
+                                           _regex_flag,
+                                           _device_replacement,
+                                           _brand_replacement,
+                                           _model_replacement))
 
-    _regex_flag = None
-    if 'regex_flag' in _device_parser:
-        _regex_flag = _device_parser['regex_flag']
-
-    _device_replacement = None
-    if 'device_replacement' in _device_parser:
-        _device_replacement = _device_parser['device_replacement']
-
-    _brand_replacement = None
-    if 'brand_replacement' in _device_parser:
-        _brand_replacement = _device_parser['brand_replacement']
-
-    _model_replacement = None
-    if 'model_replacement' in _device_parser:
-        _model_replacement = _device_parser['model_replacement']
-
-    DEVICE_PARSERS.append(DeviceParser(_regex,
-                                       _regex_flag,
-                                       _device_replacement,
-                                       _brand_replacement,
-                                       _model_replacement))
+    # Clean our our temporary vars explicitly
+    # so they can't be reused or imported
+    del regexes
+    del yaml
+    del SafeLoader
+else:
+    # Just load our pre-compiled versions
+    from ._regexes import USER_AGENT_PARSERS, DEVICE_PARSERS, OS_PARSERS

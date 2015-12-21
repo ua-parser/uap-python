@@ -1,8 +1,9 @@
 *.pyc
 *.egg-info/
 .eggs/
+.cache/
 build/
 dist/
 tmp/
 regexes.yaml
-regexes.json
+_regexes.py
