@@ -83,6 +83,8 @@ class build_regexes(Command):
                 fp.write(b'        %r,\n' % device_parser.get('os_replacement'))
                 fp.write(b'        %r,\n' % device_parser.get('os_v1_replacement'))
                 fp.write(b'        %r,\n' % device_parser.get('os_v2_replacement'))
+                fp.write(b'        %r,\n' % device_parser.get('os_v3_replacement'))
+                fp.write(b'        %r,\n' % device_parser.get('os_v4_replacement'))
                 fp.write(b'    ),\n')
             fp.write(b']\n')
             fp.write(b'\n')
