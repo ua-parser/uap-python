@@ -23,7 +23,7 @@ or like:
 """
 
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 __author__ = 'slamm@google.com (Stephen Lamm)'
 
@@ -32,7 +32,7 @@ import re
 import unittest
 import yaml
 
-import user_agent_parser
+from ua_parser import user_agent_parser
 
 TEST_RESOURCES_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                   '../uap-core')
