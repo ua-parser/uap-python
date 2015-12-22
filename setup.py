@@ -7,6 +7,14 @@ from setuptools.command.develop import develop as _develop
 from setuptools.command.sdist import sdist as _sdist
 
 
+def check_output(*args, **kwargs):
+    from subprocess import Popen
+    proc = Popen(*args, **kwargs)
+    output, _ = proc.communicate()
+    rv = proc.poll()
+    assert rv == 0, output
+
+
 class build_regexes(Command):
     description = 'build supporting regular expressions from uap-core'
     user_options = [
@@ -24,8 +32,7 @@ class build_regexes(Command):
     def run(self):
         work_path = self.work_path
         if os.path.exists(os.path.join(work_path, '.git')):
-            from subprocess import check_output
-            log.info("initializing git submodules")
+            log.info('initializing git submodules')
             check_output(['git', 'submodule', 'init'], cwd=work_path)
             check_output(['git', 'submodule', 'update'], cwd=work_path)
 
@@ -39,9 +46,10 @@ class build_regexes(Command):
                 return text
             return text.encode('utf8')
 
-        log.info('Converting regexes.yaml to _regexes.py...')
         import yaml
         py_dest = os.path.join(work_path, 'ua_parser', '_regexes.py')
+
+        log.info('Compiling regexes.yaml -> _regexes.py')
         with open(yaml_src, 'rb') as fp:
             regexes = yaml.safe_load(fp)
         with open(py_dest, 'wb') as fp:
