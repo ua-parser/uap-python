@@ -33,10 +33,12 @@ class build_regexes(Command):
 
     def run(self):
         work_path = self.work_path
-        if os.path.exists(os.path.join(work_path, '.git')):
-            log.info('initializing git submodules')
-            check_output(['git', 'submodule', 'init'], cwd=work_path)
-            check_output(['git', 'submodule', 'update'], cwd=work_path)
+        if not os.path.exists(os.path.join(work_path, '.git')):
+            return
+
+        log.info('initializing git submodules')
+        check_output(['git', 'submodule', 'init'], cwd=work_path)
+        check_output(['git', 'submodule', 'update'], cwd=work_path)
 
         yaml_src = os.path.join(work_path, 'uap-core', 'regexes.yaml')
         if not os.path.exists(yaml_src):
@@ -111,12 +113,6 @@ class develop(_develop):
         _develop.run(self)
 
 
-class build(_build):
-    def run(self):
-        self.run_command('build_regexes')
-        _build.run(self)
-
-
 class install(_install):
     def run(self):
         self.run_command('build_regexes')
@@ -129,7 +125,6 @@ class sdist(_sdist):
 
 cmdclass = {
     'develop': develop,
-    'build': build,
     'sdist': sdist,
     'install': install,
     'build_regexes': build_regexes,
