@@ -2,6 +2,7 @@
 from setuptools import setup
 from setuptools.command.develop import develop as _develop
 from setuptools.command.sdist import sdist as _sdist
+import subprocess
 
 
 def install_regexes():
@@ -23,14 +24,21 @@ def install_regexes():
         json.dump(regexes, f)
 
 
+def checkout_submodule():
+    print("Checkout submodule - uap-core")
+    return subprocess.check_output(['git', 'submodule', 'update', '--init'])
+
+
 class develop(_develop):
     def run(self):
+        checkout_submodule()
         install_regexes()
         _develop.run(self)
 
 
 class sdist(_sdist):
     def run(self):
+        checkout_submodule()
         install_regexes()
         _sdist.run(self)
 
