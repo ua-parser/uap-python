@@ -34,6 +34,11 @@ class build_regexes(Command):
             raise RuntimeError(
                 'Unable to find regexes.yaml, should be at %r' % yaml_src)
 
+        def force_bytes(text):
+            if text is None:
+                return text
+            return text.encode('utf8')
+
         log.info('Converting regexes.yaml to _regexes.py...')
         import yaml
         py_dest = os.path.join(work_path, 'ua_parser', '_regexes.py')
@@ -58,33 +63,33 @@ class build_regexes(Command):
             fp.write(b'USER_AGENT_PARSERS = [\n')
             for device_parser in regexes['user_agent_parsers']:
                 fp.write(b'    UserAgentParser(\n')
-                fp.write(b'        %r,\n' % device_parser['regex'])
-                fp.write(b'        %r,\n' % device_parser.get('family_replacement'))
-                fp.write(b'        %r,\n' % device_parser.get('v1_replacement'))
-                fp.write(b'        %r,\n' % device_parser.get('v2_replacement'))
+                fp.write(force_bytes('        %r,\n' % device_parser['regex']))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('family_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('v1_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('v2_replacement')))
                 fp.write(b'    ),\n')
             fp.write(b']\n')
             fp.write(b'\n')
             fp.write(b'DEVICE_PARSERS = [\n')
             for device_parser in regexes['device_parsers']:
                 fp.write(b'    DeviceParser(\n')
-                fp.write(b'        %r,\n' % device_parser['regex'])
-                fp.write(b'        %r,\n' % device_parser.get('regex_flag'))
-                fp.write(b'        %r,\n' % device_parser.get('device_replacement'))
-                fp.write(b'        %r,\n' % device_parser.get('brand_replacement'))
-                fp.write(b'        %r,\n' % device_parser.get('model_replacement'))
+                fp.write(force_bytes('        %r,\n' % device_parser['regex']))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('regex_flag')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('device_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('brand_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('model_replacement')))
                 fp.write(b'    ),\n')
             fp.write(b']\n')
             fp.write(b'\n')
             fp.write(b'OS_PARSERS = [\n')
             for device_parser in regexes['os_parsers']:
                 fp.write(b'    OSParser(\n')
-                fp.write(b'        %r,\n' % device_parser['regex'])
-                fp.write(b'        %r,\n' % device_parser.get('os_replacement'))
-                fp.write(b'        %r,\n' % device_parser.get('os_v1_replacement'))
-                fp.write(b'        %r,\n' % device_parser.get('os_v2_replacement'))
-                fp.write(b'        %r,\n' % device_parser.get('os_v3_replacement'))
-                fp.write(b'        %r,\n' % device_parser.get('os_v4_replacement'))
+                fp.write(force_bytes('        %r,\n' % device_parser['regex']))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('os_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('os_v1_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('os_v2_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('os_v3_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('os_v4_replacement')))
                 fp.write(b'    ),\n')
             fp.write(b']\n')
             fp.write(b'\n')
