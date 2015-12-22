@@ -16,7 +16,7 @@ $ pip install ua-parser
 ### Manual install
 In the top-level directory run:
 ```
-$ make
+$ python setup.py install
 ```
 
 ##Getting Started
@@ -52,9 +52,9 @@ $ make
 >>> ua_string = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36'
 >>> parsed_string = user_agent_parser.ParseUserAgent(ua_string)
 >>> pp.pprint(parsed_string)
- {   'family': 'Chrome', 
-	 'major': '41', 
-	 'minor': '0', 
+ {   'family': 'Chrome',
+	 'major': '41',
+	 'minor': '0',
 	 'patch': '2272'}
 ```
 
@@ -84,13 +84,13 @@ $ make
 >>> ua_string = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36'
 >>> parsed_string = user_agent_parser.ParseDevice(ua_string)
 >>> pp.pprint(parsed_string)
-{   'brand': None, 
-	'family': 'Other', 
+{   'brand': None,
+	'family': 'Other',
 	'model': None}
 ```
 
 
 ## Copyright
 
-Copyright 2008 Google Inc. See ua_parser/LICENSE for more information 
+Copyright 2008 Google Inc. See ua_parser/LICENSE for more information
 

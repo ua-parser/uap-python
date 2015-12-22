@@ -2,9 +2,11 @@
 import os
 from distutils import log
 from distutils.core import Command
+from distutils.command.build import build as _build
 from setuptools import setup
 from setuptools.command.develop import develop as _develop
 from setuptools.command.sdist import sdist as _sdist
+from setuptools.command.install import install as _install
 
 
 def check_output(*args, **kwargs):
@@ -49,7 +51,7 @@ class build_regexes(Command):
         import yaml
         py_dest = os.path.join(work_path, 'ua_parser', '_regexes.py')
 
-        log.info('Compiling regexes.yaml -> _regexes.py')
+        log.info('compiling regexes.yaml -> _regexes.py')
         with open(yaml_src, 'rb') as fp:
             regexes = yaml.safe_load(fp)
         with open(py_dest, 'wb') as fp:
@@ -109,13 +111,27 @@ class develop(_develop):
         _develop.run(self)
 
 
+class build(_build):
+    def run(self):
+        self.run_command('build_regexes')
+        _build.run(self)
+
+
+class install(_install):
+    def run(self):
+        self.run_command('build_regexes')
+        _install.run(self)
+
+
 class sdist(_sdist):
     sub_commands = _sdist.sub_commands + [('build_regexes', None)]
 
 
 cmdclass = {
     'develop': develop,
+    'build': build,
     'sdist': sdist,
+    'install': install,
     'build_regexes': build_regexes,
 }
 

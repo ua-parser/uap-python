@@ -10,9 +10,10 @@ test: clean
 
 clean:
 	@find . -name '*.pyc' -delete
-	@rm -rf tmp\
-	   ua_parser.egg-info\
-	   dist\
-	   build
+	@rm -rf tmp \
+	   ua_parser.egg-info \
+	   dist \
+	   build \
+	   ua_parser/_regexes.py
 
 .PHONY: all test clean
