@@ -21,13 +21,38 @@ class build_regexes(Command):
     description = 'build supporting regular expressions from uap-core'
     user_options = [
         ('work-path=', 'w',
-         'The working directory for source files. Defaults to .'),
+         "The working directory for source files. Defaults to ."),
+        ('build-lib=', 'b',
+         "directory for script runtime modules"),
+        ('inplace', 'i',
+         "ignore build-lib and put compiled javascript files into the source " +
+         "directory alongside your pure Python modules"),
+        ('force', 'f',
+         "Force rebuilding of static content. Defaults to rebuilding on version "
+         "change detection."),
     ]
+    boolean_options = ['force']
 
     def initialize_options(self):
+        self.build_lib = None
+        self.force = None
         self.work_path = None
+        self.inplace = None
 
     def finalize_options(self):
+        install = self.distribution.get_command_obj('install')
+        sdist = self.distribution.get_command_obj('sdist')
+        build_ext = self.distribution.get_command_obj('build_ext')
+
+        if self.inplace is None:
+            self.inplace = (build_ext.inplace or install.finalized
+                            or sdist.finalized) and 1 or 0
+
+        if self.inplace:
+            self.build_lib = '.'
+        else:
+            self.set_undefined_options('build',
+                                       ('build_lib', 'build_lib'))
         if self.work_path is None:
             self.work_path = os.path.realpath(os.path.join(os.path.dirname(__file__)))
 
@@ -51,7 +76,7 @@ class build_regexes(Command):
             return text.encode('utf8')
 
         import yaml
-        py_dest = os.path.join(work_path, 'ua_parser', '_regexes.py')
+        py_dest = os.path.join(self.build_lib, 'ua_parser', '_regexes.py')
 
         log.info('compiling regexes.yaml -> _regexes.py')
         with open(yaml_src, 'rb') as fp:
@@ -106,6 +131,15 @@ class build_regexes(Command):
             fp.write(b']\n')
             fp.write(b'\n')
 
+        self.update_manifest()
+
+    def update_manifest(self):
+        sdist = self.distribution.get_command_obj('sdist')
+        if not sdist.finalized:
+            return
+
+        sdist.filelist.files.append('ua_parser/_regexes.py')
+
 
 class develop(_develop):
     def run(self):
@@ -119,13 +153,20 @@ class install(_install):
         _install.run(self)
 
 
+class build(_build):
+    def run(self):
+        self.run_command('build_regexes')
+        _build.run(self)
+
+
 class sdist(_sdist):
     sub_commands = _sdist.sub_commands + [('build_regexes', None)]
 
 
 cmdclass = {
-    'develop': develop,
     'sdist': sdist,
+    'develop': develop,
+    'build': build,
     'install': install,
     'build_regexes': build_regexes,
 }
