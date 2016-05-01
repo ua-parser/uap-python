@@ -16,4 +16,8 @@ clean:
 	   build \
 	   ua_parser/_regexes.py
 
-.PHONY: all test clean
+release: clean
+	python setup.py sdist bdist_wheel
+	twine upload -s dist/*
+
+.PHONY: all test clean release
