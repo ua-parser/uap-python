@@ -16,10 +16,10 @@
 
 from __future__ import absolute_import
 
-__author__ = 'Lindsey Simon <elsigh@gmail.com>'
-
 import os
 import re
+
+__author__ = 'Lindsey Simon <elsigh@gmail.com>'
 
 
 class UserAgentParser(object):
@@ -140,7 +140,8 @@ class OSParser(object):
 
 
 class DeviceParser(object):
-    def __init__(self, pattern, regex_flag=None, device_replacement=None, brand_replacement=None, model_replacement=None):
+    def __init__(self, pattern, regex_flag=None, device_replacement=None, brand_replacement=None,
+                 model_replacement=None):
         """Initialize UserAgentParser.
 
         Args:
