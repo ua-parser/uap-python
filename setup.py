@@ -184,7 +184,7 @@ setup(
     url='https://github.com/ua-parser/uap-python',
     include_package_data=True,
     setup_requires=['pyyaml'],
-    install_requires=[],
+    install_requires=['backports.functools_lru_cache'],
     cmdclass=cmdclass,
     classifiers=[
         'Development Status :: 4 - Beta',

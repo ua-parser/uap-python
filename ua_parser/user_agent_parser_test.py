@@ -32,6 +32,8 @@ import re
 import unittest
 import yaml
 
+import mock
+
 from ua_parser import user_agent_parser
 
 TEST_RESOURCES_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)),
@@ -97,6 +99,12 @@ class ParseTest(unittest.TestCase):
         self.assertEqual(
             result, expected,
             "UA: {0}\n expected<{1}> != actual<{2}>".format(user_agent_string, expected, result))
+        result = user_agent_parser.ParseLRU(user_agent_string)
+        self.assertEqual(
+            result, expected,
+            "UA: {0}\n expected<{1}> != actual<{2}>".format(user_agent_string, expected, result))
+
+
     # Make a YAML file for manual comparsion with pgts_browser_list-orig.yaml
     def makePGTSComparisonYAML(self):
         import codecs
@@ -220,6 +228,19 @@ class ParseTest(unittest.TestCase):
                     result['family'],
                     result['brand'],
                     result['model']))
+
+    def testParseCache(self):
+        user_agent_string = 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.12.6; fr; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5,gzip(gfe),gzip(gfe)'
+        # Warm up cache
+        user_agent_parser.Parse(user_agent_string)
+        with mock.patch('ua_parser.user_agent_parser.ParseUserAgent') as mocked:
+            user_agent_parser.Parse(user_agent_string)
+            mocked.assert_not_called()
+
+        user_agent_parser.ParseLRU(user_agent_string)
+        with mock.patch('ua_parser.user_agent_parser.ParseUserAgent') as mocked:
+            user_agent_parser.ParseLRU(user_agent_string)
+            mocked.assert_not_called()
 
 
 class GetFiltersTest(unittest.TestCase):
