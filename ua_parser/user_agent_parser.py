@@ -19,6 +19,11 @@ from __future__ import absolute_import
 import os
 import re
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
+
 __author__ = 'Lindsey Simon <elsigh@gmail.com>'
 
 
@@ -203,29 +208,59 @@ MAX_CACHE_SIZE = 20
 _parse_cache = {}
 
 
-def Parse(user_agent_string, **jsParseBits):
-    """ Parse all the things
-    Args:
-      user_agent_string: the full user agent string
-      jsParseBits: javascript override bits
-    Returns:
-      A dictionary containing all parsed bits
-    """
+def simple_cache(func):
+    def func_wrapper(user_agent_string, **jsParseBits):
+        key = (user_agent_string, repr(jsParseBits))
+        cached = _parse_cache.get(key)
+        if cached is not None:
+            return cached
+        if len(_parse_cache) > MAX_CACHE_SIZE:
+            _parse_cache.clear()
+        return_value = func(user_agent_string, **jsParseBits)
+        _parse_cache[key] = return_value
+        return return_value
+
+    return func_wrapper
+
+
+def _Parse(user_agent_string, **jsParseBits):
     jsParseBits = jsParseBits or {}
-    key = (user_agent_string, repr(jsParseBits))
-    cached = _parse_cache.get(key)
-    if cached is not None:
-        return cached
-    if len(_parse_cache) > MAX_CACHE_SIZE:
-        _parse_cache.clear()
     v = {
         'user_agent': ParseUserAgent(user_agent_string, **jsParseBits),
         'os': ParseOS(user_agent_string, **jsParseBits),
         'device': ParseDevice(user_agent_string, **jsParseBits),
         'string': user_agent_string
     }
-    _parse_cache[key] = v
     return v
+
+
+@simple_cache
+def Parse(user_agent_string, **jsParseBits):
+    """ Parse all the things
+
+    Args:
+      user_agent_string: the full user agent string
+      jsParseBits: javascript override bits
+    Returns:
+      A dictionary containing all parsed bits
+    """
+    return _Parse(user_agent_string, **jsParseBits)
+
+
+@lru_cache(1000)
+def ParseLRU(user_agent_string, **jsParseBits):
+    """ Parse all the things with a 1000 key LRU cache
+
+    This should have a significantly higher cache hit rate then Parse,
+    resulting in a lower cpu usage.
+
+    Args:
+      user_agent_string: the full user agent string
+      jsParseBits: javascript override bits
+    Returns:
+      A dictionary containing all parsed bits
+    """
+    return _Parse(user_agent_string, **jsParseBits)
 
 
 def ParseUserAgent(user_agent_string, **jsParseBits):
