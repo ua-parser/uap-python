@@ -22,7 +22,21 @@ import re
 __author__ = 'Lindsey Simon <elsigh@gmail.com>'
 
 
-class UserAgentParser(object):
+class BaseParser(object):
+    _regex_pattern = None
+
+    def __init__(self, pattern, regex_flag=None):
+        self.pattern = pattern
+        self.regex_flag = regex_flag
+
+    @property
+    def user_agent_re(self):
+        if self._regex_pattern is None:
+            self._regex_pattern = re.compile(self.pattern, self.regex_flag or 0)
+        return self._regex_pattern
+
+
+class UserAgentParser(BaseParser):
     def __init__(self, pattern, family_replacement=None, v1_replacement=None, v2_replacement=None):
         """Initialize UserAgentParser.
 
@@ -32,8 +46,7 @@ class UserAgentParser(object):
           v1_replacement: a string to override the matched v1 (optional)
           v2_replacement: a string to override the matched v2 (optional)
         """
-        self.pattern = pattern
-        self.user_agent_re = re.compile(self.pattern)
+        super(UserAgentParser, self).__init__(pattern)
         self.family_replacement = family_replacement
         self.v1_replacement = v1_replacement
         self.v2_replacement = v2_replacement
@@ -74,7 +87,7 @@ class UserAgentParser(object):
         return family, v1, v2, v3
 
 
-class OSParser(object):
+class OSParser(BaseParser):
     def __init__(self, pattern, os_replacement=None,
                  os_v1_replacement=None, os_v2_replacement=None,
                  os_v3_replacement=None, os_v4_replacement=None):
@@ -88,8 +101,7 @@ class OSParser(object):
           os_v3_replacement: a string to override the matched v3 (optional)
           os_v4_replacement: a string to override the matched v4 (optional)
         """
-        self.pattern = pattern
-        self.user_agent_re = re.compile(self.pattern)
+        super(OSParser, self).__init__(pattern)
         self.os_replacement = os_replacement
         self.os_v1_replacement = os_v1_replacement
         self.os_v2_replacement = os_v2_replacement
@@ -139,7 +151,7 @@ class OSParser(object):
         return os, os_v1, os_v2, os_v3, os_v4
 
 
-class DeviceParser(object):
+class DeviceParser(BaseParser):
     def __init__(self, pattern, regex_flag=None, device_replacement=None, brand_replacement=None,
                  model_replacement=None):
         """Initialize UserAgentParser.
@@ -148,11 +160,7 @@ class DeviceParser(object):
           pattern: a regular expression string
           device_replacement: a string to override the matched device (optional)
         """
-        self.pattern = pattern
-        if regex_flag == 'i':
-            self.user_agent_re = re.compile(self.pattern, re.IGNORECASE)
-        else:
-            self.user_agent_re = re.compile(self.pattern)
+        super(DeviceParser, self).__init__(pattern, re.IGNORECASE if regex_flag == 'i' else None)
         self.device_replacement = device_replacement
         self.brand_replacement = brand_replacement
         self.model_replacement = model_replacement
