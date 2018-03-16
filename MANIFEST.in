@@ -1,2 +1,3 @@
 include README.rst
+include ua_parser/LICENSE
 global-exclude *~
