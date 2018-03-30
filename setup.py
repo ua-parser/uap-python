@@ -105,6 +105,7 @@ class build_regexes(Command):
                 fp.write(force_bytes('        %r,\n' % device_parser.get('family_replacement')))
                 fp.write(force_bytes('        %r,\n' % device_parser.get('v1_replacement')))
                 fp.write(force_bytes('        %r,\n' % device_parser.get('v2_replacement')))
+                fp.write(force_bytes('        %r,\n' % device_parser.get('v3_replacement')))
                 fp.write(b'    ),\n')
             fp.write(b']\n')
             fp.write(b'\n')
