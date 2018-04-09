@@ -117,7 +117,10 @@ class OSParser(object):
                 os = match.group(1)
 
             if self.os_v1_replacement:
-                os_v1 = self.os_v1_replacement
+                if re.search(r'\$1', self.os_v1_replacement):
+                    os_v1 = re.sub(r'\$1', match.group(1), self.os_v1_replacement)
+                else:
+                    os_v1 = self.os_v1_replacement
             elif match.lastindex and match.lastindex >= 2:
                 os_v1 = match.group(2)
 
