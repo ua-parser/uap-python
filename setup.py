@@ -180,7 +180,7 @@ setup(
     author_email='no-reply@pbs.org',
     packages=['ua_parser'],
     package_dir={'': '.'},
-    license='LICENSE.txt',
+    license='Apache 2.0',
     zip_safe=False,
     url='https://github.com/ua-parser/uap-python',
     include_package_data=True,
