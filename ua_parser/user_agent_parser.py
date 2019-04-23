@@ -61,15 +61,15 @@ class UserAgentParser(object):
             if self.v1_replacement:
                 v1 = self.v1_replacement
             elif match.lastindex and match.lastindex >= 2:
-                v1 = match.group(2)
+                v1 = match.group(2) if match.group(2) != '' else None
 
             if self.v2_replacement:
                 v2 = self.v2_replacement
             elif match.lastindex and match.lastindex >= 3:
-                v2 = match.group(3)
+                v2 = match.group(3) if match.group(3) != '' else None
 
             if match.lastindex and match.lastindex >= 4:
-                v3 = match.group(4)
+                v3 = match.group(4) if match.group(4) != '' else None
 
         return family, v1, v2, v3
 
