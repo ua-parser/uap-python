@@ -125,17 +125,26 @@ class OSParser(object):
                 os_v1 = match.group(2)
 
             if self.os_v2_replacement:
-                os_v2 = self.os_v2_replacement
+                if re.search(r'\$2', self.os_v2_replacement):
+                    os_v2 = re.sub(r'\$2', match.group(2), self.os_v2_replacement)
+                else:
+                    os_v2 = self.os_v2_replacement
             elif match.lastindex and match.lastindex >= 3:
                 os_v2 = match.group(3)
 
             if self.os_v3_replacement:
-                os_v3 = self.os_v3_replacement
+                if re.search(r'\$3', self.os_v3_replacement):
+                    os_v3 = re.sub(r'\$3', match.group(3), self.os_v3_replacement)
+                else:
+                    os_v3 = self.os_v3_replacement
             elif match.lastindex and match.lastindex >= 4:
                 os_v3 = match.group(4)
 
             if self.os_v4_replacement:
-                os_v4 = self.os_v4_replacement
+                if re.search(r'\$4', self.os_v4_replacement):
+                    os_v4 = re.sub(r'\$4', match.group(4), self.os_v4_replacement)
+                else:
+                    os_v4 = self.os_v4_replacement
             elif match.lastindex and match.lastindex >= 5:
                 os_v4 = match.group(5)
 
