@@ -109,47 +109,45 @@ class OSParser(object):
         match = self.user_agent_re.search(user_agent_string)
         if match:
             if self.os_replacement:
-                if re.search(r'\$1', self.os_replacement):
-                    os = re.sub(r'\$1', match.group(1), self.os_replacement)
-                else:
-                    os = self.os_replacement
+                os = MultiReplace(self.os_replacement, match)
             elif match.lastindex:
                 os = match.group(1)
 
             if self.os_v1_replacement:
-                if re.search(r'\$1', self.os_v1_replacement):
-                    os_v1 = re.sub(r'\$1', match.group(1), self.os_v1_replacement)
-                else:
-                    os_v1 = self.os_v1_replacement
+                os_v1 = MultiReplace(self.os_v1_replacement, match)
             elif match.lastindex and match.lastindex >= 2:
                 os_v1 = match.group(2)
 
             if self.os_v2_replacement:
-                if re.search(r'\$2', self.os_v2_replacement):
-                    os_v2 = re.sub(r'\$2', match.group(2), self.os_v2_replacement)
-                else:
-                    os_v2 = self.os_v2_replacement
+                os_v2 = MultiReplace(self.os_v2_replacement, match)
             elif match.lastindex and match.lastindex >= 3:
                 os_v2 = match.group(3)
 
             if self.os_v3_replacement:
-                if re.search(r'\$3', self.os_v3_replacement):
-                    os_v3 = re.sub(r'\$3', match.group(3), self.os_v3_replacement)
-                else:
-                    os_v3 = self.os_v3_replacement
+                os_v3 = MultiReplace(self.os_v3_replacement, match)
             elif match.lastindex and match.lastindex >= 4:
                 os_v3 = match.group(4)
 
             if self.os_v4_replacement:
-                if re.search(r'\$4', self.os_v4_replacement):
-                    os_v4 = re.sub(r'\$4', match.group(4), self.os_v4_replacement)
-                else:
-                    os_v4 = self.os_v4_replacement
+                os_v4 = MultiReplace(self.os_v4_replacement, match)
             elif match.lastindex and match.lastindex >= 5:
                 os_v4 = match.group(5)
 
         return os, os_v1, os_v2, os_v3, os_v4
 
+def MultiReplace(string, match):
+    def _repl(m):
+        index = int(m.group(1)) - 1
+        group = match.groups()
+        if index < len(group):
+            return group[index]
+        return ''
+
+    _string = re.sub(r'\$(\d)', _repl, string)
+    _string = re.sub(r'^\s+|\s+$', '', _string)
+    if _string == '':
+        return None
+    return _string
 
 class DeviceParser(object):
     def __init__(self, pattern, regex_flag=None, device_replacement=None, brand_replacement=None,
@@ -177,34 +175,20 @@ class DeviceParser(object):
                            for group_index in range(1, match.lastindex + 1)]
         return match_spans
 
-    def MultiReplace(self, string, match):
-        def _repl(m):
-            index = int(m.group(1)) - 1
-            group = match.groups()
-            if index < len(group):
-                return group[index]
-            return ''
-
-        _string = re.sub(r'\$(\d)', _repl, string)
-        _string = re.sub(r'^\s+|\s+$', '', _string)
-        if _string == '':
-            return None
-        return _string
-
     def Parse(self, user_agent_string):
         device, brand, model = None, None, None
         match = self.user_agent_re.search(user_agent_string)
         if match:
             if self.device_replacement:
-                device = self.MultiReplace(self.device_replacement, match)
+                device = MultiReplace(self.device_replacement, match)
             else:
                 device = match.group(1)
 
             if self.brand_replacement:
-                brand = self.MultiReplace(self.brand_replacement, match)
+                brand = MultiReplace(self.brand_replacement, match)
 
             if self.model_replacement:
-                model = self.MultiReplace(self.model_replacement, match)
+                model = MultiReplace(self.model_replacement, match)
             elif len(match.groups()) > 0:
                 model = match.group(1)
 
@@ -279,9 +263,9 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
     family = family or 'Other'
     return {
         'family': family,
-        'major': v1,
-        'minor': v2,
-        'patch': v3
+        'major': v1 or None,
+        'minor': v2 or None,
+        'patch': v3 or None,
     }
 
 
