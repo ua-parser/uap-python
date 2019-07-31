@@ -135,6 +135,7 @@ class OSParser(object):
 
         return os, os_v1, os_v2, os_v3, os_v4
 
+
 def MultiReplace(string, match):
     def _repl(m):
         index = int(m.group(1)) - 1
@@ -148,6 +149,7 @@ def MultiReplace(string, match):
     if _string == '':
         return None
     return _string
+
 
 class DeviceParser(object):
     def __init__(self, pattern, regex_flag=None, device_replacement=None, brand_replacement=None,
