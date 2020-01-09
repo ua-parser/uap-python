@@ -241,9 +241,9 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
         jsParseBits['js_user_agent_family'] != ''
     ):
         family = jsParseBits['js_user_agent_family']
-        v1 = jsParseBits.get('js_user_agent_v1')
-        v2 = jsParseBits.get('js_user_agent_v2')
-        v3 = jsParseBits.get('js_user_agent_v3')
+        v1 = jsParseBits.get('js_user_agent_v1') or None
+        v2 = jsParseBits.get('js_user_agent_v2') or None
+        v3 = jsParseBits.get('js_user_agent_v3') or None
     else:
         for uaParser in USER_AGENT_PARSERS:
             family, v1, v2, v3 = uaParser.Parse(user_agent_string)
