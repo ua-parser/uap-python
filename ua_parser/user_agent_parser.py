@@ -23,7 +23,8 @@ __author__ = 'Lindsey Simon <elsigh@gmail.com>'
 
 
 class UserAgentParser(object):
-    def __init__(self, pattern, family_replacement=None, v1_replacement=None, v2_replacement=None):
+    def __init__(self, pattern, family_replacement=None, v1_replacement=None,
+                 v2_replacement=None):
         """Initialize UserAgentParser.
 
         Args:
@@ -52,7 +53,8 @@ class UserAgentParser(object):
         if match:
             if self.family_replacement:
                 if re.search(r'\$1', self.family_replacement):
-                    family = re.sub(r'\$1', match.group(1), self.family_replacement)
+                    family = re.sub(r'\$1', match.group(1),
+                                    self.family_replacement)
                 else:
                     family = self.family_replacement
             else:
@@ -152,8 +154,8 @@ def MultiReplace(string, match):
 
 
 class DeviceParser(object):
-    def __init__(self, pattern, regex_flag=None, device_replacement=None, brand_replacement=None,
-                 model_replacement=None):
+    def __init__(self, pattern, regex_flag=None, device_replacement=None,
+                 brand_replacement=None, model_replacement=None):
         """Initialize UserAgentParser.
 
         Args:
@@ -234,14 +236,12 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
     Returns:
       A dictionary containing parsed bits.
     """
-    if 'js_user_agent_family' in jsParseBits and jsParseBits['js_user_agent_family'] != '':
+    if 'js_user_agent_family' in jsParseBits and
+    jsParseBits['js_user_agent_family'] != '':
         family = jsParseBits['js_user_agent_family']
-        if 'js_user_agent_v1' in jsParseBits:
-            v1 = jsParseBits['js_user_agent_v1'] or None
-        if 'js_user_agent_v2' in jsParseBits:
-            v2 = jsParseBits['js_user_agent_v2'] or None
-        if 'js_user_agent_v3' in jsParseBits:
-            v3 = jsParseBits['js_user_agent_v3'] or None
+        v1 = jsParseBits.get('js_user_agent_v1')
+        v2 = jsParseBits.get('js_user_agent_v2')
+        v3 = jsParseBits.get('js_user_agent_v3')
     else:
         for uaParser in USER_AGENT_PARSERS:
             family, v1, v2, v3 = uaParser.Parse(user_agent_string)
@@ -252,7 +252,8 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
     if 'js_user_agent_string' in jsParseBits:
         js_user_agent_string = jsParseBits['js_user_agent_string']
         if (
-            js_user_agent_string and js_user_agent_string.find('Chrome/') > -1 and
+            js_user_agent_string and
+            js_user_agent_string.find('Chrome/') > -1 and
             user_agent_string.find('chromeframe') > -1
         ):
             jsOverride = {}
@@ -357,15 +358,9 @@ def ParseWithJSOverrides(user_agent_string,
     # Override via JS properties.
     if js_user_agent_family is not None and js_user_agent_family != '':
         family = js_user_agent_family
-        v1 = None
-        v2 = None
-        v3 = None
-        if js_user_agent_v1 is not None:
-            v1 = js_user_agent_v1
-        if js_user_agent_v2 is not None:
-            v2 = js_user_agent_v2
-        if js_user_agent_v3 is not None:
-            v3 = js_user_agent_v3
+        v1 = js_user_agent_v1 or None
+        v2 = js_user_agent_v2 or None
+        v3 = js_user_agent_v3 or None
     else:
         for parser in USER_AGENT_PARSERS:
             family, v1, v2, v3 = parser.Parse(user_agent_string)
@@ -463,17 +458,9 @@ if UA_PARSER_YAML:
     for _ua_parser in regexes['user_agent_parsers']:
         _regex = _ua_parser['regex']
 
-        _family_replacement = None
-        if 'family_replacement' in _ua_parser:
-            _family_replacement = _ua_parser['family_replacement']
-
-        _v1_replacement = None
-        if 'v1_replacement' in _ua_parser:
-            _v1_replacement = _ua_parser['v1_replacement']
-
-        _v2_replacement = None
-        if 'v2_replacement' in _ua_parser:
-            _v2_replacement = _ua_parser['v2_replacement']
+        _family_replacement = _ua_parser.get('family_replacement')
+        _v1_replacement = _ua_parser.get('v1_replacement')
+        _v2_replacement = _ua_parser.get('v2_replacement')
 
         USER_AGENT_PARSERS.append(UserAgentParser(_regex,
                                                   _family_replacement,
@@ -484,25 +471,11 @@ if UA_PARSER_YAML:
     for _os_parser in regexes['os_parsers']:
         _regex = _os_parser['regex']
 
-        _os_replacement = None
-        if 'os_replacement' in _os_parser:
-            _os_replacement = _os_parser['os_replacement']
-
-        _os_v1_replacement = None
-        if 'os_v1_replacement' in _os_parser:
-            _os_v1_replacement = _os_parser['os_v1_replacement']
-
-        _os_v2_replacement = None
-        if 'os_v2_replacement' in _os_parser:
-            _os_v2_replacement = _os_parser['os_v2_replacement']
-
-        _os_v3_replacement = None
-        if 'os_v3_replacement' in _os_parser:
-            _os_v3_replacement = _os_parser['os_v3_replacement']
-
-        _os_v4_replacement = None
-        if 'os_v4_replacement' in _os_parser:
-            _os_v4_replacement = _os_parser['os_v4_replacement']
+        _os_replacement = _os_parser.get('os_replacement')
+        _os_v1_replacement = _os_parser.get('os_v1_replacement')
+        _os_v2_replacement = _os_parser.get('os_v2_replacement')
+        _os_v3_replacement = _os_parser.get('os_v3_replacement')
+        _os_v4_replacement = _os_parser.get('os_v4_replacement')
 
         OS_PARSERS.append(OSParser(_regex,
                                    _os_replacement,
@@ -515,21 +488,10 @@ if UA_PARSER_YAML:
     for _device_parser in regexes['device_parsers']:
         _regex = _device_parser['regex']
 
-        _regex_flag = None
-        if 'regex_flag' in _device_parser:
-            _regex_flag = _device_parser['regex_flag']
-
-        _device_replacement = None
-        if 'device_replacement' in _device_parser:
-            _device_replacement = _device_parser['device_replacement']
-
-        _brand_replacement = None
-        if 'brand_replacement' in _device_parser:
-            _brand_replacement = _device_parser['brand_replacement']
-
-        _model_replacement = None
-        if 'model_replacement' in _device_parser:
-            _model_replacement = _device_parser['model_replacement']
+        _regex_flag = _device_parser.get('regex_flag')
+        _device_replacement = _device_parser.get('device_replacement')
+        _brand_replacement = _device_parser.get('brand_replacement')
+        _model_replacement = _device_parser.get('model_replacement')
 
         DEVICE_PARSERS.append(DeviceParser(_regex,
                                            _regex_flag,
