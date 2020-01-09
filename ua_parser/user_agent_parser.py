@@ -360,9 +360,15 @@ def ParseWithJSOverrides(user_agent_string,
     # Override via JS properties.
     if js_user_agent_family is not None and js_user_agent_family != '':
         family = js_user_agent_family
-        v1 = js_user_agent_v1 or None
-        v2 = js_user_agent_v2 or None
-        v3 = js_user_agent_v3 or None
+        v1 = None
+        v2 = None
+        v3 = None
+        if js_user_agent_v1 is not None:
+            v1 = js_user_agent_v1
+        if js_user_agent_v2 is not None:
+            v2 = js_user_agent_v2
+        if js_user_agent_v3 is not None:
+            v3 = js_user_agent_v3
     else:
         for parser in USER_AGENT_PARSERS:
             family, v1, v2, v3 = parser.Parse(user_agent_string)
