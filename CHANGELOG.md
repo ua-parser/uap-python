@@ -4,20 +4,6 @@
 
 [Full Changelog](https://github.com/ua-parser/uap-python/compare/0.8.0...HEAD)
 
-**Closed issues:**
-
-- Why is there a pyyaml setup-required in setup.py? [\#81](https://github.com/ua-parser/uap-python/issues/81)
-- Update uap-core submodule to 0.6.10 [\#78](https://github.com/ua-parser/uap-python/issues/78)
-- user\_agent\_parser.Parse can't get versions that are not in format {major}.{minor}.{patch} [\#72](https://github.com/ua-parser/uap-python/issues/72)
-- Slowness in parsing user agent [\#71](https://github.com/ua-parser/uap-python/issues/71)
-- uap-core pointing to 10 month old commit [\#68](https://github.com/ua-parser/uap-python/issues/68)
-- Not detecting Instagram app [\#66](https://github.com/ua-parser/uap-python/issues/66)
-- Problem of parsing Edge's user-agent [\#64](https://github.com/ua-parser/uap-python/issues/64)
-- ModuleNotFoundError: No module named 'ua\_parser.\_regexes' [\#62](https://github.com/ua-parser/uap-python/issues/62)
-- Browser family error? [\#61](https://github.com/ua-parser/uap-python/issues/61)
-- Update to latest uap-core [\#54](https://github.com/ua-parser/uap-python/issues/54)
-- Changelog? [\#46](https://github.com/ua-parser/uap-python/issues/46)
-
 **Merged pull requests:**
 
 - simplify code and pep8 and apply black formatter [\#80](https://github.com/ua-parser/uap-python/pull/80) ([jnozsc](https://github.com/jnozsc))
@@ -27,16 +13,10 @@
 - update uap-core submodule [\#70](https://github.com/ua-parser/uap-python/pull/70) ([admitad-github](https://github.com/admitad-github))
 - Fix license field [\#69](https://github.com/ua-parser/uap-python/pull/69) ([ghost](https://github.com/ghost))
 - Add license file to manifest [\#58](https://github.com/ua-parser/uap-python/pull/58) ([bachp](https://github.com/bachp))
-- Test against Python 3.5 [\#29](https://github.com/ua-parser/uap-python/pull/29) ([glogiotatidis](https://github.com/glogiotatidis))
 
 ## [0.8.0](https://github.com/ua-parser/uap-python/tree/0.8.0) (2018-04-09)
 
 [Full Changelog](https://github.com/ua-parser/uap-python/compare/0.7.3...0.8.0)
-
-**Closed issues:**
-
-- Process for updating uap-core? [\#51](https://github.com/ua-parser/uap-python/issues/51)
-- Below UserAgent String returns wrong device Name [\#50](https://github.com/ua-parser/uap-python/issues/50)
 
 **Merged pull requests:**
 
@@ -45,11 +25,6 @@
 ## [0.7.3](https://github.com/ua-parser/uap-python/tree/0.7.3) (2017-02-02)
 
 [Full Changelog](https://github.com/ua-parser/uap-python/compare/0.7.2...0.7.3)
-
-**Closed issues:**
-
-- Wrong Android Browser [\#48](https://github.com/ua-parser/uap-python/issues/48)
-- IndexError: no such group for Mozilla/5.0 \(Linux; U; Android 4.1.1; en-us; Build/JRO03C\) AppleWebKit/534.30 \(KHTML, like Gecko\) Version/4.0 Safari/534.30 [\#47](https://github.com/ua-parser/uap-python/issues/47)
 
 ## [0.7.2](https://github.com/ua-parser/uap-python/tree/0.7.2) (2016-10-31)
 
@@ -67,23 +42,9 @@
 
 [Full Changelog](https://github.com/ua-parser/uap-python/compare/0.6.1...0.7.0)
 
-**Closed issues:**
-
-- Add Brave browser support [\#44](https://github.com/ua-parser/uap-python/issues/44)
-- Unrecognised User-Agents [\#43](https://github.com/ua-parser/uap-python/issues/43)
-- version is not right in \_\_init\_\_.py [\#42](https://github.com/ua-parser/uap-python/issues/42)
-- parser device [\#41](https://github.com/ua-parser/uap-python/issues/41)
-- AWS Redshift UDF Installation [\#40](https://github.com/ua-parser/uap-python/issues/40)
-- Parser throwing UnicodeDecodeError on UA with Chinese characters [\#38](https://github.com/ua-parser/uap-python/issues/38)
-
 ## [0.6.1](https://github.com/ua-parser/uap-python/tree/0.6.1) (2015-12-22)
 
 [Full Changelog](https://github.com/ua-parser/uap-python/compare/0.5.1...0.6.1)
-
-**Closed issues:**
-
-- Cut a 0.5.1 release [\#34](https://github.com/ua-parser/uap-python/issues/34)
-- Pre-compile yaml into py file [\#23](https://github.com/ua-parser/uap-python/issues/23)
 
 **Merged pull requests:**
 
@@ -94,23 +55,9 @@
 
 [Full Changelog](https://github.com/ua-parser/uap-python/compare/87f8870e06979e4d440ccbfc88ad0673ce7465ff...0.5.1)
 
-**Closed issues:**
-
-- ua-parser fails to parse recent Windows version numbers [\#33](https://github.com/ua-parser/uap-python/issues/33)
-- Fails to build in virtualenv [\#31](https://github.com/ua-parser/uap-python/issues/31)
-- Maintain history and version number consistency [\#30](https://github.com/ua-parser/uap-python/issues/30)
-- ua\_parser.VERSION incorrect [\#18](https://github.com/ua-parser/uap-python/issues/18)
-- Release 0.4.0 is a brown bag release. regexes.yaml is missing in egg [\#16](https://github.com/ua-parser/uap-python/issues/16)
-- MS Edge support [\#15](https://github.com/ua-parser/uap-python/issues/15)
-- Improve uap-python installation instructions [\#14](https://github.com/ua-parser/uap-python/issues/14)
-- Status of Project [\#9](https://github.com/ua-parser/uap-python/issues/9)
-- uap-core should be kept upto date better. [\#6](https://github.com/ua-parser/uap-python/issues/6)
-- Released Versions? [\#5](https://github.com/ua-parser/uap-python/issues/5)
-- Question: Which repo is canonical?  [\#4](https://github.com/ua-parser/uap-python/issues/4)
-- Enable Travis CI [\#2](https://github.com/ua-parser/uap-python/issues/2)
-
 **Merged pull requests:**
 
+- Test against Python 3.5 [\#29](https://github.com/ua-parser/uap-python/pull/29) ([glogiotatidis](https://github.com/glogiotatidis))
 - Update to latest uap-core. [\#28](https://github.com/ua-parser/uap-python/pull/28) ([glogiotatidis](https://github.com/glogiotatidis))
 - Fix install from sdist and bdist\_wheel [\#27](https://github.com/ua-parser/uap-python/pull/27) ([mattrobenolt](https://github.com/mattrobenolt))
 - Cache Parse\(\) results [\#26](https://github.com/ua-parser/uap-python/pull/26) ([mattrobenolt](https://github.com/mattrobenolt))
