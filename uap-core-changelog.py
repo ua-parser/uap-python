@@ -14,7 +14,7 @@ def main():
     tags = subprocess.check_output(["git", "tag"]).decode().strip().split("\n")
     tags.reverse()
     for new, old in zip(tags[:-1], tags[1:]):
-        print("## from %s to %s:" % (old, new))
+        print("## from {} to {}:".format(old, new))
         diff = (
             subprocess.check_output(["git", "diff", old, new, "uap-core"])
             .decode()
@@ -26,8 +26,9 @@ def main():
         ]
         print(
             "[click to check the change]"
-            "(https://github.com/ua-parser/uap-core/compare/%s...%s)"
-            % (old_commit, new_commit)
+            "(https://github.com/ua-parser/uap-core/compare/{}...{})".format(
+                old_commit, new_commit
+            )
         )
 
 
