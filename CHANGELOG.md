@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/ua-parser/uap-python/tree/HEAD)
+## [0.9.0](https://github.com/ua-parser/uap-python/tree/0.9.0) (2020-02-04)
 
-[Full Changelog](https://github.com/ua-parser/uap-python/compare/0.8.0...HEAD)
+[Full Changelog](https://github.com/ua-parser/uap-python/compare/0.8.0...0.9.0)
 
 **Merged pull requests:**
 
