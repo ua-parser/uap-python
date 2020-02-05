@@ -7,7 +7,9 @@ import subprocess
 def main():
     print("# uap-core (upstream) changelog")
     print(
-        "In this document, we provide a link to compare the upstream change between each uap-python release."
+        "In this document, "
+        "we provide a link to compare the upstream change "
+        "between each uap-python release."
     )
     tags = subprocess.check_output(["git", "tag"]).decode().strip().split("\n")
     tags.reverse()
