@@ -31,6 +31,10 @@ In the top-level directory run:
 
     $ python setup.py install
 
+Change Log
+---------------
+Because this repo is mostly a python wrapper for the User Agent String Parser repo (https://github.com/ua-parser/uap-core), the changes made to this repo are best described by the update diffs in that project. Please see the diffs for this submodule (https://github.com/ua-parser/uap-core/releases) for a list of what has changed between versions of this package.
+
 Getting Started
 ---------------
 
