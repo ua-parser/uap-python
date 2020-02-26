@@ -85,7 +85,7 @@ class ParseTest(unittest.TestCase):
     def testParseAll(self):
         user_agent_string = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; fr; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5,gzip(gfe),gzip(gfe)"
         expected = {
-            "device": {"family": "Other", "brand": None, "model": None},
+            "device": {"family": "Mac", "brand": "Apple", "model": "Mac"},
             "os": {
                 "family": "Mac OS X",
                 "major": "10",
