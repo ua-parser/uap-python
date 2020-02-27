@@ -49,7 +49,7 @@ Retrieve data on a user-agent string
     >>> ua_string = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36'
     >>> parsed_string = user_agent_parser.Parse(ua_string)
     >>> pp.pprint(parsed_string)
-    {   'device': {   'brand': None, 'family': 'Other', 'model': None},
+    {   'device': {   'brand': 'Apple', 'family': 'Mac', 'model': 'Mac'},
         'os': {   'family': 'Mac OS X',
                   'major': '10',
                   'minor': '9',
@@ -105,9 +105,9 @@ Extract Device information from user-agent string
     >>> ua_string = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36'
     >>> parsed_string = user_agent_parser.ParseDevice(ua_string)
     >>> pp.pprint(parsed_string)
-    {   'brand': None,
-        'family': 'Other',
-        'model': None}
+    {   'brand': 'Apple',
+        'family': 'Mac',
+        'model': 'Mac'}
 
 Copyright
 ---------
