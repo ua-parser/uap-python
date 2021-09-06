@@ -35,10 +35,16 @@ class UserAgentParser(object):
           v2_replacement: a string to override the matched v2 (optional)
         """
         self.pattern = pattern
-        self.user_agent_re = re.compile(self.pattern)
+        self._user_agent_re = None
         self.family_replacement = family_replacement
         self.v1_replacement = v1_replacement
         self.v2_replacement = v2_replacement
+
+    @property
+    def user_agent_re(self):
+        if self._user_agent_re is None:
+            self._user_agent_re = re.compile(self.pattern)
+        return self._user_agent_re
 
     def MatchSpans(self, user_agent_string):
         match_spans = []
@@ -98,12 +104,18 @@ class OSParser(object):
           os_v4_replacement: a string to override the matched v4 (optional)
         """
         self.pattern = pattern
-        self.user_agent_re = re.compile(self.pattern)
+        self._user_agent_re = None
         self.os_replacement = os_replacement
         self.os_v1_replacement = os_v1_replacement
         self.os_v2_replacement = os_v2_replacement
         self.os_v3_replacement = os_v3_replacement
         self.os_v4_replacement = os_v4_replacement
+
+    @property
+    def user_agent_re(self):
+        if self._user_agent_re is None:
+            self._user_agent_re = re.compile(self.pattern)
+        return self._user_agent_re
 
     def MatchSpans(self, user_agent_string):
         match_spans = []
@@ -177,13 +189,20 @@ class DeviceParser(object):
           device_replacement: a string to override the matched device (optional)
         """
         self.pattern = pattern
-        if regex_flag == "i":
-            self.user_agent_re = re.compile(self.pattern, re.IGNORECASE)
-        else:
-            self.user_agent_re = re.compile(self.pattern)
+        self.regex_flag = regex_flag
+        self._user_agent_re = None
         self.device_replacement = device_replacement
         self.brand_replacement = brand_replacement
         self.model_replacement = model_replacement
+
+    @property
+    def user_agent_re(self):
+        if self._user_agent_re is None:
+            if self.regex_flag == "i":
+                self._user_agent_re = re.compile(self.pattern, re.IGNORECASE)
+            else:
+                self._user_agent_re = re.compile(self.pattern)
+        return self._user_agent_re
 
     def MatchSpans(self, user_agent_string):
         match_spans = []
@@ -219,7 +238,7 @@ _parse_cache = {}
 
 
 def Parse(user_agent_string, **jsParseBits):
-    """ Parse all the things
+    """Parse all the things
     Args:
       user_agent_string: the full user agent string
       jsParseBits: javascript override bits
@@ -244,7 +263,7 @@ def Parse(user_agent_string, **jsParseBits):
 
 
 def ParseUserAgent(user_agent_string, **jsParseBits):
-    """ Parses the user-agent string for user agent (browser) info.
+    """Parses the user-agent string for user agent (browser) info.
     Args:
       user_agent_string: The full user-agent string.
       jsParseBits: javascript override bits.
@@ -290,7 +309,7 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
 
 
 def ParseOS(user_agent_string, **jsParseBits):
-    """ Parses the user-agent string for operating system info
+    """Parses the user-agent string for operating system info
     Args:
       user_agent_string: The full user-agent string.
       jsParseBits: javascript override bits.
@@ -312,7 +331,7 @@ def ParseOS(user_agent_string, **jsParseBits):
 
 
 def ParseDevice(user_agent_string):
-    """ Parses the user-agent string for device info.
+    """Parses the user-agent string for device info.
     Args:
         user_agent_string: The full user-agent string.
         ua_family: The parsed user agent family name.
@@ -368,7 +387,7 @@ def ParseWithJSOverrides(
     js_user_agent_v2=None,
     js_user_agent_v3=None,
 ):
-    """ backwards compatible. use one of the other Parse methods instead! """
+    """backwards compatible. use one of the other Parse methods instead!"""
 
     # Override via JS properties.
     if js_user_agent_family is not None and js_user_agent_family != "":
@@ -404,7 +423,7 @@ def ParseWithJSOverrides(
 
 
 def Pretty(family, v1=None, v2=None, v3=None):
-    """ backwards compatible. use PrettyUserAgent instead! """
+    """backwards compatible. use PrettyUserAgent instead!"""
     if v3:
         if v3[0].isdigit():
             return "%s %s.%s.%s" % (family, v1, v2, v3)
