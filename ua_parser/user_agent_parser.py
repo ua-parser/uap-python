@@ -477,7 +477,7 @@ if UA_PARSER_YAML:
     except ImportError:
         from yaml import SafeLoader
 
-    with open(UA_PARSER_YAML) as fp:
+    with open(UA_PARSER_YAML, 'rb') as fp:
         regexes = yaml.load(fp, Loader=SafeLoader)
 
     USER_AGENT_PARSERS = []
