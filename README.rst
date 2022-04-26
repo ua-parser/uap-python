@@ -7,8 +7,9 @@ formerly https://github.com/tobie/ua-parser)
 Build Status
 ------------
 
-.. image:: https://travis-ci.org/ua-parser/uap-python.svg
-   :target: https://travis-ci.org/ua-parser/uap-python
+.. image:: https://github.com/ua-parser/uap-python/actions/workflows/ci.yml/badge.svg
+   :alt: CI on the master branch
+
 
 Installing
 ----------
