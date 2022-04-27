@@ -219,7 +219,7 @@ _parse_cache = {}
 
 
 def Parse(user_agent_string, **jsParseBits):
-    """ Parse all the things
+    """Parse all the things
     Args:
       user_agent_string: the full user agent string
       jsParseBits: javascript override bits
@@ -244,7 +244,7 @@ def Parse(user_agent_string, **jsParseBits):
 
 
 def ParseUserAgent(user_agent_string, **jsParseBits):
-    """ Parses the user-agent string for user agent (browser) info.
+    """Parses the user-agent string for user agent (browser) info.
     Args:
       user_agent_string: The full user-agent string.
       jsParseBits: javascript override bits.
@@ -290,7 +290,7 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
 
 
 def ParseOS(user_agent_string, **jsParseBits):
-    """ Parses the user-agent string for operating system info
+    """Parses the user-agent string for operating system info
     Args:
       user_agent_string: The full user-agent string.
       jsParseBits: javascript override bits.
@@ -312,7 +312,7 @@ def ParseOS(user_agent_string, **jsParseBits):
 
 
 def ParseDevice(user_agent_string):
-    """ Parses the user-agent string for device info.
+    """Parses the user-agent string for device info.
     Args:
         user_agent_string: The full user-agent string.
         ua_family: The parsed user agent family name.
@@ -368,7 +368,7 @@ def ParseWithJSOverrides(
     js_user_agent_v2=None,
     js_user_agent_v3=None,
 ):
-    """ backwards compatible. use one of the other Parse methods instead! """
+    """backwards compatible. use one of the other Parse methods instead!"""
 
     # Override via JS properties.
     if js_user_agent_family is not None and js_user_agent_family != "":
@@ -404,7 +404,7 @@ def ParseWithJSOverrides(
 
 
 def Pretty(family, v1=None, v2=None, v3=None):
-    """ backwards compatible. use PrettyUserAgent instead! """
+    """backwards compatible. use PrettyUserAgent instead!"""
     if v3:
         if v3[0].isdigit():
             return "%s %s.%s.%s" % (family, v1, v2, v3)
@@ -477,7 +477,7 @@ if UA_PARSER_YAML:
     except ImportError:
         from yaml import SafeLoader
 
-    with open(UA_PARSER_YAML, 'rb') as fp:
+    with open(UA_PARSER_YAML, "rb") as fp:
         regexes = yaml.load(fp, Loader=SafeLoader)
 
     USER_AGENT_PARSERS = []
