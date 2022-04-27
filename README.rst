@@ -50,13 +50,15 @@ Retrieve data on a user-agent string
     >>> ua_string = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36'
     >>> parsed_string = user_agent_parser.Parse(ua_string)
     >>> pp.pprint(parsed_string)
-    {   'device': {   'brand': 'Apple', 'family': 'Mac', 'model': 'Mac'},
+    {   'device': {'brand': 'Apple', 'family': 'Mac', 'model': 'Mac'},
         'os': {   'family': 'Mac OS X',
                   'major': '10',
                   'minor': '9',
                   'patch': '4',
                   'patch_minor': None},
-        'string': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36',
+        'string': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) '
+                  'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 '
+                  'Safari/537.36',
         'user_agent': {   'family': 'Chrome',
                           'major': '41',
                           'minor': '0',
@@ -73,10 +75,7 @@ Extract browser data from user-agent string
     >>> ua_string = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36'
     >>> parsed_string = user_agent_parser.ParseUserAgent(ua_string)
     >>> pp.pprint(parsed_string)
-     {   'family': 'Chrome',
-         'major': '41',
-         'minor': '0',
-         'patch': '2272'}
+    {'family': 'Chrome', 'major': '41', 'minor': '0', 'patch': '2272'}
 
 Extract OS information from user-agent string
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -106,9 +105,7 @@ Extract Device information from user-agent string
     >>> ua_string = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36'
     >>> parsed_string = user_agent_parser.ParseDevice(ua_string)
     >>> pp.pprint(parsed_string)
-    {   'brand': 'Apple',
-        'family': 'Mac',
-        'model': 'Mac'}
+    {'brand': 'Apple', 'family': 'Mac', 'model': 'Mac'}
 
 Copyright
 ---------

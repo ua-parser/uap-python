@@ -49,3 +49,7 @@ jobs:
       run: |
         python setup.py develop
         python ./ua_parser/user_agent_parser_test.py
+    - name: doctests
+      # pprint formatting was changed a lot in 3.5
+      if: ${{ matrix.python-version != '2.7' }}
+      run: python -mdoctest README.rst
