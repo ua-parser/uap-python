@@ -77,6 +77,16 @@ Extract browser data from user-agent string
     >>> pp.pprint(parsed_string)
     {'family': 'Chrome', 'major': '41', 'minor': '0', 'patch': '2272'}
 
+..
+
+    ⚠️The convenience parsers (``ParseUserAgent``, ``ParseOs``, and
+    ``ParseDevice``) currently have no caching, which can result in
+    degraded performances when parsing large amounts of identical
+    user-agents (which might occur for real-world datasets).
+
+    In that case, prefer using ``Parse`` and extracting the
+    sub-component you need from the resulting dictionary.
+
 Extract OS information from user-agent string
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
