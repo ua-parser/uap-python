@@ -18,6 +18,7 @@ from __future__ import absolute_import
 
 import os
 import re
+import warnings
 
 __author__ = "Lindsey Simon <elsigh@gmail.com>"
 
@@ -369,6 +370,9 @@ def ParseWithJSOverrides(
     js_user_agent_v3=None,
 ):
     """backwards compatible. use one of the other Parse methods instead!"""
+    warnings.warn(
+        "Use Parse (or a specialised parser)", DeprecationWarning, stacklevel=2
+    )
 
     # Override via JS properties.
     if js_user_agent_family is not None and js_user_agent_family != "":
@@ -405,6 +409,7 @@ def ParseWithJSOverrides(
 
 def Pretty(family, v1=None, v2=None, v3=None):
     """backwards compatible. use PrettyUserAgent instead!"""
+    warnings.warn("Use PrettyUserAgent", DeprecationWarning, stacklevel=2)
     if v3:
         if v3[0].isdigit():
             return "%s %s.%s.%s" % (family, v1, v2, v3)

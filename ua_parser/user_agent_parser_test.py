@@ -30,6 +30,7 @@ __author__ = "slamm@google.com (Stephen Lamm)"
 import os
 import re
 import unittest
+import warnings
 import yaml
 
 try:
@@ -284,6 +285,35 @@ class GetFiltersTest(unittest.TestCase):
         self.assertEqual(
             {"js_user_agent_string": "bar", "js_user_agent_family": "foo"}, filters
         )
+
+
+class TestDeprecationWarnings(unittest.TestCase):
+    def setUp(self):
+        """In Python 2.7, catch_warnings apparently does not do anything if
+        the warning category is not active, whereas in 3(.6 and up) it
+        seems to work out of the box.
+        """
+        super(TestDeprecationWarnings, self).setUp()
+        warnings.simplefilter("default", DeprecationWarning)
+
+    def tearDown(self):
+        # not ideal as it discards all other warnings updates from the
+        # process, should really copy the contents of
+        # `warnings.filters`, then reset-it.
+        warnings.resetwarnings()
+        super(TestDeprecationWarnings, self).tearDown()
+
+    def test_parser_deprecation(self):
+        with warnings.catch_warnings(record=True) as ws:
+            user_agent_parser.ParseWithJSOverrides("")
+        self.assertEqual(len(ws), 1)
+        self.assertEqual(ws[0].category, DeprecationWarning)
+
+    def test_printer_deprecation(self):
+        with warnings.catch_warnings(record=True) as ws:
+            user_agent_parser.Pretty("")
+        self.assertEqual(len(ws), 1)
+        self.assertEqual(ws[0].category, DeprecationWarning)
 
 
 if __name__ == "__main__":
