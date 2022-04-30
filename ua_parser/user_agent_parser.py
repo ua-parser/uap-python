@@ -472,7 +472,8 @@ if UA_PARSER_YAML:
     import yaml
 
     try:
-        # Try and use libyaml bindings if available since faster
+        # Try and use libyaml bindings if available since faster,
+        # pyyaml doesn't do it by default (yaml/pyyaml#436)
         from yaml import CSafeLoader as SafeLoader
     except ImportError:
         from yaml import SafeLoader
