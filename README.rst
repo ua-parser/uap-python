@@ -79,13 +79,14 @@ Extract browser data from user-agent string
 
 ..
 
-    ⚠️The convenience parsers (``ParseUserAgent``, ``ParseOs``, and
-    ``ParseDevice``) currently have no caching, which can result in
-    degraded performances when parsing large amounts of identical
-    user-agents (which might occur for real-world datasets).
+    ⚠️Before 0.15, the convenience parsers (``ParseUserAgent``,
+    ``ParseOs``, and ``ParseDevice``) were not cached, which could
+    result in degraded performances when parsing large amounts of
+    identical user-agents (which might occur for real-world datasets).
 
-    In that case, prefer using ``Parse`` and extracting the
-    sub-component you need from the resulting dictionary.
+    For these versions (up to 0.10 included), prefer using ``Parse``
+    and extracting the sub-component you need from the resulting
+    dictionary.
 
 Extract OS information from user-agent string
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

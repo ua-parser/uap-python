@@ -215,8 +215,29 @@ class DeviceParser(object):
         return device, brand, model
 
 
-MAX_CACHE_SIZE = 20
-_parse_cache = {}
+MAX_CACHE_SIZE = 200
+_PARSE_CACHE = {}
+
+
+def _lookup(ua, args):
+    key = (ua, tuple(sorted(args.items())))
+    entry = _PARSE_CACHE.get(key)
+    if entry is not None:
+        return entry
+
+    if len(_PARSE_CACHE) >= MAX_CACHE_SIZE:
+        _PARSE_CACHE.pop(next(iter(_PARSE_CACHE)))
+
+    v = _PARSE_CACHE[key] = {"string": ua}
+    return v
+
+
+def _cached(ua, args, key, fn):
+    entry = _lookup(ua, args)
+    r = entry.get(key)
+    if not r:
+        r = entry[key] = fn(ua, args)
+    return r
 
 
 def Parse(user_agent_string, **jsParseBits):
@@ -227,21 +248,20 @@ def Parse(user_agent_string, **jsParseBits):
     Returns:
       A dictionary containing all parsed bits
     """
-    jsParseBits = jsParseBits or {}
-    key = (user_agent_string, repr(jsParseBits))
-    cached = _parse_cache.get(key)
-    if cached is not None:
-        return cached
-    if len(_parse_cache) > MAX_CACHE_SIZE:
-        _parse_cache.clear()
-    v = {
-        "user_agent": ParseUserAgent(user_agent_string, **jsParseBits),
-        "os": ParseOS(user_agent_string, **jsParseBits),
-        "device": ParseDevice(user_agent_string, **jsParseBits),
-        "string": user_agent_string,
-    }
-    _parse_cache[key] = v
-    return v
+    entry = _lookup(user_agent_string, jsParseBits)
+    # entry is complete, return directly
+    if len(entry) == 4:
+        return entry
+
+    # entry is partially or entirely empty
+    if "user_agent" not in entry:
+        entry["user_agent"] = _ParseUserAgent(user_agent_string, jsParseBits)
+    if "os" not in entry:
+        entry["os"] = _ParseOS(user_agent_string, jsParseBits)
+    if "device" not in entry:
+        entry["device"] = _ParseDevice(user_agent_string, jsParseBits)
+
+    return entry
 
 
 def ParseUserAgent(user_agent_string, **jsParseBits):
@@ -252,6 +272,10 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
     Returns:
       A dictionary containing parsed bits.
     """
+    return _cached(user_agent_string, jsParseBits, "user_agent", _ParseUserAgent)
+
+
+def _ParseUserAgent(user_agent_string, jsParseBits):
     if (
         "js_user_agent_family" in jsParseBits
         and jsParseBits["js_user_agent_family"] != ""
@@ -298,6 +322,10 @@ def ParseOS(user_agent_string, **jsParseBits):
     Returns:
       A dictionary containing parsed bits.
     """
+    return _cached(user_agent_string, jsParseBits, "os", _ParseOS)
+
+
+def _ParseOS(user_agent_string, jsParseBits):
     for osParser in OS_PARSERS:
         os, os_v1, os_v2, os_v3, os_v4 = osParser.Parse(user_agent_string)
         if os:
@@ -312,7 +340,7 @@ def ParseOS(user_agent_string, **jsParseBits):
     }
 
 
-def ParseDevice(user_agent_string):
+def ParseDevice(user_agent_string, **jsParseBits):
     """Parses the user-agent string for device info.
     Args:
         user_agent_string: The full user-agent string.
@@ -320,6 +348,10 @@ def ParseDevice(user_agent_string):
     Returns:
         A dictionary containing parsed bits.
     """
+    return _cached(user_agent_string, jsParseBits, "device", _ParseDevice)
+
+
+def _ParseDevice(user_agent_string, jsParseBits):
     for deviceParser in DEVICE_PARSERS:
         device, brand, model = deviceParser.Parse(user_agent_string)
         if device:
