@@ -23,6 +23,19 @@ import warnings
 __author__ = "Lindsey Simon <elsigh@gmail.com>"
 
 
+_JS_TEMPLATE_TO_PYTHON = re.compile(r"\$(\d)")
+
+
+def _convert_template(tmpl):
+    """Converts a JS-style regex replacement template (``$n``
+    placeholders) to a Python style one (`\n` placeholders).
+    """
+    if not tmpl:
+        return tmpl
+
+    return _JS_TEMPLATE_TO_PYTHON.sub(r"\\\1", tmpl)
+
+
 class UserAgentParser(object):
     def __init__(
         self, pattern, family_replacement=None, v1_replacement=None, v2_replacement=None
@@ -35,30 +48,17 @@ class UserAgentParser(object):
           v1_replacement: a string to override the matched v1 (optional)
           v2_replacement: a string to override the matched v2 (optional)
         """
-        self.pattern = pattern
-        self.user_agent_re = re.compile(self.pattern)
-        self.family_replacement = family_replacement
+        self.user_agent_re = re.compile(pattern)
+        self.family_replacement = _convert_template(family_replacement)
         self.v1_replacement = v1_replacement
         self.v2_replacement = v2_replacement
-
-    def MatchSpans(self, user_agent_string):
-        match_spans = []
-        match = self.user_agent_re.search(user_agent_string)
-        if match:
-            match_spans = [
-                match.span(group_index) for group_index in range(1, match.lastindex + 1)
-            ]
-        return match_spans
 
     def Parse(self, user_agent_string):
         family, v1, v2, v3 = None, None, None, None
         match = self.user_agent_re.search(user_agent_string)
         if match:
             if self.family_replacement:
-                if re.search(r"\$1", self.family_replacement):
-                    family = re.sub(r"\$1", match.group(1), self.family_replacement)
-                else:
-                    family = self.family_replacement
+                family = match.expand(self.family_replacement).strip() or None
             else:
                 family = match.group(1)
 
@@ -98,68 +98,43 @@ class OSParser(object):
           os_v3_replacement: a string to override the matched v3 (optional)
           os_v4_replacement: a string to override the matched v4 (optional)
         """
-        self.pattern = pattern
-        self.user_agent_re = re.compile(self.pattern)
-        self.os_replacement = os_replacement
-        self.os_v1_replacement = os_v1_replacement
-        self.os_v2_replacement = os_v2_replacement
-        self.os_v3_replacement = os_v3_replacement
-        self.os_v4_replacement = os_v4_replacement
-
-    def MatchSpans(self, user_agent_string):
-        match_spans = []
-        match = self.user_agent_re.search(user_agent_string)
-        if match:
-            match_spans = [
-                match.span(group_index) for group_index in range(1, match.lastindex + 1)
-            ]
-        return match_spans
+        self.user_agent_re = re.compile(pattern)
+        self.os_replacement = _convert_template(os_replacement)
+        self.os_v1_replacement = _convert_template(os_v1_replacement)
+        self.os_v2_replacement = _convert_template(os_v2_replacement)
+        self.os_v3_replacement = _convert_template(os_v3_replacement)
+        self.os_v4_replacement = _convert_template(os_v4_replacement)
 
     def Parse(self, user_agent_string):
         os, os_v1, os_v2, os_v3, os_v4 = None, None, None, None, None
         match = self.user_agent_re.search(user_agent_string)
         if match:
             if self.os_replacement:
-                os = MultiReplace(self.os_replacement, match)
+                os = match.expand(self.os_replacement).strip() or None
             elif match.lastindex:
                 os = match.group(1)
 
             if self.os_v1_replacement:
-                os_v1 = MultiReplace(self.os_v1_replacement, match)
+                os_v1 = match.expand(self.os_v1_replacement).strip() or None
             elif match.lastindex and match.lastindex >= 2:
                 os_v1 = match.group(2)
 
             if self.os_v2_replacement:
-                os_v2 = MultiReplace(self.os_v2_replacement, match)
+                os_v2 = match.expand(self.os_v2_replacement).strip() or None
             elif match.lastindex and match.lastindex >= 3:
                 os_v2 = match.group(3)
 
             if self.os_v3_replacement:
-                os_v3 = MultiReplace(self.os_v3_replacement, match)
+                os_v3 = match.expand(self.os_v3_replacement).strip() or None
             elif match.lastindex and match.lastindex >= 4:
                 os_v3 = match.group(4)
 
             if self.os_v4_replacement:
-                os_v4 = MultiReplace(self.os_v4_replacement, match)
+                os_v4 = match.expand(self.os_v4_replacement).strip() or None
             elif match.lastindex and match.lastindex >= 5:
                 os_v4 = match.group(5)
 
         return os, os_v1, os_v2, os_v3, os_v4
-
-
-def MultiReplace(string, match):
-    def _repl(m):
-        index = int(m.group(1)) - 1
-        group = match.groups()
-        if index < len(group):
-            return group[index]
-        return ""
-
-    _string = re.sub(r"\$(\d)", _repl, string)
-    _string = re.sub(r"^\s+|\s+$", "", _string)
-    if _string == "":
-        return None
-    return _string
 
 
 class DeviceParser(object):
@@ -177,39 +152,29 @@ class DeviceParser(object):
           pattern: a regular expression string
           device_replacement: a string to override the matched device (optional)
         """
-        self.pattern = pattern
         if regex_flag == "i":
-            self.user_agent_re = re.compile(self.pattern, re.IGNORECASE)
+            self.user_agent_re = re.compile(pattern, re.IGNORECASE)
         else:
-            self.user_agent_re = re.compile(self.pattern)
-        self.device_replacement = device_replacement
-        self.brand_replacement = brand_replacement
-        self.model_replacement = model_replacement
-
-    def MatchSpans(self, user_agent_string):
-        match_spans = []
-        match = self.user_agent_re.search(user_agent_string)
-        if match:
-            match_spans = [
-                match.span(group_index) for group_index in range(1, match.lastindex + 1)
-            ]
-        return match_spans
+            self.user_agent_re = re.compile(pattern)
+        self.device_replacement = _convert_template(device_replacement)
+        self.brand_replacement = _convert_template(brand_replacement)
+        self.model_replacement = _convert_template(model_replacement)
 
     def Parse(self, user_agent_string):
         device, brand, model = None, None, None
         match = self.user_agent_re.search(user_agent_string)
         if match:
             if self.device_replacement:
-                device = MultiReplace(self.device_replacement, match)
+                device = match.expand(self.device_replacement).strip() or None
             else:
                 device = match.group(1)
 
             if self.brand_replacement:
-                brand = MultiReplace(self.brand_replacement, match)
+                brand = match.expand(self.brand_replacement).strip() or None
 
             if self.model_replacement:
-                model = MultiReplace(self.model_replacement, match)
-            elif len(match.groups()) > 0:
+                model = match.expand(self.model_replacement).strip() or None
+            elif match.groups():
                 model = match.group(1)
 
         return device, brand, model
@@ -391,114 +356,6 @@ def PrettyOS(os, os_v1=None, os_v2=None, os_v3=None, os_v4=None):
     elif os_v1:
         return "%s %s" % (os, os_v1)
     return os
-
-
-def ParseWithJSOverrides(
-    user_agent_string,
-    js_user_agent_string=None,
-    js_user_agent_family=None,
-    js_user_agent_v1=None,
-    js_user_agent_v2=None,
-    js_user_agent_v3=None,
-):
-    """backwards compatible. use one of the other Parse methods instead!"""
-    warnings.warn(
-        "Use Parse (or a specialised parser)", DeprecationWarning, stacklevel=2
-    )
-
-    # Override via JS properties.
-    if js_user_agent_family is not None and js_user_agent_family != "":
-        family = js_user_agent_family
-        v1 = None
-        v2 = None
-        v3 = None
-        if js_user_agent_v1 is not None:
-            v1 = js_user_agent_v1
-        if js_user_agent_v2 is not None:
-            v2 = js_user_agent_v2
-        if js_user_agent_v3 is not None:
-            v3 = js_user_agent_v3
-    else:
-        for parser in USER_AGENT_PARSERS:
-            family, v1, v2, v3 = parser.Parse(user_agent_string)
-            if family:
-                break
-
-    # Override for Chrome Frame IFF Chrome is enabled.
-    if (
-        js_user_agent_string
-        and js_user_agent_string.find("Chrome/") > -1
-        and user_agent_string.find("chromeframe") > -1
-    ):
-        family = "Chrome Frame (%s %s)" % (family, v1)
-        ua_dict = ParseUserAgent(js_user_agent_string)
-        v1 = ua_dict["major"]
-        v2 = ua_dict["minor"]
-        v3 = ua_dict["patch"]
-
-    return family or "Other", v1, v2, v3
-
-
-def Pretty(family, v1=None, v2=None, v3=None):
-    """backwards compatible. use PrettyUserAgent instead!"""
-    warnings.warn("Use PrettyUserAgent", DeprecationWarning, stacklevel=2)
-    if v3:
-        if v3[0].isdigit():
-            return "%s %s.%s.%s" % (family, v1, v2, v3)
-        else:
-            return "%s %s.%s%s" % (family, v1, v2, v3)
-    elif v2:
-        return "%s %s.%s" % (family, v1, v2)
-    elif v1:
-        return "%s %s" % (family, v1)
-    return family
-
-
-def GetFilters(
-    user_agent_string,
-    js_user_agent_string=None,
-    js_user_agent_family=None,
-    js_user_agent_v1=None,
-    js_user_agent_v2=None,
-    js_user_agent_v3=None,
-):
-    """Return the optional arguments that should be saved and used to query.
-
-    js_user_agent_string is always returned if it is present. We really only need
-    it for Chrome Frame. However, I added it in the generally case to find other
-    cases when it is different. When the recording of js_user_agent_string was
-    added, we created new records for all new user agents.
-
-    Since we only added js_document_mode for the IE 9 preview case, it did not
-    cause new user agent records the way js_user_agent_string did.
-
-    js_document_mode has since been removed in favor of individual property
-    overrides.
-
-    Args:
-      user_agent_string: The full user-agent string.
-      js_user_agent_string: JavaScript ua string from client-side
-      js_user_agent_family: This is an override for the family name to deal
-          with the fact that IE platform preview (for instance) cannot be
-          distinguished by user_agent_string, but only in javascript.
-      js_user_agent_v1: v1 override - see above.
-      js_user_agent_v2: v1 override - see above.
-      js_user_agent_v3: v1 override - see above.
-    Returns:
-      {js_user_agent_string: '[...]', js_family_name: '[...]', etc...}
-    """
-    filters = {}
-    filterdict = {
-        "js_user_agent_string": js_user_agent_string,
-        "js_user_agent_family": js_user_agent_family,
-        "js_user_agent_v1": js_user_agent_v1,
-        "js_user_agent_v2": js_user_agent_v2,
-        "js_user_agent_v3": js_user_agent_v3,
-    }
-    for key, value in filterdict.items():
-        if value is not None and value != "":
-            filters[key] = value
-    return filters
 
 
 # Build the list of user agent parsers from YAML
