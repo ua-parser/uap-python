@@ -17,7 +17,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: "3.8"
+        python-version: "3.10"
     - name: Install checkers
       run: |
         python -mpip install --upgrade pip
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["2.7", "3.6", "3.7", "3.8"]
+        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11.0-alpha.7", "pypy-3.8"]
 
     steps:
     - name: Checkout working copy
@@ -48,7 +48,7 @@ jobs:
     - name: tests
       run: |
         python setup.py develop
-        python ./ua_parser/user_agent_parser_test.py
+        env time -v python ./ua_parser/user_agent_parser_test.py
     - name: doctests
       # pprint formatting was changed a lot in 3.5
       if: ${{ matrix.python-version != '2.7' }}
