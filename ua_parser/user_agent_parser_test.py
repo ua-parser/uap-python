@@ -182,6 +182,11 @@ class ParseTest(unittest.TestCase):
                     result["patch"],
                 ),
             )
+            self.assertLessEqual(
+                len(user_agent_parser._PARSE_CACHE),
+                user_agent_parser.MAX_CACHE_SIZE,
+                "verify that the cache size never exceeds the configured setting",
+            )
 
     def runOSTestsFromYAML(self, file_name):
         yamlFile = open(os.path.join(TEST_RESOURCES_DIR, file_name))
