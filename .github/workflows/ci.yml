@@ -48,7 +48,7 @@ jobs:
     - name: install package in environment
       run: python setup.py develop
     - name: run tests
-      run: pytest
+      run: pytest -v
     - name: run doctests
       # pprint formatting was changed a lot in 3.5
       if: ${{ matrix.python-version != '2.7' }}
