@@ -27,17 +27,26 @@ from __future__ import unicode_literals, absolute_import
 
 __author__ = "slamm@google.com (Stephen Lamm)"
 
+import logging
 import os
+import platform
 import re
 import unittest
 import warnings
 import yaml
 
-try:
-    # Try and use libyaml bindings if available since faster
-    from yaml import CSafeLoader as SafeLoader
-except ImportError:
+if platform.python_implementation() == "PyPy":
     from yaml import SafeLoader
+else:
+    try:
+        from yaml import CSafeLoader as SafeLoader
+    except ImportError:
+        logging.getLogger(__name__).warning(
+            "PyYaml C extension not available to run tests, this will result "
+            "in dramatic tests slowdown."
+        )
+        from yaml import SafeLoader
+
 
 from ua_parser import user_agent_parser
 

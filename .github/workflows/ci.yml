@@ -45,8 +45,10 @@ jobs:
       run: |
         python -mpip install --upgrade pip
         # if binary wheels are not available for the current package install libyaml
-        if ! pip download --only-binary pyyaml -rrequirements_dev.txt > /dev/null 2>&1; then
-            sudo apt install libyaml-dev
+        if ! ${{matrix.python-version == 'pypy-3.8'}}; then
+            if ! pip download --only-binary pyyaml -rrequirements_dev.txt > /dev/null 2>&1; then
+                sudo apt install libyaml-dev
+            fi
         fi
         python -mpip install -r requirements_dev.txt
     - name: install package in environment
