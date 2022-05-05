@@ -244,7 +244,6 @@ def Parse(user_agent_string, **jsParseBits):
     """Parse all the things
     Args:
       user_agent_string: the full user agent string
-      jsParseBits: javascript override bits
     Returns:
       A dictionary containing all parsed bits
     """
@@ -268,7 +267,6 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
     """Parses the user-agent string for user agent (browser) info.
     Args:
       user_agent_string: The full user-agent string.
-      jsParseBits: javascript override bits.
     Returns:
       A dictionary containing parsed bits.
     """
@@ -276,6 +274,12 @@ def ParseUserAgent(user_agent_string, **jsParseBits):
 
 
 def _ParseUserAgent(user_agent_string, jsParseBits):
+    if jsParseBits:
+        warnings.warn(
+            "javascript overrides are deprecated and will be removed next release",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
     if (
         "js_user_agent_family" in jsParseBits
         and jsParseBits["js_user_agent_family"] != ""
@@ -318,7 +322,6 @@ def ParseOS(user_agent_string, **jsParseBits):
     """Parses the user-agent string for operating system info
     Args:
       user_agent_string: The full user-agent string.
-      jsParseBits: javascript override bits.
     Returns:
       A dictionary containing parsed bits.
     """
@@ -326,6 +329,12 @@ def ParseOS(user_agent_string, **jsParseBits):
 
 
 def _ParseOS(user_agent_string, jsParseBits):
+    if jsParseBits:
+        warnings.warn(
+            "javascript overrides are deprecated and will be removed next release",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
     for osParser in OS_PARSERS:
         os, os_v1, os_v2, os_v3, os_v4 = osParser.Parse(user_agent_string)
         if os:
@@ -344,7 +353,6 @@ def ParseDevice(user_agent_string, **jsParseBits):
     """Parses the user-agent string for device info.
     Args:
         user_agent_string: The full user-agent string.
-        ua_family: The parsed user agent family name.
     Returns:
         A dictionary containing parsed bits.
     """
@@ -352,6 +360,12 @@ def ParseDevice(user_agent_string, **jsParseBits):
 
 
 def _ParseDevice(user_agent_string, jsParseBits):
+    if jsParseBits:
+        warnings.warn(
+            "javascript overrides are deprecated and will be removed next release",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
     for deviceParser in DEVICE_PARSERS:
         device, brand, model = deviceParser.Parse(user_agent_string)
         if device:

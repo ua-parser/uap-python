@@ -1,5 +1,3 @@
-#!/usr/bin/python2.5
-#
 # Copyright 2008 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License')
@@ -121,38 +119,6 @@ class ParseTest(unittest.TestCase):
             ),
         )
 
-    # Make a YAML file for manual comparsion with pgts_browser_list-orig.yaml
-    def makePGTSComparisonYAML(self):
-        import codecs
-
-        outfile = codecs.open("outfile.yaml", "w", "utf-8")
-        print >> outfile, "test_cases:"
-
-        yamlFile = open(os.path.join(TEST_RESOURCES_DIR, "pgts_browser_list.yaml"))
-        yamlContents = yaml.load(yamlFile, Loader=SafeLoader)
-        yamlFile.close()
-
-        for test_case in yamlContents["test_cases"]:
-            user_agent_string = test_case["user_agent_string"]
-            kwds = {}
-            if "js_ua" in test_case:
-                kwds = eval(test_case["js_ua"])
-
-            (family, major, minor, patch) = user_agent_parser.ParseUserAgent(
-                user_agent_string, **kwds
-            )
-
-            # Escape any double-quotes in the UA string
-            user_agent_string = re.sub(r'"', '\\"', user_agent_string)
-            print >> outfile, '    - user_agent_string: "' + user_agent_string + '"' + "\n" + '      family: "' + family + '"\n' + "      major: " + (
-                "" if (major is None) else "'" + major + "'"
-            ) + "\n" + "      minor: " + (
-                "" if (minor is None) else "'" + minor + "'"
-            ) + "\n" + "      patch: " + (
-                "" if (patch is None) else "'" + patch + "'"
-            )
-        outfile.close()
-
     # Run a set of test cases from a YAML file
     def runUserAgentTestsFromYAML(self, file_name):
         yamlFile = open(os.path.join(TEST_RESOURCES_DIR, file_name))
@@ -162,9 +128,6 @@ class ParseTest(unittest.TestCase):
         for test_case in yamlContents["test_cases"]:
             # Inputs to Parse()
             user_agent_string = test_case["user_agent_string"]
-            kwds = {}
-            if "js_ua" in test_case:
-                kwds = eval(test_case["js_ua"])
 
             # The expected results
             expected = {
@@ -175,7 +138,7 @@ class ParseTest(unittest.TestCase):
             }
 
             result = {}
-            result = user_agent_parser.ParseUserAgent(user_agent_string, **kwds)
+            result = user_agent_parser.ParseUserAgent(user_agent_string)
             self.assertEqual(
                 result,
                 expected,
@@ -205,9 +168,6 @@ class ParseTest(unittest.TestCase):
         for test_case in yamlContents["test_cases"]:
             # Inputs to Parse()
             user_agent_string = test_case["user_agent_string"]
-            kwds = {}
-            if "js_ua" in test_case:
-                kwds = eval(test_case["js_ua"])
 
             # The expected results
             expected = {
@@ -218,7 +178,7 @@ class ParseTest(unittest.TestCase):
                 "patch_minor": test_case["patch_minor"],
             }
 
-            result = user_agent_parser.ParseOS(user_agent_string, **kwds)
+            result = user_agent_parser.ParseOS(user_agent_string)
             self.assertEqual(
                 result,
                 expected,
@@ -245,9 +205,6 @@ class ParseTest(unittest.TestCase):
         for test_case in yamlContents["test_cases"]:
             # Inputs to Parse()
             user_agent_string = test_case["user_agent_string"]
-            kwds = {}
-            if "js_ua" in test_case:
-                kwds = eval(test_case["js_ua"])
 
             # The expected results
             expected = {
@@ -256,7 +213,7 @@ class ParseTest(unittest.TestCase):
                 "model": test_case["model"],
             }
 
-            result = user_agent_parser.ParseDevice(user_agent_string, **kwds)
+            result = user_agent_parser.ParseDevice(user_agent_string)
             self.assertEqual(
                 result,
                 expected,
@@ -308,7 +265,7 @@ class TestDeprecationWarnings(unittest.TestCase):
         seems to work out of the box.
         """
         super(TestDeprecationWarnings, self).setUp()
-        warnings.simplefilter("default", DeprecationWarning)
+        warnings.simplefilter("always", DeprecationWarning)
 
     def tearDown(self):
         # not ideal as it discards all other warnings updates from the
@@ -328,6 +285,20 @@ class TestDeprecationWarnings(unittest.TestCase):
             user_agent_parser.Pretty("")
         self.assertEqual(len(ws), 1)
         self.assertEqual(ws[0].category, DeprecationWarning)
+
+    def test_js_bits_deprecation(self):
+        for parser, count in [
+            (user_agent_parser.Parse, 3),
+            (user_agent_parser.ParseUserAgent, 1),
+            (user_agent_parser.ParseOS, 1),
+            (user_agent_parser.ParseDevice, 1),
+        ]:
+            user_agent_parser._PARSE_CACHE.clear()
+            with warnings.catch_warnings(record=True) as ws:
+                parser("some random thing", js_attribute=True)
+            self.assertEqual(len(ws), count)
+            for w in ws:
+                self.assertEqual(w.category, DeprecationWarning)
 
 
 if __name__ == "__main__":
