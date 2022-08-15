@@ -29,6 +29,7 @@ import logging
 import os
 import platform
 import re
+import sys
 import unittest
 import warnings
 import yaml
@@ -299,6 +300,27 @@ class TestDeprecationWarnings(unittest.TestCase):
             self.assertEqual(len(ws), count)
             for w in ws:
                 self.assertEqual(w.category, DeprecationWarning)
+
+
+class ErrTest(unittest.TestCase):
+    @unittest.skipIf(
+        sys.version_info < (3,), "bytes and str are not differentiated in P2"
+    )
+    def test_bytes(self):
+        with self.assertRaises(TypeError):
+            user_agent_parser.Parse(b"")
+
+    def test_int(self):
+        with self.assertRaises(TypeError):
+            user_agent_parser.Parse(0)
+
+    def test_list(self):
+        with self.assertRaises(TypeError):
+            user_agent_parser.Parse([])
+
+    def test_tuple(self):
+        with self.assertRaises(TypeError):
+            user_agent_parser.Parse(())
 
 
 if __name__ == "__main__":
