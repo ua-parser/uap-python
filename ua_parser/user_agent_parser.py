@@ -18,6 +18,7 @@ from __future__ import absolute_import
 
 import os
 import re
+import sys
 import warnings
 
 __author__ = "Lindsey Simon <elsigh@gmail.com>"
@@ -218,8 +219,15 @@ class DeviceParser(object):
 MAX_CACHE_SIZE = 200
 _PARSE_CACHE = {}
 
+_UA_TYPES = str
+if sys.version_info < (3,):
+    _UA_TYPES = (str, unicode)
+
 
 def _lookup(ua, args):
+    if not isinstance(ua, _UA_TYPES):
+        raise TypeError("Expected user agent to be a string, got %r" % ua)
+
     key = (ua, tuple(sorted(args.items())))
     entry = _PARSE_CACHE.get(key)
     if entry is not None:
