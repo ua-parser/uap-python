@@ -210,7 +210,7 @@ setup(
     zip_safe=False,
     url="https://github.com/ua-parser/uap-python",
     include_package_data=True,
-    setup_requires=["pyyaml ~= 5.4.0"],
+    setup_requires=["pyyaml"],
     install_requires=[],
     cmdclass=cmdclass,
     classifiers=[

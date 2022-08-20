@@ -27,6 +27,37 @@ jobs:
     - name: black
       run: black --check --diff --color --quiet .
 
+  compile:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11.0-alpha - 3.11", "pypy-3.8"]
+        pyyaml-version: ["5.1.*", "5.4.*", "6.0.*", "6.*"]
+        exclude:
+          - python-version: 2.7
+            pyyaml-version: 6.0.*
+          - python-version: 2.7
+            pyyaml-version: 6.*
+
+    steps:
+    - name: Checkout working copy
+      uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependency
+      run: |
+        python -mpip install --upgrade pip
+        python -mpip install pyyaml==${{ matrix.pyyaml-version }}
+    - name: Build regexes.py
+      run: python setup.py build_regexes -i
+    - name: Check results
+      run: |
+        # check that _regexes exists, and .eggs does not (== setuptools used our dependency)
+        test -e ua_parser/_regexes.py -a ! -e .eggs
+
   test:
     runs-on: ubuntu-latest
     strategy:
