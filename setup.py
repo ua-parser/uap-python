@@ -92,11 +92,15 @@ class build_regexes(Command):
 
         import yaml
 
-        py_dest = os.path.join(self.build_lib, "ua_parser", "_regexes.py")
-
         log.info("compiling regexes.yaml -> _regexes.py")
         with open(yaml_src, "rb") as fp:
             regexes = yaml.safe_load(fp)
+
+        lib_dest = os.path.join(self.build_lib, "ua_parser")
+        if not os.path.exists(lib_dest):
+            os.makedirs(lib_dest)
+
+        py_dest = os.path.join(lib_dest, "_regexes.py")
         with open(py_dest, "wb") as fp:
             # fmt: off
             fp.write(b"# -*- coding: utf-8 -*-\n")
