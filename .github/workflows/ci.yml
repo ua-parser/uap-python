@@ -76,6 +76,7 @@ jobs:
       run: |
         python -mpip install --upgrade pip
         # if binary wheels are not available for the current package install libyaml
+        # NB: cyaml is outright broken on pypy so exclude that
         if ! ${{matrix.python-version == 'pypy-3.8'}}; then
             if ! pip download --only-binary pyyaml -rrequirements_dev.txt > /dev/null 2>&1; then
                 sudo apt install libyaml-dev
