@@ -234,7 +234,7 @@ def _lookup(ua, args):
         return entry
 
     if len(_PARSE_CACHE) >= MAX_CACHE_SIZE:
-        _PARSE_CACHE.pop(next(iter(_PARSE_CACHE)))
+        _PARSE_CACHE.clear()
 
     v = _PARSE_CACHE[key] = {"string": ua}
     return v
