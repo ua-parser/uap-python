@@ -200,7 +200,7 @@ cmdclass = {
 
 setup(
     name="ua-parser",
-    version="0.15.1",
+    version="0.15.2",
     description="Python port of Browserscope's user agent parser",
     author="PBS",
     author_email="no-reply@pbs.org",
