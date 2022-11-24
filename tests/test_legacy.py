@@ -1,5 +1,3 @@
-__author__ = "slamm@google.com (Stephen Lamm)"
-
 import logging
 import os
 import platform

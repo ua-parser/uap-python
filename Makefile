@@ -14,7 +14,7 @@ format:
 	@black .
 
 release: clean
-	python setup.py sdist bdist_wheel
+	pyproject-build
 	twine upload -s dist/*
 
 .PHONY: all test clean format release
