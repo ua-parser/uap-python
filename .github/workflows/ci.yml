@@ -33,9 +33,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - "2.7"
-          - "3.6"
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
@@ -44,15 +41,7 @@ jobs:
           - "pypy-3.8"
           - "pypy-3.9"
         pyyaml-version: ["5.1.*", "5.4.*", "6.0.*", "6.*"]
-        include:
-          - python-version: 3.6
-            os: ubuntu-20.04
-        exclude:
-          - python-version: 2.7
-            pyyaml-version: 6.0.*
-          - python-version: 2.7
-            pyyaml-version: 6.*
-    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout working copy
@@ -77,9 +66,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - "2.7"
-          - "3.6"
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
@@ -87,11 +73,7 @@ jobs:
           - "3.12.0-alpha - 3.12"
           - "pypy-3.8"
           - "pypy-3.9"
-        include:
-          - python-version: 3.6
-            os: ubuntu-20.04
-    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
-
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout working copy
       uses: actions/checkout@v3
@@ -115,10 +97,4 @@ jobs:
     - name: install package in environment
       run: pip install .
     - name: run tests
-      if: ${{ matrix.python-version != '2.7' }}
       run: pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst"
-    - name: run tests
-      # pprint formatting was widely altered in 3.5, so can't run
-      # doctests before then
-      if: ${{ matrix.python-version == '2.7' }}
-      run: pytest -v -Werror -Wignore::ImportWarning
