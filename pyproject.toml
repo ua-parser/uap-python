@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ua-parser"
+description = "Python port of Browserscope's user agent parser"
+version = "1.0.0a"
+readme = "README.rst"
+requires-python = ">=3.7"
+dependencies = []
+optional-dependencies = { yaml = ["PyYaml"] }
+
+license = {text = "Apache 2.0"}
+urls = {repository = "https://github.com/ua-parser/uap-python"}
+
+authors = [
+   { name = "PBS", email = "no-reply@pbs.org" },
+   { name = "Selwin Ong",  email = "selwin.ong@gmail.com" },
+   { name = "Matt Robenolt", email = "matt@ydekproductions.com" },
+   { name = "Lindsey Simon", email = "lsimon@commoner.com" }
+]
+maintainers = [
+    { name = "masklinn", email = "uap@masklinn.net" }
+]
+
+classifiers = [
+        "Development Status :: 4 - Beta",
+        "Environment :: Web Environment",
+        "Intended Audience :: Developers",
+        "Operating System :: OS Independent",
+        "License :: OSI Approved :: Apache Software License",
+        "Programming Language :: Python",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy"
+]
