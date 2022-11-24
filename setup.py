@@ -110,7 +110,6 @@ class build_regexes(Command):
             fp.write(b"# instead, re-run `setup.py build_regexes` #\n")
             fp.write(b"############################################\n")
             fp.write(b"\n")
-            fp.write(b"from __future__ import absolute_import, unicode_literals\n")
             fp.write(b"from .user_agent_parser import (\n")
             fp.write(b"    UserAgentParser, DeviceParser, OSParser,\n")
             fp.write(b")\n")
@@ -223,14 +222,6 @@ setup(
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
