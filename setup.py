@@ -1,68 +1,39 @@
 #!/usr/bin/env python
 # flake8: noqa
-import os
-from distutils import log
-from distutils.core import Command
-from distutils.command.build import build as _build
-from setuptools import setup, find_packages
-from setuptools.command.develop import develop as _develop
-from setuptools.command.sdist import sdist as _sdist
-from setuptools.command.install import install as _install
+from contextlib import suppress
+from os import fspath
+from pathlib import Path
+from typing import Optional, List, Dict
+
+from setuptools import setup, Command, find_namespace_packages
+from setuptools.command.build import build, SubCommand
+from setuptools.command.editable_wheel import editable_wheel
+
+import yaml
 
 
-def check_output(*args, **kwargs):
-    from subprocess import Popen
-
-    proc = Popen(*args, **kwargs)
-    output, _ = proc.communicate()
-    rv = proc.poll()
-    assert rv == 0, output
+build.sub_commands.insert(0, ("compile-regexes", None))
 
 
-class build_regexes(Command):
-    description = "build supporting regular expressions from uap-core"
-    user_options = [
-        ("work-path=", "w", "The working directory for source files. Defaults to ."),
-        ("build-lib=", "b", "directory for script runtime modules"),
-        (
-            "inplace",
-            "i",
-            "ignore build-lib and put compiled javascript files into the source "
-            + "directory alongside your pure Python modules",
-        ),
-        (
-            "force",
-            "f",
-            "Force rebuilding of static content. Defaults to rebuilding on version "
-            "change detection.",
-        ),
-    ]
-    boolean_options = ["force"]
+class CompileRegexes(Command, SubCommand):
+    def initialize_options(self) -> None:
+        self.pkg_name: Optional[str] = None
 
-    def initialize_options(self):
-        self.build_lib = None
-        self.force = None
-        self.work_path = None
-        self.inplace = None
+    def finalize_options(self) -> None:
+        self.pkg_name = self.distribution.get_name().replace("-", "_")
 
-    def finalize_options(self):
-        install = self.distribution.get_command_obj("install")
-        sdist = self.distribution.get_command_obj("sdist")
-        build_ext = self.distribution.get_command_obj("build_ext")
+    def get_source_files(self) -> List[str]:
+        return ["uap-core/regexes.yaml"]
 
-        if self.inplace is None:
-            self.inplace = (
-                (build_ext.inplace or install.finalized or sdist.finalized) and 1 or 0
-            )
+    def get_outputs(self) -> List[str]:
+        return [f"{self.pkg_name}/_regexes.py"]
 
-        if self.inplace:
-            self.build_lib = "./src"
-        else:
-            self.set_undefined_options("build", ("build_lib", "build_lib"))
-        if self.work_path is None:
-            self.work_path = os.path.realpath(os.path.join(os.path.dirname(__file__)))
+    def get_output_mapping(self) -> Dict[str, str]:
+        return dict(zip(self.get_source_files(), self.get_outputs()))
 
-    def run(self):
+    def run(self) -> None:
+        # FIXME: check git / submodules?
+        """
         work_path = self.work_path
         if not os.path.exists(os.path.join(work_path, ".git")):
             return
@@ -70,17 +41,15 @@ class build_regexes(Command):
         log.info("initializing git submodules")
         check_output(["git", "submodule", "init"], cwd=work_path)
         check_output(["git", "submodule", "update"], cwd=work_path)
+        """
+        if not self.pkg_name:
+            return  # or error?
 
-        yaml_src = os.path.join(work_path, "uap-core", "regexes.yaml")
-        if not os.path.exists(yaml_src):
+        yaml_src = Path("uap-core", "regexes.yaml")
+        if not yaml_src.is_file():
             raise RuntimeError(
-                "Unable to find regexes.yaml, should be at %r" % yaml_src
+                f"Unable to find regexes.yaml, should be at {yaml_src!r}"
             )
-
-        def force_bytes(text):
-            if text is None:
-                return text
-            return text.encode("utf8")
 
         def write_params(fields):
             # strip trailing None values
@@ -88,27 +57,27 @@ class build_regexes(Command):
                 fields.pop()
 
             for field in fields:
-                fp.write(("        %r,\n" % field).encode("utf-8"))
+                fp.write((f"        {field!r},\n").encode())
 
-        import yaml
+        with yaml_src.open("rb") as f:
+            regexes = yaml.safe_load(f)
 
-        log.info("compiling regexes.yaml -> _regexes.py")
-        with open(yaml_src, "rb") as fp:
-            regexes = yaml.safe_load(fp)
+        if self.editable_mode:
+            dist_dir = Path("src")
+        else:
+            dist_dir = Path(self.get_finalized_command("bdist_wheel").bdist_dir)
 
-        lib_dest = os.path.join(self.build_lib, "ua_parser")
-        if not os.path.exists(lib_dest):
-            os.makedirs(lib_dest)
+        outdir = dist_dir / self.pkg_name
+        outdir.mkdir(parents=True, exist_ok=True)
 
-        py_dest = os.path.join(lib_dest, "_regexes.py")
-        with open(py_dest, "wb") as fp:
+        dest = outdir / "_regexes.py"
+
+        with dest.open("wb") as fp:
             # fmt: off
             fp.write(b"# -*- coding: utf-8 -*-\n")
-            fp.write(b"############################################\n")
-            fp.write(b"# NOTICE: This file is autogenerated from  #\n")
-            fp.write(b"# regexes.yaml. Do not edit by hand,       #\n")
-            fp.write(b"# instead, re-run `setup.py build_regexes` #\n")
-            fp.write(b"############################################\n")
+            fp.write(b"########################################################\n")
+            fp.write(b"# NOTICE: This file is autogenerated from regexes.yaml #\n")
+            fp.write(b"########################################################\n")
             fp.write(b"\n")
             fp.write(b"from .user_agent_parser import (\n")
             fp.write(b"    UserAgentParser, DeviceParser, OSParser,\n")
@@ -156,77 +125,9 @@ class build_regexes(Command):
             fp.write(b"]\n")
             # fmt: on
 
-        self.update_manifest()
-
-    def update_manifest(self):
-        sdist = self.distribution.get_command_obj("sdist")
-        if not sdist.finalized:
-            return
-
-        sdist.filelist.files.append("src/ua_parser/_regexes.py")
-
-
-class develop(_develop):
-    def run(self):
-        self.run_command("build_regexes")
-        _develop.run(self)
-
-
-class install(_install):
-    def run(self):
-        self.run_command("build_regexes")
-        _install.run(self)
-
-
-class build(_build):
-    def run(self):
-        self.run_command("build_regexes")
-        _build.run(self)
-
-
-class sdist(_sdist):
-    sub_commands = _sdist.sub_commands + [("build_regexes", None)]
-
-
-cmdclass = {
-    "sdist": sdist,
-    "develop": develop,
-    "build": build,
-    "install": install,
-    "build_regexes": build_regexes,
-}
-
 
 setup(
-    name="ua-parser",
-    version="0.16.1",
-    description="Python port of Browserscope's user agent parser",
-    author="PBS",
-    author_email="no-reply@pbs.org",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
-    license="Apache 2.0",
-    zip_safe=False,
-    url="https://github.com/ua-parser/uap-python",
-    include_package_data=True,
-    setup_requires=["pyyaml"],
-    install_requires=[],
-    cmdclass=cmdclass,
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "Environment :: Web Environment",
-        "Intended Audience :: Developers",
-        "Operating System :: OS Independent",
-        "License :: OSI Approved :: Apache Software License",
-        "Programming Language :: Python",
-        "Topic :: Internet :: WWW/HTTP",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: Implementation :: CPython",
-        "Programming Language :: Python :: Implementation :: PyPy",
-    ],
+    cmdclass={
+        "compile-regexes": CompileRegexes,
+    }
 )

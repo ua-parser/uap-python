@@ -3,8 +3,6 @@ import re
 import sys
 import warnings
 
-__author__ = "Lindsey Simon <elsigh@gmail.com>"
-
 
 class UserAgentParser(object):
     def __init__(
