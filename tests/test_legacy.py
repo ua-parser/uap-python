@@ -14,10 +14,6 @@
 
 
 """User Agent Parser Unit Tests.
-Run:
-# python -m user_agent_parser_test  (runs all the tests, takes awhile)
-or like:
-# python -m user_agent_parser_test ParseTest.testBrowserscopeStrings
 """
 
 
@@ -30,8 +26,9 @@ import os
 import platform
 import re
 import sys
-import unittest
 import warnings
+
+import pytest
 import yaml
 
 if platform.python_implementation() == "PyPy":
@@ -54,7 +51,7 @@ TEST_RESOURCES_DIR = os.path.join(
 )
 
 
-class ParseTest(unittest.TestCase):
+class ParseTest:
     def testBrowserscopeStrings(self):
         self.runUserAgentTestsFromYAML(
             os.path.join(TEST_RESOURCES_DIR, "tests/test_ua.yaml")
@@ -112,12 +109,8 @@ class ParseTest(unittest.TestCase):
         }
 
         result = user_agent_parser.Parse(user_agent_string)
-        self.assertEqual(
-            result,
-            expected,
-            "UA: {0}\n expected<{1}> != actual<{2}>".format(
-                user_agent_string, expected, result
-            ),
+        assert result == expected, "UA: {0}\n expected<{1}> != actual<{2}>".format(
+            user_agent_string, expected, result
         )
 
     # Run a set of test cases from a YAML file
@@ -140,26 +133,22 @@ class ParseTest(unittest.TestCase):
 
             result = {}
             result = user_agent_parser.ParseUserAgent(user_agent_string)
-            self.assertEqual(
-                result,
-                expected,
-                "UA: {0}\n expected<{1}, {2}, {3}, {4}> != actual<{5}, {6}, {7}, {8}>".format(
-                    user_agent_string,
-                    expected["family"],
-                    expected["major"],
-                    expected["minor"],
-                    expected["patch"],
-                    result["family"],
-                    result["major"],
-                    result["minor"],
-                    result["patch"],
-                ),
+            assert (
+                result == expected
+            ), "UA: {0}\n expected<{1}, {2}, {3}, {4}> != actual<{5}, {6}, {7}, {8}>".format(
+                user_agent_string,
+                expected["family"],
+                expected["major"],
+                expected["minor"],
+                expected["patch"],
+                result["family"],
+                result["major"],
+                result["minor"],
+                result["patch"],
             )
-            self.assertLessEqual(
-                len(user_agent_parser._PARSE_CACHE),
-                user_agent_parser.MAX_CACHE_SIZE,
-                "verify that the cache size never exceeds the configured setting",
-            )
+            assert (
+                len(user_agent_parser._PARSE_CACHE) <= user_agent_parser.MAX_CACHE_SIZE
+            ), "verify that the cache size never exceeds the configured setting"
 
     def runOSTestsFromYAML(self, file_name):
         yamlFile = open(os.path.join(TEST_RESOURCES_DIR, file_name))
@@ -180,22 +169,20 @@ class ParseTest(unittest.TestCase):
             }
 
             result = user_agent_parser.ParseOS(user_agent_string)
-            self.assertEqual(
-                result,
-                expected,
-                "UA: {0}\n expected<{1} {2} {3} {4} {5}> != actual<{6} {7} {8} {9} {10}>".format(
-                    user_agent_string,
-                    expected["family"],
-                    expected["major"],
-                    expected["minor"],
-                    expected["patch"],
-                    expected["patch_minor"],
-                    result["family"],
-                    result["major"],
-                    result["minor"],
-                    result["patch"],
-                    result["patch_minor"],
-                ),
+            assert (
+                result == expected
+            ), "UA: {0}\n expected<{1} {2} {3} {4} {5}> != actual<{6} {7} {8} {9} {10}>".format(
+                user_agent_string,
+                expected["family"],
+                expected["major"],
+                expected["minor"],
+                expected["patch"],
+                expected["patch_minor"],
+                result["family"],
+                result["major"],
+                result["minor"],
+                result["patch"],
+                result["patch_minor"],
             )
 
     def runDeviceTestsFromYAML(self, file_name):
@@ -215,35 +202,33 @@ class ParseTest(unittest.TestCase):
             }
 
             result = user_agent_parser.ParseDevice(user_agent_string)
-            self.assertEqual(
-                result,
-                expected,
-                "UA: {0}\n expected<{1} {2} {3}> != actual<{4} {5} {6}>".format(
-                    user_agent_string,
-                    expected["family"],
-                    expected["brand"],
-                    expected["model"],
-                    result["family"],
-                    result["brand"],
-                    result["model"],
-                ),
+            assert (
+                result == expected
+            ), "UA: {0}\n expected<{1} {2} {3}> != actual<{4} {5} {6}>".format(
+                user_agent_string,
+                expected["family"],
+                expected["brand"],
+                expected["model"],
+                result["family"],
+                result["brand"],
+                result["model"],
             )
 
 
-class GetFiltersTest(unittest.TestCase):
+class GetFiltersTest:
     def testGetFiltersNoMatchesGiveEmptyDict(self):
         user_agent_string = "foo"
         filters = user_agent_parser.GetFilters(
             user_agent_string, js_user_agent_string=None
         )
-        self.assertEqual({}, filters)
+        assert {} == filters
 
     def testGetFiltersJsUaPassedThrough(self):
         user_agent_string = "foo"
         filters = user_agent_parser.GetFilters(
             user_agent_string, js_user_agent_string="bar"
         )
-        self.assertEqual({"js_user_agent_string": "bar"}, filters)
+        assert {"js_user_agent_string": "bar"} == filters
 
     def testGetFiltersJsUserAgentFamilyAndVersions(self):
         user_agent_string = (
@@ -254,18 +239,15 @@ class GetFiltersTest(unittest.TestCase):
         filters = user_agent_parser.GetFilters(
             user_agent_string, js_user_agent_string="bar", js_user_agent_family="foo"
         )
-        self.assertEqual(
-            {"js_user_agent_string": "bar", "js_user_agent_family": "foo"}, filters
-        )
+        assert {"js_user_agent_string": "bar", "js_user_agent_family": "foo"} == filters
 
 
-class TestDeprecationWarnings(unittest.TestCase):
+class TestDeprecationWarnings:
     def setUp(self):
         """In Python 2.7, catch_warnings apparently does not do anything if
         the warning category is not active, whereas in 3(.6 and up) it
         seems to work out of the box.
         """
-        super(TestDeprecationWarnings, self).setUp()
         warnings.simplefilter("always", DeprecationWarning)
 
     def tearDown(self):
@@ -273,19 +255,16 @@ class TestDeprecationWarnings(unittest.TestCase):
         # process, should really copy the contents of
         # `warnings.filters`, then reset-it.
         warnings.resetwarnings()
-        super(TestDeprecationWarnings, self).tearDown()
 
     def test_parser_deprecation(self):
-        with warnings.catch_warnings(record=True) as ws:
+        with pytest.warns(DeprecationWarning) as ws:
             user_agent_parser.ParseWithJSOverrides("")
-        self.assertEqual(len(ws), 1)
-        self.assertEqual(ws[0].category, DeprecationWarning)
+        assert len(ws) == 1
 
     def test_printer_deprecation(self):
-        with warnings.catch_warnings(record=True) as ws:
+        with pytest.warns(DeprecationWarning) as ws:
             user_agent_parser.Pretty("")
-        self.assertEqual(len(ws), 1)
-        self.assertEqual(ws[0].category, DeprecationWarning)
+        assert len(ws) == 1
 
     def test_js_bits_deprecation(self):
         for parser, count in [
@@ -295,33 +274,28 @@ class TestDeprecationWarnings(unittest.TestCase):
             (user_agent_parser.ParseDevice, 1),
         ]:
             user_agent_parser._PARSE_CACHE.clear()
-            with warnings.catch_warnings(record=True) as ws:
+            with pytest.warns(DeprecationWarning) as ws:
                 parser("some random thing", js_attribute=True)
-            self.assertEqual(len(ws), count)
-            for w in ws:
-                self.assertEqual(w.category, DeprecationWarning)
+            assert len(ws) == count
 
 
-class ErrTest(unittest.TestCase):
-    @unittest.skipIf(
-        sys.version_info < (3,), "bytes and str are not differentiated in P2"
+class ErrTest:
+    @pytest.mark.skipif(
+        sys.version_info < (3,),
+        reason="bytes and str are not differentiated in P2",
     )
     def test_bytes(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             user_agent_parser.Parse(b"")
 
     def test_int(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             user_agent_parser.Parse(0)
 
     def test_list(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             user_agent_parser.Parse([])
 
     def test_tuple(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             user_agent_parser.Parse(())
-
-
-if __name__ == "__main__":
-    unittest.main()
