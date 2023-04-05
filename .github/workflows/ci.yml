@@ -5,6 +5,7 @@ on:
     branches: [ '*' ]
   pull_request:
     branches: [ '*' ]
+  workflow_dispatch:
 
 jobs:
   checks:
@@ -28,17 +29,30 @@ jobs:
       run: black --check --diff --color --quiet .
 
   compile:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11.0-alpha - 3.11", "pypy-3.8"]
+        python-version:
+          - "2.7"
+          - "3.6"
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12.0-alpha - 3.12"
+          - "pypy-3.8"
+          - "pypy-3.9"
         pyyaml-version: ["5.1.*", "5.4.*", "6.0.*", "6.*"]
+        include:
+          - python-version: 3.6
+            os: ubuntu-20.04
         exclude:
           - python-version: 2.7
             pyyaml-version: 6.0.*
           - python-version: 2.7
             pyyaml-version: 6.*
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
 
     steps:
     - name: Checkout working copy
@@ -59,11 +73,24 @@ jobs:
         test -e ua_parser/_regexes.py -a ! -e .eggs
 
   test:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11.0-alpha - 3.11", "pypy-3.8"]
+        python-version:
+          - "2.7"
+          - "3.6"
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12.0-alpha - 3.12"
+          - "pypy-3.8"
+          - "pypy-3.9"
+        include:
+          - python-version: 3.6
+            os: ubuntu-20.04
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
 
     steps:
     - name: Checkout working copy
@@ -77,7 +104,7 @@ jobs:
         python -mpip install --upgrade pip
         # if binary wheels are not available for the current package install libyaml
         # NB: cyaml is outright broken on pypy so exclude that
-        if ! ${{matrix.python-version == 'pypy-3.8'}}; then
+        if ! ${{ startsWith(matrix.python-version, 'pypy-') }}; then
             if ! pip download --only-binary pyyaml -rrequirements_dev.txt > /dev/null 2>&1; then
                 sudo apt install libyaml-dev
             fi
@@ -86,7 +113,8 @@ jobs:
     - name: install package in environment
       run: python setup.py develop
     - name: run tests
-      run: pytest -v -Werror
+      # 
+      run: pytest -v -Werror -Wignore::ImportWarning
     - name: run doctests
       # pprint formatting was changed a lot in 3.5
       if: ${{ matrix.python-version != '2.7' }}
