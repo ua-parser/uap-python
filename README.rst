@@ -117,8 +117,3 @@ Extract Device information from user-agent string
     >>> parsed_string = user_agent_parser.ParseDevice(ua_string)
     >>> pp.pprint(parsed_string)
     {'brand': 'Apple', 'family': 'Mac', 'model': 'Mac'}
-
-Copyright
----------
-
-Copyright 2008 Google Inc. See ua\_parser/LICENSE for more information
