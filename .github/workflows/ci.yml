@@ -29,17 +29,20 @@ jobs:
       run: black --check --diff --color --quiet .
 
   compile:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11.0-alpha - 3.11", "pypy-3.8"]
         pyyaml-version: ["5.1.*", "5.4.*", "6.0.*", "6.*"]
+        include:
+          - python-version: 3.6
+            os: ubuntu-20.04
         exclude:
           - python-version: 2.7
             pyyaml-version: 6.0.*
           - python-version: 2.7
             pyyaml-version: 6.*
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
 
     steps:
     - name: Checkout working copy
@@ -60,11 +63,14 @@ jobs:
         test -e ua_parser/_regexes.py -a ! -e .eggs
 
   test:
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["2.7", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11.0-alpha - 3.11", "pypy-3.8"]
+        include:
+          - python-version: 3.6
+            os: ubuntu-20.04
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
 
     steps:
     - name: Checkout working copy
