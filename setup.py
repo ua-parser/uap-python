@@ -4,7 +4,7 @@ import os
 from distutils import log
 from distutils.core import Command
 from distutils.command.build import build as _build
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.develop import develop as _develop
 from setuptools.command.sdist import sdist as _sdist
 from setuptools.command.install import install as _install
@@ -56,7 +56,7 @@ class build_regexes(Command):
             )
 
         if self.inplace:
-            self.build_lib = "."
+            self.build_lib = "./src"
         else:
             self.set_undefined_options("build", ("build_lib", "build_lib"))
         if self.work_path is None:
@@ -164,7 +164,7 @@ class build_regexes(Command):
         if not sdist.finalized:
             return
 
-        sdist.filelist.files.append("ua_parser/_regexes.py")
+        sdist.filelist.files.append("src/ua_parser/_regexes.py")
 
 
 class develop(_develop):
@@ -204,8 +204,8 @@ setup(
     description="Python port of Browserscope's user agent parser",
     author="PBS",
     author_email="no-reply@pbs.org",
-    packages=["ua_parser"],
-    package_dir={"": "."},
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     license="Apache 2.0",
     zip_safe=False,
     url="https://github.com/ua-parser/uap-python",

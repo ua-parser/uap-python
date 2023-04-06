@@ -70,7 +70,7 @@ jobs:
     - name: Check results
       run: |
         # check that _regexes exists, and .eggs does not (== setuptools used our dependency)
-        test -e ua_parser/_regexes.py -a ! -e .eggs
+        test -e src/ua_parser/_regexes.py -a ! -e .eggs
 
   test:
     strategy:
@@ -95,6 +95,8 @@ jobs:
     steps:
     - name: Checkout working copy
       uses: actions/checkout@v3
+      with:
+        submodules: true
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
@@ -111,11 +113,12 @@ jobs:
         fi
         python -mpip install -r requirements_dev.txt
     - name: install package in environment
-      run: python setup.py develop
+      run: pip install .
     - name: run tests
-      # 
-      run: pytest -v -Werror -Wignore::ImportWarning
-    - name: run doctests
-      # pprint formatting was changed a lot in 3.5
       if: ${{ matrix.python-version != '2.7' }}
-      run: python -mdoctest README.rst
+      run: pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst"
+    - name: run tests
+      # pprint formatting was widely altered in 3.5, so can't run
+      # doctests before then
+      if: ${{ matrix.python-version == '2.7' }}
+      run: pytest -v -Werror -Wignore::ImportWarning
