@@ -16,9 +16,9 @@ jobs:
     - name: Checkout working copy
       uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.11"
     - name: Install checkers
       run: |
         python -mpip install --upgrade pip
@@ -28,43 +28,51 @@ jobs:
     - name: black
       run: black --check --diff --color --quiet .
 
+  # REPLACE BY: job which python -mbuild, and uploads the sdist and wheel to artifacts
+  # build is not binary so can just build the one using whatever python version
   compile:
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version:
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12.0-alpha - 3.12"
-          - "pypy-3.8"
-          - "pypy-3.9"
-        pyyaml-version: ["5.1.*", "5.4.*", "6.0.*", "6.*"]
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout working copy
       uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
       with:
-        python-version: ${{ matrix.python-version }}
+        submodules: true
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
     - name: Install dependency
       run: |
         python -mpip install --upgrade pip
-        python -mpip install pyyaml==${{ matrix.pyyaml-version }}
-    - name: Build regexes.py
-      run: python setup.py build_regexes -i
-    - name: Check results
+        python -mpip install build
+    - name: Build sdist and wheel
       run: |
-        # check that _regexes exists, and .eggs does not (== setuptools used our dependency)
-        test -e src/ua_parser/_regexes.py -a ! -e .eggs
+        python -mbuild
+    - name: Upload sdist
+      uses: actions/upload-artifact@v3
+      with:
+        name: sdist
+        path: dist/*.tar.gz
+        retention-days: 1
+
+    - name: Upload wheel
+      uses: actions/upload-artifact@v3
+      with:
+        name: wheel
+        path: dist/*.whl
+        retention-days: 1
 
   test:
+    runs-on: ubuntu-latest
+    needs: compile
     strategy:
       fail-fast: false
       matrix:
+        source:
+          - wheel
+          - sdist
+          - source
         python-version:
           - "3.8"
           - "3.9"
@@ -73,14 +81,18 @@ jobs:
           - "3.12.0-alpha - 3.12"
           - "pypy-3.8"
           - "pypy-3.9"
-    runs-on: ubuntu-latest
+        include:
+          - source: sdist
+            artifact: dist/*.tar.gz
+          - source: wheel
+            artifact: dist/*.whl
     steps:
     - name: Checkout working copy
       uses: actions/checkout@v3
       with:
         submodules: true
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install test dependencies
@@ -94,7 +106,14 @@ jobs:
             fi
         fi
         python -mpip install -r requirements_dev.txt
+    - name: download ${{ matrix.source }} artifact
+      if: matrix.artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ matrix.source }}
+        path: dist/
     - name: install package in environment
-      run: pip install .
+      run: |
+        pip install ${{ matrix.artifact || '.' }}
     - name: run tests
       run: pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst"
