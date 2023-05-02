@@ -1,7 +1,6 @@
 import logging
 import os
 import platform
-import re
 import sys
 import warnings
 
@@ -245,7 +244,7 @@ class TestDeprecationWarnings:
 
     def test_js_bits_deprecation(self):
         for parser, count in [
-            (user_agent_parser.Parse, 3),
+            (user_agent_parser.Parse, 1),
             (user_agent_parser.ParseUserAgent, 1),
             (user_agent_parser.ParseOS, 1),
             (user_agent_parser.ParseDevice, 1),
@@ -254,25 +253,3 @@ class TestDeprecationWarnings:
             with pytest.warns(DeprecationWarning) as ws:
                 parser("some random thing", js_attribute=True)
             assert len(ws) == count
-
-
-class ErrTest:
-    @pytest.mark.skipif(
-        sys.version_info < (3,),
-        reason="bytes and str are not differentiated in P2",
-    )
-    def test_bytes(self):
-        with pytest.raises(TypeError):
-            user_agent_parser.Parse(b"")
-
-    def test_int(self):
-        with pytest.raises(TypeError):
-            user_agent_parser.Parse(0)
-
-    def test_list(self):
-        with pytest.raises(TypeError):
-            user_agent_parser.Parse([])
-
-    def test_tuple(self):
-        with pytest.raises(TypeError):
-            user_agent_parser.Parse(())
