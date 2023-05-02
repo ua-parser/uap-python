@@ -27,7 +27,7 @@ TEST_RESOURCES_DIR = os.path.join(
 )
 
 
-class ParseTest:
+class TestParse:
     def testBrowserscopeStrings(self):
         self.runUserAgentTestsFromYAML(
             os.path.join(TEST_RESOURCES_DIR, "tests/test_ua.yaml")
@@ -191,19 +191,21 @@ class ParseTest:
             )
 
 
-class GetFiltersTest:
+class TestGetFilters:
     def testGetFiltersNoMatchesGiveEmptyDict(self):
         user_agent_string = "foo"
-        filters = user_agent_parser.GetFilters(
-            user_agent_string, js_user_agent_string=None
-        )
+        with pytest.warns(DeprecationWarning):
+            filters = user_agent_parser.GetFilters(
+                user_agent_string, js_user_agent_string=None
+            )
         assert {} == filters
 
     def testGetFiltersJsUaPassedThrough(self):
         user_agent_string = "foo"
-        filters = user_agent_parser.GetFilters(
-            user_agent_string, js_user_agent_string="bar"
-        )
+        with pytest.warns(DeprecationWarning):
+            filters = user_agent_parser.GetFilters(
+                user_agent_string, js_user_agent_string="bar"
+            )
         assert {"js_user_agent_string": "bar"} == filters
 
     def testGetFiltersJsUserAgentFamilyAndVersions(self):
@@ -212,26 +214,16 @@ class GetFiltersTest:
             "Windows NT 5.1; Trident/4.0; GTB6; .NET CLR 2.0.50727; "
             ".NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)"
         )
-        filters = user_agent_parser.GetFilters(
-            user_agent_string, js_user_agent_string="bar", js_user_agent_family="foo"
-        )
+        with pytest.warns(DeprecationWarning):
+            filters = user_agent_parser.GetFilters(
+                user_agent_string,
+                js_user_agent_string="bar",
+                js_user_agent_family="foo",
+            )
         assert {"js_user_agent_string": "bar", "js_user_agent_family": "foo"} == filters
 
 
 class TestDeprecationWarnings:
-    def setUp(self):
-        """In Python 2.7, catch_warnings apparently does not do anything if
-        the warning category is not active, whereas in 3(.6 and up) it
-        seems to work out of the box.
-        """
-        warnings.simplefilter("always", DeprecationWarning)
-
-    def tearDown(self):
-        # not ideal as it discards all other warnings updates from the
-        # process, should really copy the contents of
-        # `warnings.filters`, then reset-it.
-        warnings.resetwarnings()
-
     def test_parser_deprecation(self):
         with pytest.warns(DeprecationWarning) as ws:
             user_agent_parser.ParseWithJSOverrides("")
