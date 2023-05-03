@@ -329,7 +329,7 @@ def PrettyUserAgent(family, v1=None, v2=None, v3=None):
         else:
             return f"{family} {v1}.{v2}{v3}"
     elif v2:
-        return f"{family} {v1}.{v2}" % (family, v1, v2)
+        return f"{family} {v1}.{v2}"
     elif v1:
         return f"{family} {v1}"
     return family
