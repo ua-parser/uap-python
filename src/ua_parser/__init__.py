@@ -62,7 +62,7 @@ from .core import (
     UserAgentMatcher,
 )
 from .basic import Parser as BasicParser
-from .caching import CachingParser, Clearing, LRU
+from .caching import CachingParser, Clearing, LRU, Locking
 from .loaders import load_builtins, load_data, load_yaml
 
 
