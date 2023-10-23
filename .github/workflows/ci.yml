@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ '*' ]
   workflow_dispatch:
+  schedule:
+    # cron is kinda random, assumes 22:00 UTC is a low ebb, eastern
+    # countries are very early morning, and US are mid-day to
+    # mid-afternoon
+    - cron: '0 22 * * 2'
 
 jobs:
   checks:
