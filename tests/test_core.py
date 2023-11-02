@@ -53,7 +53,10 @@ PARSERS = [
         id="lru",
     ),
 ]
+with contextlib.suppress(ImportError):
+    from ua_parser import re2
 
+    PARSERS.append(pytest.param(re2.Parser(load_builtins()), id="re2"))
 
 UA_FIELDS = {f.name for f in dataclasses.fields(UserAgent)}
 

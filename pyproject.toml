@@ -9,7 +9,7 @@ version = "1.0.0a1"
 readme = "README.rst"
 requires-python = ">=3.8"
 dependencies = []
-optional-dependencies = { yaml = ["PyYaml"] }
+optional-dependencies = { yaml = ["PyYaml"], re2 = ["google-re2"] }
 
 license = {text = "Apache 2.0"}
 urls = {repository = "https://github.com/ua-parser/uap-python"}
