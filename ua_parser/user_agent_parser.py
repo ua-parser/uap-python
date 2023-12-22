@@ -24,6 +24,21 @@ import warnings
 __author__ = "Lindsey Simon <elsigh@gmail.com>"
 
 
+if sys.version_info >= (3, 8):
+    from functools import cached_property
+else:
+    class cached_property:
+        def __init__(self, func):
+            self._func = func
+
+        def __get__(self, inst, owner):
+            if inst is None:
+                return self
+            else:
+                ret = inst.__dict__[self._func.__name__] = self._func(inst)
+                return ret
+
+
 class UserAgentParser(object):
     def __init__(
         self, pattern, family_replacement=None, v1_replacement=None, v2_replacement=None
@@ -37,10 +52,13 @@ class UserAgentParser(object):
           v2_replacement: a string to override the matched v2 (optional)
         """
         self.pattern = pattern
-        self.user_agent_re = re.compile(self.pattern)
         self.family_replacement = family_replacement
         self.v1_replacement = v1_replacement
         self.v2_replacement = v2_replacement
+
+    @cached_property
+    def user_agent_re(self):
+        return re.compile(self.pattern)
 
     def MatchSpans(self, user_agent_string):
         match_spans = []
@@ -100,12 +118,15 @@ class OSParser(object):
           os_v4_replacement: a string to override the matched v4 (optional)
         """
         self.pattern = pattern
-        self.user_agent_re = re.compile(self.pattern)
         self.os_replacement = os_replacement
         self.os_v1_replacement = os_v1_replacement
         self.os_v2_replacement = os_v2_replacement
         self.os_v3_replacement = os_v3_replacement
         self.os_v4_replacement = os_v4_replacement
+
+    @cached_property
+    def user_agent_re(self):
+        return re.compile(self.pattern)
 
     def MatchSpans(self, user_agent_string):
         match_spans = []
@@ -179,13 +200,17 @@ class DeviceParser(object):
           device_replacement: a string to override the matched device (optional)
         """
         self.pattern = pattern
-        if regex_flag == "i":
-            self.user_agent_re = re.compile(self.pattern, re.IGNORECASE)
-        else:
-            self.user_agent_re = re.compile(self.pattern)
+        self.regex_flag = regex_flag
         self.device_replacement = device_replacement
         self.brand_replacement = brand_replacement
         self.model_replacement = model_replacement
+
+    @cached_property
+    def user_agent_re(self):
+        if self.regex_flag == "i":
+            return re.compile(self.pattern, re.IGNORECASE)
+        else:
+            return re.compile(self.pattern)
 
     def MatchSpans(self, user_agent_string):
         match_spans = []
