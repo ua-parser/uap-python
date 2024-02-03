@@ -21,9 +21,12 @@ class UserAgentParser(object):
         self.v1_replacement = v1_replacement
         self.v2_replacement = v2_replacement
 
-    def Parse(
-        self, user_agent_string: str
-    ) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str],]:
+    def Parse(self, user_agent_string: str) -> Tuple[
+        Optional[str],
+        Optional[str],
+        Optional[str],
+        Optional[str],
+    ]:
         family, v1, v2, v3 = None, None, None, None
         match = self.user_agent_re.search(user_agent_string)
         if match:
@@ -78,9 +81,7 @@ class OSParser(object):
         self.os_v3_replacement = os_v3_replacement
         self.os_v4_replacement = os_v4_replacement
 
-    def Parse(
-        self, user_agent_string: str
-    ) -> Tuple[
+    def Parse(self, user_agent_string: str) -> Tuple[
         Optional[str],
         Optional[str],
         Optional[str],
@@ -152,9 +153,11 @@ class DeviceParser(object):
         self.brand_replacement = brand_replacement
         self.model_replacement = model_replacement
 
-    def Parse(
-        self, user_agent_string: str
-    ) -> Tuple[Optional[str], Optional[str], Optional[str],]:
+    def Parse(self, user_agent_string: str) -> Tuple[
+        Optional[str],
+        Optional[str],
+        Optional[str],
+    ]:
         device, brand, model = None, None, None
         match = self.user_agent_re.search(user_agent_string)
         if match:
