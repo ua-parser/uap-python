@@ -27,11 +27,13 @@ jobs:
     - name: Install checkers
       run: |
         python -mpip install --upgrade pip
-        python -mpip install black flake8
+        python -mpip install black flake8 mypy types-PyYaml
     - name: flake
       run: flake8 .
     - name: black
       run: black --check --diff --color --quiet .
+    - name: mypy
+      run: mypy
 
   # REPLACE BY: job which python -mbuild, and uploads the sdist and wheel to artifacts
   # build is not binary so can just build the one using whatever python version
