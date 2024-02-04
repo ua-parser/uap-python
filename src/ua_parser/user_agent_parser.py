@@ -181,7 +181,7 @@ MAX_CACHE_SIZE = 200
 _PARSE_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
-def _lookup(ua: str):
+def _lookup(ua):
     if not isinstance(ua, str):
         raise TypeError(f"Expected user agent to be a string, got {ua!r}")
 
@@ -204,7 +204,7 @@ def _cached(ua, key, fn):
     return r
 
 
-def Parse(user_agent_string: str, **_jsParseBits):
+def Parse(user_agent_string, **_jsParseBits):
     """Parse all the things
     Args:
       user_agent_string: the full user agent string

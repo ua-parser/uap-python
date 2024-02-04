@@ -42,3 +42,54 @@ classifiers = [
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy"
 ]
+
+[tool.mypy]
+python_version = "3.8"
+files = "src,tests"
+
+# can't use strict because it's only global
+
+# these two are global
+warn_unused_configs = true
+warn_redundant_casts = true
+
+# these can be overridden (maybe?)
+strict_equality = true
+strict_concatenate = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+disallow_untyped_decorators = true
+disallow_any_generics = true
+disallow_untyped_calls = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_reexport = true
+warn_return_any = true
+
+[[tool.mypy.overrides]]
+module = "ua_parser.user_agent_parser"
+
+#check_untyped_defs = false
+disallow_untyped_calls = false
+#disallow_incomplete_defs = false
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+       "test_core",
+       "test_caches",
+       "test_parsers_basics",
+]
+
+#check_untyped_defs = false
+#disallow_untyped_calls = false
+#disallow_incomplete_defs = false
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "test_legacy"
+
+#check_untyped_defs = false
+disallow_untyped_calls = false
+#disallow_incomplete_defs = false
+disallow_untyped_defs = false
