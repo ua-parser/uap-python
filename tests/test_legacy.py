@@ -1,17 +1,15 @@
 import logging
 import os
 import platform
-import sys
-import warnings
 
-import pytest
+import pytest  # type: ignore
 import yaml
 
 if platform.python_implementation() == "PyPy":
     from yaml import SafeLoader
 else:
     try:
-        from yaml import CSafeLoader as SafeLoader
+        from yaml import CSafeLoader as SafeLoader  # type: ignore
     except ImportError:
         logging.getLogger(__name__).warning(
             "PyYaml C extension not available to run tests, this will result "
