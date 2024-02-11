@@ -46,7 +46,9 @@ __all__ = [
 
 VERSION = (1, 0, 0)
 
-from typing import Optional
+import contextlib
+from typing import Callable, Optional, Type
+
 from .core import (
     DefaultedParseResult,
     Device,
@@ -65,6 +67,10 @@ from .basic import Parser as BasicParser
 from .caching import CachingParser, Clearing, LRU, Locking
 from .loaders import load_builtins, load_data, load_yaml
 
+Re2Parser: Optional[Callable[[Matchers], Parser]] = None
+with contextlib.suppress(ImportError):
+    from .re2 import Parser as Re2Parser
+
 
 parser: Parser
 
@@ -72,10 +78,13 @@ parser: Parser
 def __getattr__(name: str) -> Parser:
     global parser
     if name == "parser":
-        parser = CachingParser(
-            BasicParser(load_builtins()),
-            LRU(200),
-        )
+        if Re2Parser is not None:
+            parser = Re2Parser(load_builtins())
+        else:
+            parser = CachingParser(
+                BasicParser(load_builtins()),
+                Locking(LRU(200)),
+            )
         return parser
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
