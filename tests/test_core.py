@@ -30,6 +30,7 @@ from ua_parser import (
     ParseResult,
     UserAgentMatcher,
     load_builtins,
+    load_lazy_builtins,
     caching,
 )
 
@@ -38,6 +39,7 @@ CORE_DIR = (pathlib.Path(__name__).parent.parent / "uap-core").resolve()
 
 PARSERS = [
     pytest.param(BasicParser(load_builtins()), id="basic"),
+    pytest.param(BasicParser(load_lazy_builtins()), id="lazy"),
     pytest.param(
         caching.CachingParser(
             BasicParser(load_builtins()),

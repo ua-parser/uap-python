@@ -7,6 +7,7 @@ from .core import (
     Device,
     DeviceMatcher,
     Domain,
+    Matcher,
     Matchers,
     OS,
     OSMatcher,
@@ -23,9 +24,9 @@ class Parser(AbstractParser):
     when one matches.
     """
 
-    user_agent_matchers: List[UserAgentMatcher]
-    os_matchers: List[OSMatcher]
-    device_matchers: List[DeviceMatcher]
+    user_agent_matchers: List[Matcher[UserAgent]]
+    os_matchers: List[Matcher[OS]]
+    device_matchers: List[Matcher[Device]]
 
     def __init__(
         self,

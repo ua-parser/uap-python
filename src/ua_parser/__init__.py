@@ -36,6 +36,7 @@ __all__ = [
     "UserAgent",
     "UserAgentMatcher",
     "load_builtins",
+    "load_lazy_builtins",
     "load_data",
     "load_yaml",
     "parse",
@@ -65,7 +66,7 @@ from .core import (
 )
 from .basic import Parser as BasicParser
 from .caching import CachingParser, Clearing, LRU, Locking
-from .loaders import load_builtins, load_data, load_yaml
+from .loaders import load_builtins, load_lazy_builtins, load_data, load_yaml
 
 Re2Parser: Optional[Callable[[Matchers], Parser]] = None
 with contextlib.suppress(ImportError):
@@ -79,7 +80,7 @@ def __getattr__(name: str) -> Parser:
     global parser
     if name == "parser":
         if Re2Parser is not None:
-            parser = Re2Parser(load_builtins())
+            parser = Re2Parser(load_lazy_builtins())
         else:
             parser = CachingParser(
                 BasicParser(load_builtins()),
