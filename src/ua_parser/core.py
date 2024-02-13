@@ -1,9 +1,8 @@
 import abc
 import re
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from enum import Flag, auto
-from typing import Literal, Optional, Tuple, List, TypeVar, Match, Pattern
+from typing import Generic, Literal, Optional, Tuple, List, TypeVar, Match, Pattern
 
 __all__ = [
     "DefaultedParseResult",
@@ -221,7 +220,23 @@ def _replacer(repl: str, m: Match[str]) -> Optional[str]:
     return re.sub(r"\$(\d)", lambda n: _get(m, int(n[1])) or "", repl).strip() or None
 
 
-class UserAgentMatcher:
+T = TypeVar("T")
+
+
+class Matcher(abc.ABC, Generic[T]):
+    @abc.abstractmethod
+    def __call__(self, ua: str) -> Optional[T]: ...
+
+    @property
+    @abc.abstractmethod
+    def pattern(self) -> str: ...
+
+    @property
+    def flags(self) -> int:
+        return 0
+
+
+class UserAgentMatcher(Matcher[UserAgent]):
     regex: Pattern[str]
     family: str
     major: Optional[str]
@@ -260,6 +275,10 @@ class UserAgentMatcher:
             )
         return None
 
+    @property
+    def pattern(self) -> str:
+        return self.regex.pattern
+
     def __repr__(self) -> str:
         fields = [
             ("family", self.family if self.family != "$1" else None),
@@ -270,10 +289,10 @@ class UserAgentMatcher:
         ]
         args = "".join(f", {k}={v!r}" for k, v in fields if v is not None)
 
-        return f"UserAgentMatcher({self.regex.pattern!r}{args})"
+        return f"UserAgentMatcher({self.pattern!r}{args})"
 
 
-class OSMatcher:
+class OSMatcher(Matcher[OS]):
     regex: Pattern[str]
     family: str
     major: str
@@ -311,6 +330,10 @@ class OSMatcher:
             )
         return None
 
+    @property
+    def pattern(self) -> str:
+        return self.regex.pattern
+
     def __repr__(self) -> str:
         fields = [
             ("family", self.family if self.family != "$1" else None),
@@ -321,10 +344,10 @@ class OSMatcher:
         ]
         args = "".join(f", {k}={v!r}" for k, v in fields if v is not None)
 
-        return f"OSMatcher({self.regex.pattern!r}{args})"
+        return f"OSMatcher({self.pattern!r}{args})"
 
 
-class DeviceMatcher:
+class DeviceMatcher(Matcher[Device]):
     regex: Pattern[str]
     family: str
     brand: str
@@ -355,20 +378,28 @@ class DeviceMatcher:
             )
         return None
 
+    @property
+    def pattern(self) -> str:
+        return self.regex.pattern
+
+    @property
+    def flags(self) -> int:
+        return self.regex.flags
+
     def __repr__(self) -> str:
         fields = [
             ("family", self.family if self.family != "$1" else None),
             ("brand", self.brand or None),
             ("model", self.model if self.model != "$1" else None),
         ]
-        iflag = ', "i"' if self.regex.flags & re.IGNORECASE else ""
+        iflag = ', "i"' if self.flags & re.IGNORECASE else ""
         args = iflag + "".join(f", {k}={v!r}" for k, v in fields if v is not None)
 
-        return f"DeviceMatcher({self.regex.pattern!r}{args})"
+        return f"DeviceMatcher({self.pattern!r}{args})"
 
 
 Matchers = Tuple[
-    List[UserAgentMatcher],
-    List[OSMatcher],
-    List[DeviceMatcher],
+    List[Matcher[UserAgent]],
+    List[Matcher[OS]],
+    List[Matcher[Device]],
 ]

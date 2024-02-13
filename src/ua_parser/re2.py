@@ -12,6 +12,8 @@ from .core import (
     PartialParseResult,
     Device,
     Domain,
+    Matcher,
+    Matchers,
     OS,
     UserAgent,
     UserAgentMatcher,
@@ -22,26 +24,26 @@ from .core import (
 
 class Parser(AbstractParser):
     ua: re2.Filter
-    user_agent_matchers: List[UserAgentMatcher]
+    user_agent_matchers: List[Matcher[UserAgent]]
     os: re2.Filter
-    os_matchers: List[OSMatcher]
+    os_matchers: List[Matcher[OS]]
     devices: re2.Filter
-    device_matchers: List[DeviceMatcher]
+    device_matchers: List[Matcher[Device]]
 
     def __init__(
         self,
-        matchers: Tuple[List[UserAgentMatcher], List[OSMatcher], List[DeviceMatcher]],
+        matchers: Matchers,
     ) -> None:
         self.user_agent_matchers, self.os_matchers, self.device_matchers = matchers
 
         self.ua = re2.Filter()
         for u in self.user_agent_matchers:
-            self.ua.Add(u.regex.pattern)
+            self.ua.Add(u.pattern)
         self.ua.Compile()
 
         self.os = re2.Filter()
         for o in self.os_matchers:
-            self.os.Add(o.regex.pattern)
+            self.os.Add(o.pattern)
         self.os.Compile()
 
         self.devices = re2.Filter()
@@ -49,10 +51,10 @@ class Parser(AbstractParser):
             # Prepend the i global flag if IGNORECASE is set. Assumes
             # no pattern uses global flags, but since they're not
             # supported in JS that seems safe.
-            if d.regex.flags & re.IGNORECASE:
-                self.devices.Add("(?i)" + d.regex.pattern)
+            if d.flags & re.IGNORECASE:
+                self.devices.Add("(?i)" + d.pattern)
             else:
-                self.devices.Add(d.regex.pattern)
+                self.devices.Add(d.pattern)
         self.devices.Compile()
 
     def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
