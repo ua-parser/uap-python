@@ -10,6 +10,15 @@ Build Status
 .. image:: https://github.com/ua-parser/uap-python/actions/workflows/ci.yml/badge.svg
    :alt: CI on the master branch
 
+⚠️ THIS IS NOT THE DOCUMENTATION YOU ARE LOOKING FOR (probably) ⚠️
+------------------------------------------------------------------
+
+This is the readme for the `future 1.0 <https://github.com/ua-
+parser/uap-python/milestone/1>`_.
+
+For the current releases, see `the 0.x branch
+<https://github.com/ua-parser/uap-python/tree/0.x#uap- python>`_.
+
 Installing
 ----------
 
