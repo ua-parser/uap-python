@@ -7,7 +7,7 @@ formerly https://github.com/tobie/ua-parser)
 Build Status
 ------------
 
-.. image:: https://github.com/ua-parser/uap-python/actions/workflows/ci.yml/badge.svg
+.. image:: https://github.com/ua-parser/uap-python/actions/workflows/ci.yml/badge.svg?branch=0.x
    :alt: CI on the master branch
 
 
