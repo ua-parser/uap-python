@@ -20,18 +20,20 @@ jobs:
     steps:
     - name: Checkout working copy
       uses: actions/checkout@v3
+    - name: ruff check
+      uses: chartboost/ruff-action@v1
+    - name: ruff format
+      uses: chartboost/ruff-action@v1
+      with:
+        args: format --diff
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: "3.11"
-    - name: Install checkers
+    - name: Install mypy
       run: |
         python -mpip install --upgrade pip
-        python -mpip install black flake8 mypy types-PyYaml
-    - name: flake
-      run: flake8 .
-    - name: black
-      run: black --check --diff --color --quiet .
+        python -mpip install mypy types-PyYaml
     - name: mypy
       run: mypy
 

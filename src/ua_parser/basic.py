@@ -1,20 +1,15 @@
-import io
-import os
 from operator import methodcaller
 from typing import List
 
 from .core import (
     Device,
-    DeviceMatcher,
     Domain,
     Matcher,
     Matchers,
     OS,
-    OSMatcher,
     Parser as AbstractParser,
     PartialParseResult,
     UserAgent,
-    UserAgentMatcher,
 )
 
 

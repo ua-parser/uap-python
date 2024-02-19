@@ -1,7 +1,7 @@
 import os
 import re
 import warnings
-from typing import *
+from typing import Any, Dict, Optional, Tuple
 
 
 class UserAgentParser(object):
@@ -21,7 +21,9 @@ class UserAgentParser(object):
         self.v1_replacement = v1_replacement
         self.v2_replacement = v2_replacement
 
-    def Parse(self, user_agent_string: str) -> Tuple[
+    def Parse(
+        self, user_agent_string: str
+    ) -> Tuple[
         Optional[str],
         Optional[str],
         Optional[str],
@@ -81,7 +83,9 @@ class OSParser(object):
         self.os_v3_replacement = os_v3_replacement
         self.os_v4_replacement = os_v4_replacement
 
-    def Parse(self, user_agent_string: str) -> Tuple[
+    def Parse(
+        self, user_agent_string: str
+    ) -> Tuple[
         Optional[str],
         Optional[str],
         Optional[str],
@@ -153,7 +157,9 @@ class DeviceParser(object):
         self.brand_replacement = brand_replacement
         self.model_replacement = model_replacement
 
-    def Parse(self, user_agent_string: str) -> Tuple[
+    def Parse(
+        self, user_agent_string: str
+    ) -> Tuple[
         Optional[str],
         Optional[str],
         Optional[str],
