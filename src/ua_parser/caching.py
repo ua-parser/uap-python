@@ -1,7 +1,7 @@
 import abc
 from collections import OrderedDict
 import threading
-from typing import Callable, ContextManager, Dict, Optional, MutableMapping
+from typing import Dict, Optional
 
 from .core import Parser, Domain, PartialParseResult
 

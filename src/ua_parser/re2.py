@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import io
-import os
 import re
-from typing import List, Tuple, Union
+from typing import List
 
 import re2  # type: ignore
 
@@ -16,9 +14,6 @@ from .core import (
     Matchers,
     OS,
     UserAgent,
-    UserAgentMatcher,
-    OSMatcher,
-    DeviceMatcher,
 )
 
 

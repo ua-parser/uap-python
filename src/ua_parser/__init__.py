@@ -45,10 +45,8 @@ __all__ = [
     "parse_user_agent",
 ]
 
-VERSION = (1, 0, 0)
-
 import contextlib
-from typing import Callable, Optional, Type
+from typing import Callable, Optional
 
 from .core import (
     DefaultedParseResult,
@@ -73,6 +71,7 @@ with contextlib.suppress(ImportError):
     from .re2 import Parser as Re2Parser
 
 
+VERSION = (1, 0, 0)
 parser: Parser
 
 
