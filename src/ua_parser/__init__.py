@@ -48,6 +48,8 @@ __all__ = [
 import contextlib
 from typing import Callable, Optional
 
+from .basic import Parser as BasicParser
+from .caching import CachingParser, Clearing, Locking, LRU
 from .core import (
     DefaultedParseResult,
     Device,
@@ -56,15 +58,13 @@ from .core import (
     Matchers,
     OS,
     OSMatcher,
-    ParseResult,
     Parser,
+    ParseResult,
     PartialParseResult,
     UserAgent,
     UserAgentMatcher,
 )
-from .basic import Parser as BasicParser
-from .caching import CachingParser, Clearing, LRU, Locking
-from .loaders import load_builtins, load_lazy_builtins, load_data, load_yaml
+from .loaders import load_builtins, load_data, load_lazy_builtins, load_yaml
 
 Re2Parser: Optional[Callable[[Matchers], Parser]] = None
 with contextlib.suppress(ImportError):

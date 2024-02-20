@@ -43,6 +43,17 @@ classifiers = [
         "Programming Language :: Python :: Implementation :: PyPy"
 ]
 
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "RET", "RUF", "PT"]
+ignore = [
+    "RET505",  # elif after return
+    "E501",  # line too long, formatter should take care of the fixable ones
+]
+
+[tool.ruff.lint.isort]
+classes = ["LRU", "OS"]
+combine-as-imports = true
+
 [tool.mypy]
 python_version = "3.8"
 files = "src,tests"

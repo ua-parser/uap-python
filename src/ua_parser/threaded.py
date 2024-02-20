@@ -6,13 +6,13 @@ import time
 from typing import Iterable
 
 from . import (
-    load_builtins,
     BasicParser,
     CachingParser,
     Clearing,
     Locking,
     LRU,
     Parser,
+    load_builtins,
 )
 from .re2 import Parser as Re2Parser
 

@@ -1,11 +1,12 @@
 import io
+
 from ua_parser import (
     BasicParser,
-    PartialParseResult,
     Domain,
+    PartialParseResult,
     UserAgent,
-    load_yaml,
     UserAgentMatcher,
+    load_yaml,
 )
 
 

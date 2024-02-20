@@ -1,7 +1,8 @@
 __all__ = ["MATCHERS"]
 
-from typing import Tuple, List
-from .core import UserAgentMatcher, OSMatcher, DeviceMatcher
+from typing import List, Tuple
+
+from .core import DeviceMatcher, OSMatcher, UserAgentMatcher
 
 MATCHERS: Tuple[
     List[UserAgentMatcher],

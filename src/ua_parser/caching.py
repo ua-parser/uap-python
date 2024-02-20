@@ -1,10 +1,9 @@
 import abc
-from collections import OrderedDict
 import threading
+from collections import OrderedDict
 from typing import Dict, Optional
 
-from .core import Parser, Domain, PartialParseResult
-
+from .core import Domain, Parser, PartialParseResult
 
 __all__ = [
     "CachingParser",

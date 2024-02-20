@@ -11,27 +11,30 @@ from operator import attrgetter
 import pytest  # type: ignore
 
 if platform.python_implementation() == "PyPy":
-    from yaml import load, SafeLoader
+    from yaml import SafeLoader, load
 else:
     try:
-        from yaml import load, CSafeLoader as SafeLoader  # type: ignore
+        from yaml import (  # type: ignore
+            CSafeLoader as SafeLoader,
+            load,
+        )
     except ImportError:
         logging.getLogger(__name__).warning(
             "PyYaml C extension not available to run tests, this will result "
             "in dramatic tests slowdown."
         )
-        from yaml import load, SafeLoader
+        from yaml import SafeLoader, load
 
 from ua_parser import (
     BasicParser,
-    UserAgent,
-    OS,
     Device,
+    OS,
     ParseResult,
+    UserAgent,
     UserAgentMatcher,
+    caching,
     load_builtins,
     load_lazy_builtins,
-    caching,
 )
 
 CORE_DIR = (pathlib.Path(__name__).parent.parent / "uap-core").resolve()

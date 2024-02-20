@@ -6,13 +6,13 @@ from typing import List
 import re2  # type: ignore
 
 from .core import (
-    Parser as AbstractParser,
-    PartialParseResult,
     Device,
     Domain,
     Matcher,
     Matchers,
     OS,
+    Parser as AbstractParser,
+    PartialParseResult,
     UserAgent,
 )
 

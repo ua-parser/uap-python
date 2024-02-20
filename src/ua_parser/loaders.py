@@ -15,6 +15,7 @@ import io
 import json
 import os
 from typing import (
+    TYPE_CHECKING,
     Callable,
     List,
     Literal,
@@ -24,21 +25,20 @@ from typing import (
     Type,
     TypedDict,
     Union,
-    TYPE_CHECKING,
     cast,
 )
 
 from . import lazy
-from .core import Matchers, UserAgentMatcher, OSMatcher, DeviceMatcher
+from .core import DeviceMatcher, Matchers, OSMatcher, UserAgentMatcher
 
 if TYPE_CHECKING:
     PathOrFile = Union[str, os.PathLike[str], io.IOBase]
     SafeLoader: Optional[Type[object]]
 try:
-    from yaml import load, CSafeLoader as SafeLoader
+    from yaml import CSafeLoader as SafeLoader, load
 except ImportError:
     try:
-        from yaml import load, SafeLoader
+        from yaml import SafeLoader, load
     except ImportError:
         load = SafeLoader = None  # type: ignore
 

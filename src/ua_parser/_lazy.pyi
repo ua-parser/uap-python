@@ -1,7 +1,8 @@
 __all__ = ["MATCHERS"]
 
-from typing import Tuple, List
-from .lazy import UserAgentMatcher, OSMatcher, DeviceMatcher
+from typing import List, Tuple
+
+from .lazy import DeviceMatcher, OSMatcher, UserAgentMatcher
 
 MATCHERS: Tuple[
     List[UserAgentMatcher],
