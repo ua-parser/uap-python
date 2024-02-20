@@ -2,17 +2,17 @@ from collections import OrderedDict
 
 from ua_parser import (
     BasicParser,
-    PartialParseResult,
-    Domain,
-    UserAgent,
-    OS,
-    Device,
     CachingParser,
     Clearing,
-    LRU,
-    UserAgentMatcher,
-    OSMatcher,
+    Device,
     DeviceMatcher,
+    Domain,
+    LRU,
+    OS,
+    OSMatcher,
+    PartialParseResult,
+    UserAgent,
+    UserAgentMatcher,
 )
 
 

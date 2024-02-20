@@ -2,7 +2,7 @@ import abc
 import re
 from dataclasses import dataclass
 from enum import Flag, auto
-from typing import Generic, Literal, Optional, Tuple, List, TypeVar, Match, Pattern
+from typing import Generic, List, Literal, Match, Optional, Pattern, Tuple, TypeVar
 
 __all__ = [
     "DefaultedParseResult",

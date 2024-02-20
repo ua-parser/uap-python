@@ -4,7 +4,7 @@ import re
 from functools import cached_property
 from typing import Literal, Optional, Pattern
 
-from .core import Matcher, UserAgent, OS, Device, _replacer, _get
+from .core import Device, Matcher, OS, UserAgent, _get, _replacer
 
 
 class UserAgentMatcher(Matcher[UserAgent]):

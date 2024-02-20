@@ -1,25 +1,25 @@
 import argparse
 import csv
-import itertools
 import io
-import time
+import itertools
 import sys
+import time
 from typing import Any, Callable, Iterable, List, Optional
 
 from . import (
-    load_builtins,
-    load_yaml,
     BasicParser,
     CachingParser,
     Clearing,
-    LRU,
     Locking,
+    LRU,
     Matchers,
     Parser,
+    load_builtins,
+    load_yaml,
 )
 from .caching import Cache
-from .user_agent_parser import Parse
 from .re2 import Parser as Re2Parser
+from .user_agent_parser import Parse
 
 CACHEABLE = {
     "basic": True,
