@@ -6,15 +6,15 @@ import time
 from typing import Iterable
 
 from . import (
-    BasicParser,
-    CachingParser,
+    BasicResolver,
+    CachingResolver,
     Clearing,
     Locking,
     LRU,
     Parser,
     load_builtins,
 )
-from .re2 import Parser as Re2Parser
+from .re2 import Resolver as Re2Resolver
 
 
 def worker(
@@ -54,11 +54,11 @@ def main() -> None:
     args = ap.parse_args()
 
     lines = list(args.file)
-    basic = BasicParser(load_builtins())
+    basic = BasicResolver(load_builtins())
     for name, parser in [
-        ("clearing", CachingParser(basic, Clearing(CACHESIZE))),
-        ("LRU", CachingParser(basic, Locking(LRU(CACHESIZE)))),
-        ("re2", Re2Parser(load_builtins())),
+        ("clearing", CachingResolver(basic, Clearing(CACHESIZE))),
+        ("LRU", CachingResolver(basic, Locking(LRU(CACHESIZE)))),
+        ("re2", Re2Resolver(load_builtins())),
     ]:
         # randomize the dataset for each thread, predictably, to
         # simulate distributed load (not great but better than

@@ -1,29 +1,31 @@
 import argparse
 import itertools
+from typing import Callable, List
 
 from . import (
-    CachingParser,
+    CachingResolver,
     Clearing,
     Domain,
     LRU,
     Parser,
     PartialParseResult,
+    Resolver,
 )
+from .caching import Cache
 
 
-class Noop(Parser):
-    def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
-        return PartialParseResult(
-            domains=domains,
-            string=ua,
-            user_agent=None,
-            os=None,
-            device=None,
-        )
+def Noop(ua: str, domains: Domain, /) -> PartialParseResult:
+    return PartialParseResult(
+        domains=domains,
+        string=ua,
+        user_agent=None,
+        os=None,
+        device=None,
+    )
 
 
-class Counter(Parser):
-    def __init__(self, parser: Parser) -> None:
+class Counter:
+    def __init__(self, parser: Resolver) -> None:
         self.count = 0
         self.parser = parser
 
@@ -60,12 +62,13 @@ def main() -> None:
     print(total, "lines", uniques, "uniques")
     print(f"ideal hit rate: {(total - uniques)/total:.0%}")
     print()
+    caches: List[Callable[[int], Cache]] = [Clearing, LRU]
     for cache, cache_size in itertools.product(
-        [Clearing, LRU],
+        caches,
         args.cachesizes,
     ):
-        misses = Counter(Noop())
-        parser = CachingParser(misses, cache(cache_size))
+        misses = Counter(Noop)
+        parser = Parser(CachingResolver(misses, cache(cache_size)))
         for line in lines:
             parser.parse(line)
 

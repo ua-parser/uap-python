@@ -1,4 +1,4 @@
-from __future__ import annotations
+__all__ = ["Resolver"]
 
 import re
 from typing import List
@@ -11,13 +11,12 @@ from .core import (
     Matcher,
     Matchers,
     OS,
-    Parser as AbstractParser,
     PartialParseResult,
     UserAgent,
 )
 
 
-class Parser(AbstractParser):
+class Resolver:
     ua: re2.Filter
     user_agent_matchers: List[Matcher[UserAgent]]
     os: re2.Filter

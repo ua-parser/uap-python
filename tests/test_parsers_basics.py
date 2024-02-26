@@ -1,17 +1,17 @@
 import io
 
 from ua_parser import (
-    BasicParser,
+    BasicResolver,
     Domain,
     PartialParseResult,
     UserAgent,
-    UserAgentMatcher,
-    load_yaml,
 )
+from ua_parser.loaders import load_yaml
+from ua_parser.matchers import UserAgentMatcher
 
 
 def test_trivial_matching():
-    p = BasicParser(([UserAgentMatcher("(a)")], [], []))
+    p = BasicResolver(([UserAgentMatcher("(a)")], [], []))
 
     assert p("x", Domain.ALL) == PartialParseResult(
         string="x",
@@ -31,7 +31,7 @@ def test_trivial_matching():
 
 
 def test_partial():
-    p = BasicParser(([UserAgentMatcher("(a)")], [], []))
+    p = BasicResolver(([UserAgentMatcher("(a)")], [], []))
 
     assert p("x", Domain.USER_AGENT) == PartialParseResult(
         string="x",
@@ -60,7 +60,7 @@ os_parsers: []
 device_parsers: []
 """
     )
-    p = BasicParser(load_yaml(f))
+    p = BasicResolver(load_yaml(f))
 
     assert p("x", Domain.USER_AGENT) == PartialParseResult(
         string="x",
