@@ -16,29 +16,25 @@ For convenience, direct aliases are also provided for:
 This way importing anything but the top-level package should not be
 necessary unless you want to *implement* a parser.
 """
+from __future__ import annotations
 
 __all__ = [
-    "BasicParser",
-    "CachingParser",
+    "BasicResolver",
+    "CachingResolver",
     "Clearing",
     "DefaultedParseResult",
     "Device",
-    "DeviceMatcher",
     "Domain",
     "LRU",
     "Locking",
     "Matchers",
     "OS",
-    "OSMatcher",
     "ParseResult",
-    "Parser",
+    "Resolver",
     "PartialParseResult",
     "UserAgent",
-    "UserAgentMatcher",
     "load_builtins",
     "load_lazy_builtins",
-    "load_data",
-    "load_yaml",
     "parse",
     "parse_device",
     "parse_os",
@@ -48,43 +44,89 @@ __all__ = [
 import contextlib
 from typing import Callable, Optional
 
-from .basic import Parser as BasicParser
-from .caching import CachingParser, Clearing, Locking, LRU
+from .basic import Resolver as BasicResolver
+from .caching import CachingResolver, Clearing, Locking, LRU
 from .core import (
     DefaultedParseResult,
     Device,
-    DeviceMatcher,
     Domain,
     Matchers,
     OS,
-    OSMatcher,
-    Parser,
     ParseResult,
     PartialParseResult,
+    Resolver,
     UserAgent,
-    UserAgentMatcher,
 )
-from .loaders import load_builtins, load_data, load_lazy_builtins, load_yaml
+from .loaders import load_builtins, load_lazy_builtins
 
-Re2Parser: Optional[Callable[[Matchers], Parser]] = None
+Re2Resolver: Optional[Callable[[Matchers], Resolver]] = None
 with contextlib.suppress(ImportError):
-    from .re2 import Parser as Re2Parser
+    from .re2 import Resolver as Re2Resolver
 
 
 VERSION = (1, 0, 0)
+
+
+class Parser:
+    @classmethod
+    def from_matchers(cls, m: Matchers, /) -> Parser:
+        if Re2Resolver is not None:
+            return cls(Re2Resolver(m))
+        else:
+            return cls(
+                CachingResolver(
+                    BasicResolver(m),
+                    Locking(LRU(200)),
+                )
+            )
+
+    def __init__(self, resolver: Resolver) -> None:
+        self.resolver = resolver
+
+    def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
+        """Parses the ``ua`` string, returning a parse result with *at least*
+        the requested :class:`domains <Domain>` resolved (whether to success or
+        failure).
+
+        A parser may resolve more :class:`domains <Domain>` than
+        requested, but it *must not* resolve less.
+        """
+        return self.resolver(ua, domains)
+
+    def parse(self, ua: str) -> ParseResult:
+        """Convenience method for parsing all domains, and falling back to
+        default values for all failures.
+        """
+        return self(ua, Domain.ALL).complete()
+
+    def parse_user_agent(self, ua: str) -> Optional[UserAgent]:
+        """Convenience method for parsing the :class:`UserAgent` domain,
+        falling back to the default value in case of failure.
+        """
+        return self(ua, Domain.USER_AGENT).user_agent
+
+    def parse_os(self, ua: str) -> Optional[OS]:
+        """Convenience method for parsing the :class:`OS` domain, falling back
+        to the default value in case of failure.
+        """
+        return self(ua, Domain.OS).os
+
+    def parse_device(self, ua: str) -> Optional[Device]:
+        """Convenience method for parsing the :class:`Device` domain, falling
+        back to the default value in case of failure.
+        """
+        return self(ua, Domain.DEVICE).device
+
+
 parser: Parser
 
 
 def __getattr__(name: str) -> Parser:
     global parser
     if name == "parser":
-        if Re2Parser is not None:
-            parser = Re2Parser(load_lazy_builtins())
-        else:
-            parser = CachingParser(
-                BasicParser(load_builtins()),
-                Locking(LRU(200)),
-            )
+        parser = Parser.from_matchers(
+            load_builtins() if Re2Resolver is None else load_lazy_builtins()
+        )
         return parser
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
@@ -105,7 +147,7 @@ def parse(ua: str) -> ParseResult:
     # parser, a `global` access fails to and we get a NameError
     from . import parser
 
-    return parser.parse(ua)
+    return parser(ua, Domain.ALL).complete()
 
 
 def parse_user_agent(ua: str) -> Optional[UserAgent]:
@@ -114,7 +156,7 @@ def parse_user_agent(ua: str) -> Optional[UserAgent]:
     """
     from . import parser
 
-    return parser.parse_user_agent(ua)
+    return parser(ua, Domain.USER_AGENT).user_agent
 
 
 def parse_os(ua: str) -> Optional[OS]:
@@ -123,7 +165,7 @@ def parse_os(ua: str) -> Optional[OS]:
     """
     from . import parser
 
-    return parser.parse_os(ua)
+    return parser(ua, Domain.OS).os
 
 
 def parse_device(ua: str) -> Optional[Device]:
@@ -132,4 +174,4 @@ def parse_device(ua: str) -> Optional[Device]:
     """
     from . import parser
 
-    return parser.parse_device(ua)
+    return parser(ua, Domain.DEVICE).device

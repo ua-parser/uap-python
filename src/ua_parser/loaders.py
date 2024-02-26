@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 __all__ = [
-    "load_builtins",
-    "load_lazy_builtins",
-    "load_data",
-    "load_yaml",
-    "MatchersData",
-    "UserAgentDict",
-    "OSDict",
     "DeviceDict",
+    "MatchersData",
+    "OSDict",
+    "UserAgentDict",
+    "load_builtins",
+    "load_data",
+    "load_json",
+    "load_lazy",
+    "load_lazy_builtins",
+    "load_yaml",
 ]
 
 import io
@@ -28,8 +30,8 @@ from typing import (
     cast,
 )
 
-from . import lazy
-from .core import DeviceMatcher, Matchers, OSMatcher, UserAgentMatcher
+from . import lazy, matchers
+from .core import Matchers
 
 if TYPE_CHECKING:
     PathOrFile = Union[str, os.PathLike[str], io.IOBase]
@@ -93,7 +95,7 @@ DataLoader = Callable[[MatchersData], Matchers]
 def load_data(d: MatchersData) -> Matchers:
     return (
         [
-            UserAgentMatcher(
+            matchers.UserAgentMatcher(
                 p["regex"],
                 p.get("family_replacement"),
                 p.get("v1_replacement"),
@@ -104,7 +106,7 @@ def load_data(d: MatchersData) -> Matchers:
             for p in d[0]
         ],
         [
-            OSMatcher(
+            matchers.OSMatcher(
                 p["regex"],
                 p.get("os_replacement"),
                 p.get("os_v1_replacement"),
@@ -115,7 +117,7 @@ def load_data(d: MatchersData) -> Matchers:
             for p in d[1]
         ],
         [
-            DeviceMatcher(
+            matchers.DeviceMatcher(
                 p["regex"],
                 p.get("regex_flag"),
                 p.get("device_replacement"),

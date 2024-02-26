@@ -7,18 +7,18 @@ import time
 from typing import Any, Callable, Iterable, List, Optional
 
 from . import (
-    BasicParser,
-    CachingParser,
+    BasicResolver,
+    CachingResolver,
     Clearing,
     Locking,
     LRU,
     Matchers,
     Parser,
-    load_builtins,
-    load_yaml,
+    Resolver,
 )
 from .caching import Cache
-from .re2 import Parser as Re2Parser
+from .loaders import load_builtins, load_yaml
+from .re2 import Resolver as Re2Resolver
 from .user_agent_parser import Parse
 
 CACHEABLE = {
@@ -222,19 +222,19 @@ def run_csv(args: argparse.Namespace) -> None:
 def get_parser(
     parser: str, cache: str, cachesize: int, rules: Matchers
 ) -> Callable[[str], Any]:
-    p: Parser
+    r: Resolver
     if parser == "legacy":
         return Parse
     elif parser == "basic":
-        p = BasicParser(rules)
+        r = BasicResolver(rules)
     elif parser == "re2":
-        p = Re2Parser(rules)
+        r = Re2Resolver(rules)
     else:
         sys.exit(f"unknown parser {parser!r}")
 
     c: Callable[[int], Cache]
     if cache == "none":
-        return p.parse
+        return Parser(r).parse
     elif cache == "clearing":
         c = Clearing
     elif cache == "lru":
@@ -244,7 +244,7 @@ def get_parser(
     else:
         sys.exit(f"unknown cache algorithm {cache!r}")
 
-    return CachingParser(p, c(cachesize)).parse
+    return Parser(CachingResolver(r, c(cachesize))).parse
 
 
 def run(

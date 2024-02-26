@@ -1,3 +1,5 @@
+__all__ = ["Resolver"]
+
 from operator import methodcaller
 from typing import List
 
@@ -7,13 +9,12 @@ from .core import (
     Matcher,
     Matchers,
     OS,
-    Parser as AbstractParser,
     PartialParseResult,
     UserAgent,
 )
 
 
-class Parser(AbstractParser):
+class Resolver:
     """A simple pure-python parser based around trying a numer of regular
     expressions in sequence for each domain, and returning a result
     when one matches.
@@ -27,9 +28,7 @@ class Parser(AbstractParser):
         self,
         matchers: Matchers,
     ) -> None:
-        self.user_agent_matchers = matchers[0]
-        self.os_matchers = matchers[1]
-        self.device_matchers = matchers[2]
+        self.user_agent_matchers, self.os_matchers, self.device_matchers = matchers
 
     def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
         parse = methodcaller("__call__", ua)

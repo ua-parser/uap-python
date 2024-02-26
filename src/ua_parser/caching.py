@@ -1,12 +1,12 @@
 import abc
 import threading
 from collections import OrderedDict
-from typing import Dict, Optional
+from typing import Dict, Optional, Protocol
 
-from .core import Domain, Parser, PartialParseResult
+from .core import Domain, PartialParseResult, Resolver
 
 __all__ = [
-    "CachingParser",
+    "CachingResolver",
     "Cache",
     "Clearing",
     "Locking",
@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 
-class Cache(abc.ABC):
+class Cache(Protocol):
     """Cache abstract protocol. The :class:`CachingParser` will look
     values up, merge what was returned (possibly nothing) with what it
     got from its actual parser, and *re-set the result*.
@@ -33,7 +33,7 @@ class Cache(abc.ABC):
         ...
 
 
-class Clearing(Cache):
+class Clearing:
     """A clearing cache, if the cache is full, just remove all the entries
     and re-fill from scratch.
 
@@ -62,7 +62,7 @@ class Clearing(Cache):
         self.cache[key] = value
 
 
-class LRU(Cache):
+class LRU:
     """Cache following a least-recently used replacement policy: when
     there is no more room in the cache, whichever entry was last seen
     the least recently is removed.
@@ -103,7 +103,7 @@ class LRU(Cache):
             self.cache.popitem(last=False)
 
 
-class Locking(Cache):
+class Locking:
     """Locking cache decorator. Takes a non-thread-safe cache and
     ensures retrieving and setting entries is protected by a mutex.
 
@@ -122,7 +122,7 @@ class Locking(Cache):
             self.cache[key] = value
 
 
-class CachingParser(Parser):
+class CachingResolver:
     """A wrapping parser which takes an underlying concrete :class:`Cache`
     for the actual caching and cache strategy.
 
@@ -134,8 +134,8 @@ class CachingParser(Parser):
     really, they're immutable).
     """
 
-    def __init__(self, parser: Parser, cache: Cache):
-        self.parser: Parser = parser
+    def __init__(self, parser: Resolver, cache: Cache):
+        self.parser: Resolver = parser
         self.cache: Cache = cache
 
     def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:

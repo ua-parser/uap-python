@@ -1,7 +1,6 @@
 __all__ = ["UserAgentMatcher", "OSMatcher", "DeviceMatcher"]
 
 import re
-from functools import cached_property
 from typing import Literal, Optional, Pattern
 
 from .core import Device, Matcher, OS, UserAgent
@@ -9,7 +8,7 @@ from .utils import get, replacer
 
 
 class UserAgentMatcher(Matcher[UserAgent]):
-    pattern: str = ""
+    regex: Pattern[str]
     family: str
     major: Optional[str]
     minor: Optional[str]
@@ -25,7 +24,7 @@ class UserAgentMatcher(Matcher[UserAgent]):
         patch: Optional[str] = None,
         patch_minor: Optional[str] = None,
     ) -> None:
-        self.pattern = regex
+        self.regex = re.compile(regex)
         self.family = family or "$1"
         self.major = major
         self.minor = minor
@@ -47,9 +46,9 @@ class UserAgentMatcher(Matcher[UserAgent]):
             )
         return None
 
-    @cached_property
-    def regex(self) -> Pattern[str]:
-        return re.compile(self.pattern)
+    @property
+    def pattern(self) -> str:
+        return self.regex.pattern
 
     def __repr__(self) -> str:
         fields = [
@@ -65,7 +64,7 @@ class UserAgentMatcher(Matcher[UserAgent]):
 
 
 class OSMatcher(Matcher[OS]):
-    pattern: str = ""
+    regex: Pattern[str]
     family: str
     major: str
     minor: str
@@ -81,7 +80,7 @@ class OSMatcher(Matcher[OS]):
         patch: Optional[str] = None,
         patch_minor: Optional[str] = None,
     ) -> None:
-        self.pattern = regex
+        self.regex = re.compile(regex)
         self.family = family or "$1"
         self.major = major or "$2"
         self.minor = minor or "$3"
@@ -102,9 +101,9 @@ class OSMatcher(Matcher[OS]):
             )
         return None
 
-    @cached_property
-    def regex(self) -> Pattern[str]:
-        return re.compile(self.pattern)
+    @property
+    def pattern(self) -> str:
+        return self.regex.pattern
 
     def __repr__(self) -> str:
         fields = [
@@ -120,8 +119,7 @@ class OSMatcher(Matcher[OS]):
 
 
 class DeviceMatcher(Matcher[Device]):
-    pattern: str = ""
-    flags: int = 0
+    regex: Pattern[str]
     family: str
     brand: str
     model: str
@@ -134,8 +132,7 @@ class DeviceMatcher(Matcher[Device]):
         brand: Optional[str] = None,
         model: Optional[str] = None,
     ) -> None:
-        self.pattern = regex
-        self.flags = re.IGNORECASE if regex_flag == "i" else 0
+        self.regex = re.compile(regex, flags=re.IGNORECASE if regex_flag == "i" else 0)
         self.family = family or "$1"
         self.brand = brand or ""
         self.model = model or "$1"
@@ -152,9 +149,13 @@ class DeviceMatcher(Matcher[Device]):
             )
         return None
 
-    @cached_property
-    def regex(self) -> Pattern[str]:
-        return re.compile(self.pattern, flags=self.flags)
+    @property
+    def pattern(self) -> str:
+        return self.regex.pattern
+
+    @property
+    def flags(self) -> int:
+        return self.regex.flags
 
     def __repr__(self) -> str:
         fields = [

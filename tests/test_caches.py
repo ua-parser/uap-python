@@ -1,19 +1,18 @@
 from collections import OrderedDict
 
 from ua_parser import (
-    BasicParser,
-    CachingParser,
+    BasicResolver,
+    CachingResolver,
     Clearing,
     Device,
-    DeviceMatcher,
     Domain,
     LRU,
     OS,
-    OSMatcher,
+    Parser,
     PartialParseResult,
     UserAgent,
-    UserAgentMatcher,
 )
+from ua_parser.matchers import DeviceMatcher, OSMatcher, UserAgentMatcher
 
 
 def test_clearing():
@@ -21,7 +20,7 @@ def test_clearing():
     entries.
     """
     cache = Clearing(2)
-    p = CachingParser(BasicParser(([], [], [])), cache)
+    p = Parser(CachingResolver(BasicResolver(([], [], [])), cache))
 
     p.parse("a")
     p.parse("b")
@@ -42,7 +41,7 @@ def test_lru():
     popped LRU-first.
     """
     cache = LRU(2)
-    p = CachingParser(BasicParser(([], [], [])), cache)
+    p = Parser(CachingResolver(BasicResolver(([], [], [])), cache))
 
     p.parse("a")
     p.parse("b")
@@ -69,15 +68,17 @@ def test_backfill():
     existing entry when new parts get parsed.
     """
     cache = Clearing(2)
-    p = CachingParser(
-        BasicParser(
-            (
-                [UserAgentMatcher("(a)")],
-                [OSMatcher("(a)")],
-                [DeviceMatcher("(a)")],
-            )
-        ),
-        cache,
+    p = Parser(
+        CachingResolver(
+            BasicResolver(
+                (
+                    [UserAgentMatcher("(a)")],
+                    [OSMatcher("(a)")],
+                    [DeviceMatcher("(a)")],
+                )
+            ),
+            cache,
+        )
     )
 
     p.parse_user_agent("a")

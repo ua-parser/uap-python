@@ -26,34 +26,39 @@ else:
         from yaml import SafeLoader, load
 
 from ua_parser import (
-    BasicParser,
+    BasicResolver,
     Device,
     OS,
+    Parser,
     ParseResult,
     UserAgent,
-    UserAgentMatcher,
     caching,
     load_builtins,
     load_lazy_builtins,
 )
+from ua_parser.matchers import UserAgentMatcher
 
 CORE_DIR = (pathlib.Path(__name__).parent.parent / "uap-core").resolve()
 
 
 PARSERS = [
-    pytest.param(BasicParser(load_builtins()), id="basic"),
-    pytest.param(BasicParser(load_lazy_builtins()), id="lazy"),
+    pytest.param(Parser(BasicResolver(load_builtins())), id="basic"),
+    pytest.param(Parser(BasicResolver(load_lazy_builtins())), id="lazy"),
     pytest.param(
-        caching.CachingParser(
-            BasicParser(load_builtins()),
-            caching.Clearing(10),
+        Parser(
+            caching.CachingResolver(
+                BasicResolver(load_builtins()),
+                caching.Clearing(10),
+            )
         ),
         id="clearing",
     ),
     pytest.param(
-        caching.CachingParser(
-            BasicParser(load_builtins()),
-            caching.LRU(10),
+        Parser(
+            caching.CachingResolver(
+                BasicResolver(load_builtins()),
+                caching.LRU(10),
+            )
         ),
         id="lru",
     ),
@@ -61,7 +66,7 @@ PARSERS = [
 with contextlib.suppress(ImportError):
     from ua_parser import re2
 
-    PARSERS.append(pytest.param(re2.Parser(load_builtins()), id="re2"))
+    PARSERS.append(pytest.param(Parser(re2.Resolver(load_builtins())), id="re2"))
 
 UA_FIELDS = {f.name for f in dataclasses.fields(UserAgent)}
 
@@ -134,7 +139,7 @@ def test_devices(parser, test_file):
 
 
 def test_results():
-    p = BasicParser(([UserAgentMatcher("(x)")], [], []))
+    p = Parser(BasicResolver(([UserAgentMatcher("(x)")], [], [])))
 
     assert p.parse_user_agent("x") == UserAgent("x")
     assert p.parse_user_agent("y") is None
