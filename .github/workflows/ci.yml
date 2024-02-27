@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: ruff check
       uses: chartboost/ruff-action@v1
     - name: ruff format
@@ -27,9 +27,9 @@ jobs:
       with:
         args: format --diff
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: "3.x"
     - name: Install mypy
       run: |
         python -mpip install --upgrade pip
@@ -44,13 +44,13 @@ jobs:
 
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: true
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: "3.x"
     - name: Install dependency
       run: |
         python -mpip install --upgrade pip
@@ -59,14 +59,14 @@ jobs:
       run: |
         python -mbuild
     - name: Upload sdist
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sdist
         path: dist/*.tar.gz
         retention-days: 1
 
     - name: Upload wheel
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wheel
         path: dist/*.whl
@@ -94,6 +94,9 @@ jobs:
           - "pypy-3.9"
           - "pypy-3.10"
           # - "pypy-3.11"
+          # don't enable graal because it's slower than even pypy and
+          # fails because oracle/graalpython#385
+          # - "graalpy-23"
         include:
           - source: sdist
             artifact: dist/*.tar.gz
@@ -101,28 +104,37 @@ jobs:
             artifact: dist/*.whl
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: true
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
     - name: Install test dependencies
       run: |
         python -mpip install --upgrade pip
-        # if binary wheels are not available for the current package install libyaml
-        # NB: cyaml is outright broken on pypy so exclude that
+        # cyaml is outright broken on pypy
         if ! ${{ startsWith(matrix.python-version, 'pypy-') }}; then
+            # if binary wheels are not available for the current
+            # package install libyaml-dev so we can install pyyaml
+            # from source
             if ! pip download --only-binary pyyaml -rrequirements_dev.txt > /dev/null 2>&1; then
                 sudo apt install libyaml-dev
             fi
         fi
         python -mpip install pytest pyyaml
+
+        # re2 is basically impossible to install from source so don't
+        # bother, and suppress installation failure so the test does
+        # not fail (re2 tests will just be skipped for versions /
+        # implementations for which google does not provide a binary
+        # wheel)
+        python -mpip install --only-binary :all: google-re2 || true
     - name: download ${{ matrix.source }} artifact
       if: matrix.artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: ${{ matrix.source }}
         path: dist/
@@ -130,4 +142,4 @@ jobs:
       run: |
         pip install ${{ matrix.artifact || '.' }}
     - name: run tests
-      run: pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst"
+      run: pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst" -ra
