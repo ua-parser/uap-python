@@ -1,7 +1,6 @@
 """Tests UAP-Python using the UAP-core test suite
 """
 
-import contextlib
 import dataclasses
 import logging
 import pathlib
@@ -63,9 +62,15 @@ PARSERS = [
         id="lru",
     ),
 ]
-with contextlib.suppress(ImportError):
+try:
     from ua_parser import re2
-
+except ImportError:
+    PARSERS.append(
+        pytest.param(
+            None, id="re2", marks=pytest.mark.skip(reason="re2 parser not available")
+        )
+    )
+else:
     PARSERS.append(pytest.param(Parser(re2.Resolver(load_builtins())), id="re2"))
 
 UA_FIELDS = {f.name for f in dataclasses.fields(UserAgent)}
