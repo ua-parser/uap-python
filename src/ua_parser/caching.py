@@ -1,7 +1,8 @@
 import abc
 import threading
 from collections import OrderedDict
-from typing import Dict, Optional, Protocol
+from contextvars import ContextVar
+from typing import Callable, Dict, Optional, Protocol
 
 from .core import Domain, PartialParseResult, Resolver
 
@@ -120,6 +121,35 @@ class Locking:
     def __setitem__(self, key: str, value: PartialParseResult) -> None:
         with self.lock:
             self.cache[key] = value
+
+
+class Local:
+    """Thread local cache decorator. Takes a cache factory and lazily
+    instantiates a cache for each thread it's accessed from.
+
+    This means the cache capacity and memory consumption is
+    figuratively multiplied by however many threads the cache is used
+    from, but those threads don't share their caching.
+
+    """
+
+    def __init__(self, factory: Callable[[], Cache]) -> None:
+        self.cv: ContextVar[Cache] = ContextVar("local-cache")
+        self.factory = factory
+
+    @property
+    def cache(self) -> Cache:
+        c = self.cv.get(None)
+        if c is None:
+            c = self.factory()
+            self.cv.set(c)
+        return c
+
+    def __getitem__(self, key: str) -> Optional[PartialParseResult]:
+        return self.cache[key]
+
+    def __setitem__(self, key: str, value: PartialParseResult) -> None:
+        self.cache[key] = value
 
 
 class CachingResolver:

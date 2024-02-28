@@ -22,7 +22,7 @@ from . import (
     PartialParseResult,
     Resolver,
 )
-from .caching import Cache
+from .caching import Cache, Local
 from .loaders import load_builtins, load_yaml
 from .re2 import Resolver as Re2Resolver
 from .user_agent_parser import Parse
@@ -243,11 +243,12 @@ def run_threaded(args: argparse.Namespace) -> None:
     basic = BasicResolver(load_builtins())
     resolvers: List[Tuple[str, Resolver]] = [
         ("clearing", CachingResolver(basic, Clearing(CACHESIZE))),
-        ("LRU", CachingResolver(basic, Locking(LRU(CACHESIZE)))),
+        ("locking-lru", CachingResolver(basic, Locking(LRU(CACHESIZE)))),
+        ("local-lru", CachingResolver(basic, Local(lambda: LRU(CACHESIZE)))),
         ("re2", Re2Resolver(load_builtins())),
     ]
     for name, resolver in resolvers:
-        print(f"{name:10}: ", end="", flush=True)
+        print(f"{name:11}: ", end="", flush=True)
         # randomize the dataset for each thread, predictably, to
         # simulate distributed load (not great but better than
         # nothing, and probably better than reusing the exact same
