@@ -1,4 +1,8 @@
-from ua_parser import Parser, ParseResult, PartialParseResult
+from ua_parser import Domain, Parser, ParseResult, PartialParseResult
+
+
+def resolver(s: str, d: Domain) -> PartialParseResult:
+    return PartialParseResult(d, None, None, None, s)
 
 
 def test_parser_utility() -> None:
@@ -6,8 +10,10 @@ def test_parser_utility() -> None:
     helpers, for users who may not wish to instantiate a parser or
     something.
 
-    Sadly the typing doesn't really play nicely with that.
-
     """
-    r = Parser.parse(lambda s, d: PartialParseResult(d, None, None, None, s), "a")  # type: ignore
+
+    r = Parser.parse(resolver, "a")
     assert r == ParseResult(None, None, None, "a")
+
+    os = Parser.parse_os(resolver, "a")
+    assert os is None
