@@ -93,25 +93,25 @@ class Parser:
         """
         return self.resolver(ua, domains)
 
-    def parse(self, ua: str) -> ParseResult:
+    def parse(self: Resolver, ua: str) -> ParseResult:
         """Convenience method for parsing all domains, and falling back to
         default values for all failures.
         """
         return self(ua, Domain.ALL).complete()
 
-    def parse_user_agent(self, ua: str) -> Optional[UserAgent]:
+    def parse_user_agent(self: Resolver, ua: str) -> Optional[UserAgent]:
         """Convenience method for parsing the :class:`UserAgent` domain,
         falling back to the default value in case of failure.
         """
         return self(ua, Domain.USER_AGENT).user_agent
 
-    def parse_os(self, ua: str) -> Optional[OS]:
+    def parse_os(self: Resolver, ua: str) -> Optional[OS]:
         """Convenience method for parsing the :class:`OS` domain, falling back
         to the default value in case of failure.
         """
         return self(ua, Domain.OS).os
 
-    def parse_device(self, ua: str) -> Optional[Device]:
+    def parse_device(self: Resolver, ua: str) -> Optional[Device]:
         """Convenience method for parsing the :class:`Device` domain, falling
         back to the default value in case of failure.
         """
