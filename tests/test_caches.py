@@ -3,44 +3,22 @@ from collections import OrderedDict
 from ua_parser import (
     BasicResolver,
     CachingResolver,
-    Clearing,
     Device,
     Domain,
-    LRU,
     OS,
     Parser,
     PartialParseResult,
     UserAgent,
 )
+from ua_parser.caching import Lru
 from ua_parser.matchers import DeviceMatcher, OSMatcher, UserAgentMatcher
-
-
-def test_clearing():
-    """Tests that the cache correctly gets cleared to make room for new
-    entries.
-    """
-    cache = Clearing(2)
-    p = Parser(CachingResolver(BasicResolver(([], [], [])), cache))
-
-    p.parse("a")
-    p.parse("b")
-
-    assert cache.cache == {
-        "a": PartialParseResult(Domain.ALL, None, None, None, "a"),
-        "b": PartialParseResult(Domain.ALL, None, None, None, "b"),
-    }
-
-    p.parse("c")
-    assert cache.cache == {
-        "c": PartialParseResult(Domain.ALL, None, None, None, "c"),
-    }
 
 
 def test_lru():
     """Tests that the cache entries do get moved when accessed, and are
     popped LRU-first.
     """
-    cache = LRU(2)
+    cache = Lru(2)
     p = Parser(CachingResolver(BasicResolver(([], [], [])), cache))
 
     p.parse("a")
@@ -67,7 +45,7 @@ def test_backfill():
     """Tests that caches handle partial parsing correctly, by updating the
     existing entry when new parts get parsed.
     """
-    cache = Clearing(2)
+    cache = Lru(2)
     p = Parser(
         CachingResolver(
             BasicResolver(

@@ -22,31 +22,72 @@ class UserAgent:
     information parsed from the user agent string.
     """
 
-    family: str = "Other"
-    major: Optional[str] = None
-    minor: Optional[str] = None
-    patch: Optional[str] = None
-    patch_minor: Optional[str] = None
+    __slots__ = ("family", "major", "minor", "patch", "patch_minor")
+    family: str
+    major: Optional[str]
+    minor: Optional[str]
+    patch: Optional[str]
+    patch_minor: Optional[str]
+
+    def __init__(
+        self,
+        family: str = "Other",
+        major: Optional[str] = None,
+        minor: Optional[str] = None,
+        patch: Optional[str] = None,
+        patch_minor: Optional[str] = None,
+    ) -> None:
+        object.__setattr__(self, "family", family)
+        object.__setattr__(self, "major", major)
+        object.__setattr__(self, "minor", minor)
+        object.__setattr__(self, "patch", patch)
+        object.__setattr__(self, "patch_minor", patch_minor)
 
 
 @dataclass(frozen=True)
 class OS:
     """OS information parsed from the user agent string."""
 
-    family: str = "Other"
-    major: Optional[str] = None
-    minor: Optional[str] = None
-    patch: Optional[str] = None
-    patch_minor: Optional[str] = None
+    __slots__ = ("family", "major", "minor", "patch", "patch_minor")
+    family: str
+    major: Optional[str]
+    minor: Optional[str]
+    patch: Optional[str]
+    patch_minor: Optional[str]
+
+    def __init__(
+        self,
+        family: str = "Other",
+        major: Optional[str] = None,
+        minor: Optional[str] = None,
+        patch: Optional[str] = None,
+        patch_minor: Optional[str] = None,
+    ) -> None:
+        object.__setattr__(self, "family", family)
+        object.__setattr__(self, "major", major)
+        object.__setattr__(self, "minor", minor)
+        object.__setattr__(self, "patch", patch)
+        object.__setattr__(self, "patch_minor", patch_minor)
 
 
 @dataclass(frozen=True)
 class Device:
     """Device information parsed from the user agent string."""
 
-    family: str = "Other"
-    brand: Optional[str] = None
-    model: Optional[str] = None
+    __slots__ = ("family", "brand", "model")
+    family: str
+    brand: Optional[str]
+    model: Optional[str]
+
+    def __init__(
+        self,
+        family: str = "Other",
+        brand: Optional[str] = None,
+        model: Optional[str] = None,
+    ) -> None:
+        object.__setattr__(self, "family", family)
+        object.__setattr__(self, "brand", brand)
+        object.__setattr__(self, "model", model)
 
 
 class Domain(Flag):
@@ -128,6 +169,7 @@ class PartialParseResult:
     If the flag is unset, the field has not been looked up yet.
     """
 
+    __slots__ = ("domains", "user_agent", "os", "device", "string")
     domains: Domain
     user_agent: Optional[UserAgent]
     os: Optional[OS]
