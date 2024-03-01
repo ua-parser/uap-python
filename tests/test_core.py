@@ -1,5 +1,4 @@
-"""Tests UAP-Python using the UAP-core test suite
-"""
+"""Tests UAP-Python using the UAP-core test suite"""
 
 import dataclasses
 import logging

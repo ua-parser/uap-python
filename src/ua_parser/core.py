@@ -158,13 +158,11 @@ T = TypeVar("T")
 
 class Matcher(abc.ABC, Generic[T]):
     @abc.abstractmethod
-    def __call__(self, ua: str) -> Optional[T]:
-        ...
+    def __call__(self, ua: str) -> Optional[T]: ...
 
     @property
     @abc.abstractmethod
-    def pattern(self) -> str:
-        ...
+    def pattern(self) -> str: ...
 
     @property
     def flags(self) -> int:

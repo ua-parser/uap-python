@@ -16,6 +16,7 @@ For convenience, direct aliases are also provided for:
 This way importing anything but the top-level package should not be
 necessary unless you want to *implement* a parser.
 """
+
 from __future__ import annotations
 
 __all__ = [
