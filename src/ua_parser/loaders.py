@@ -167,8 +167,9 @@ def load_lazy(d: MatchersData) -> Matchers:
 
 
 class FileLoader(Protocol):
-    def __call__(self, path: PathOrFile, loader: DataLoader = load_data) -> Matchers:
-        ...
+    def __call__(
+        self, path: PathOrFile, loader: DataLoader = load_data
+    ) -> Matchers: ...
 
 
 def load_json(f: PathOrFile, loader: DataLoader = load_data) -> Matchers:
