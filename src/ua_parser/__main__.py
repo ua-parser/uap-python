@@ -1,5 +1,6 @@
 import argparse
 import csv
+import gc
 import io
 import itertools
 import math
@@ -8,19 +9,29 @@ import random
 import sys
 import threading
 import time
-from typing import Any, Callable, Iterable, List, Optional, Sequence, Tuple, Union
+import tracemalloc
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+    cast,
+)
 
 from . import (
     BasicResolver,
     CachingResolver,
-    Clearing,
     Domain,
-    Locking,
-    LRU,
     Matchers,
     Parser,
     PartialParseResult,
     Resolver,
+    caching,
 )
 from .caching import Cache, Local
 from .loaders import load_builtins, load_yaml
@@ -32,6 +43,17 @@ CACHEABLE = {
     "re2": True,
     "legacy": False,
 }
+
+
+CACHES: Dict[str, Optional[Callable[[int], Cache]]] = {"none": None}
+CACHES.update(
+    (cache.__name__.lower(), cache)
+    for cache in [
+        cast(Callable[[int], Cache], caching.Lru),
+        caching.S3Fifo,
+        caching.Sieve,
+    ]
+)
 
 
 def get_rules(parsers: List[str], regexes: Optional[io.IOBase]) -> Matchers:
@@ -156,17 +178,12 @@ def get_parser(
     else:
         sys.exit(f"unknown parser {parser!r}")
 
-    c: Callable[[int], Cache]
-    if cache == "none":
-        return Parser(r).parse
-    elif cache == "clearing":
-        c = Clearing
-    elif cache == "lru":
-        c = LRU
-    elif cache == "lru-threadsafe":
-        c = lambda size: Locking(LRU(size))  # noqa: E731
-    else:
+    if cache not in CACHES:
         sys.exit(f"unknown cache algorithm {cache!r}")
+
+    c = CACHES.get(cache)
+    if c is None:
+        return Parser(r).parse
 
     return Parser(CachingResolver(r, c(cachesize))).parse
 
@@ -182,14 +199,16 @@ def run(
 
 
 def run_hitrates(args: argparse.Namespace) -> None:
-    def noop(ua: str, domains: Domain, /) -> PartialParseResult:
-        return PartialParseResult(
-            domains=domains,
-            string=ua,
-            user_agent=None,
-            os=None,
-            device=None,
-        )
+    r = PartialParseResult(
+        domains=Domain.ALL,
+        string="",
+        user_agent=None,
+        os=None,
+        device=None,
+    )
+
+    def noop(_ua: str, _domains: Domain, /) -> PartialParseResult:
+        return r
 
     class Counter:
         def __init__(self, parser: Resolver) -> None:
@@ -206,19 +225,25 @@ def run_hitrates(args: argparse.Namespace) -> None:
     print(total, "lines", uniques, "uniques")
     print(f"ideal hit rate: {(total - uniques)/total:.0%}")
     print()
-    caches: List[Callable[[int], Cache]] = [Clearing, LRU]
+    w = int(math.log10(max(args.cachesizes)) + 1)
+    tracemalloc.start()
     for cache, cache_size in itertools.product(
-        caches,
+        filter(None, CACHES.values()),
         args.cachesizes,
     ):
         misses = Counter(noop)
+        gc.collect()
+        before = tracemalloc.take_snapshot()
         parser = Parser(CachingResolver(misses, cache(cache_size)))
         for line in lines:
             parser.parse(line)
-
+        gc.collect()
+        after = tracemalloc.take_snapshot()
+        diff = sum(s.size_diff for s in after.compare_to(before, "filename"))
         print(
-            f"{cache.__name__.lower()}({cache_size}): {(total - misses.count)/total:.0%} hit rate"
+            f"{cache.__name__.lower():8}({cache_size:{w}}): {(total - misses.count)/total*100:2.0f}% hit rate, {diff:9} bytes"
         )
+        del misses, parser
 
 
 CACHESIZE = 1000
@@ -242,9 +267,8 @@ def run_threaded(args: argparse.Namespace) -> None:
     lines = list(args.file)
     basic = BasicResolver(load_builtins())
     resolvers: List[Tuple[str, Resolver]] = [
-        ("clearing", CachingResolver(basic, Clearing(CACHESIZE))),
-        ("locking-lru", CachingResolver(basic, Locking(LRU(CACHESIZE)))),
-        ("local-lru", CachingResolver(basic, Local(lambda: LRU(CACHESIZE)))),
+        ("locking-lru", CachingResolver(basic, caching.Lru(CACHESIZE))),
+        ("local-lru", CachingResolver(basic, Local(lambda: caching.Lru(CACHESIZE)))),
         ("re2", Re2Resolver(load_builtins())),
     ]
     for name, resolver in resolvers:
@@ -367,8 +391,8 @@ bench.add_argument(
 bench.add_argument(
     "--caches",
     nargs="+",
-    choices=["none", "clearing", "lru", "lru-threadsafe"],
-    default=["none", "clearing", "lru", "lru-threadsafe"],
+    choices=list(CACHES),
+    default=list(CACHES),
     help="""Cache implementations to test. `clearing` completely
     clears the cache when full, `lru` uses a least-recently-eviction
     policy. `lru` is not thread-safe, so `lru-threadsafe` adds a mutex

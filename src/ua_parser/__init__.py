@@ -22,12 +22,10 @@ from __future__ import annotations
 __all__ = [
     "BasicResolver",
     "CachingResolver",
-    "Clearing",
+    "Cache",
     "DefaultedParseResult",
     "Device",
     "Domain",
-    "LRU",
-    "Locking",
     "Matchers",
     "OS",
     "ParseResult",
@@ -46,7 +44,7 @@ import contextlib
 from typing import Callable, Optional
 
 from .basic import Resolver as BasicResolver
-from .caching import CachingResolver, Clearing, Locking, LRU
+from .caching import CachingResolver, S3Fifo as Cache
 from .core import (
     DefaultedParseResult,
     Device,
@@ -77,7 +75,7 @@ class Parser:
             return cls(
                 CachingResolver(
                     BasicResolver(m),
-                    Locking(LRU(200)),
+                    Cache(200),
                 )
             )
 
