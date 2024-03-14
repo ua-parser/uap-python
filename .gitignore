@@ -8,3 +8,4 @@ dist/
 tmp/
 regexes.yaml
 _regexes.py
+doc/_build

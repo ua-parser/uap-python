@@ -9,6 +9,14 @@ from .utils import get, replacer
 
 
 class UserAgentMatcher(Matcher[UserAgent]):
+    """Lazy user agent matcher, compiles the input ``regex`` on first
+    use.
+
+    Requires slightly more memory as it needs to reference both the
+    pattern string and the compiled pattern.
+
+    """
+
     pattern: str = ""
     family: str
     major: Optional[str]
@@ -65,6 +73,14 @@ class UserAgentMatcher(Matcher[UserAgent]):
 
 
 class OSMatcher(Matcher[OS]):
+    """Lazy OS matcher, compiles the input ``regex`` on first
+    use.
+
+    Requires slightly more memory as it needs to reference both the
+    pattern string and the compiled pattern.
+
+    """
+
     pattern: str = ""
     family: str
     major: str
@@ -120,6 +136,14 @@ class OSMatcher(Matcher[OS]):
 
 
 class DeviceMatcher(Matcher[Device]):
+    """Lazy device matcher, compiles the input ``regex`` on first
+    use.
+
+    Requires slightly more memory as it needs to reference both the
+    pattern string and the compiled pattern.
+
+    """
+
     pattern: str = ""
     flags: int = 0
     family: str

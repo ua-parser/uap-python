@@ -29,7 +29,7 @@ from . import (
     Domain,
     Matchers,
     Parser,
-    PartialParseResult,
+    PartialResult,
     Resolver,
     caching,
 )
@@ -199,7 +199,7 @@ def run(
 
 
 def run_hitrates(args: argparse.Namespace) -> None:
-    r = PartialParseResult(
+    r = PartialResult(
         domains=Domain.ALL,
         string="",
         user_agent=None,
@@ -207,7 +207,7 @@ def run_hitrates(args: argparse.Namespace) -> None:
         device=None,
     )
 
-    def noop(_ua: str, _domains: Domain, /) -> PartialParseResult:
+    def noop(_ua: str, _domains: Domain, /) -> PartialResult:
         return r
 
     class Counter:
@@ -215,7 +215,7 @@ def run_hitrates(args: argparse.Namespace) -> None:
             self.count = 0
             self.parser = parser
 
-        def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
+        def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
             self.count += 1
             return self.parser(ua, domains)
 

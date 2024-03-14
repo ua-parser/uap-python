@@ -1,8 +1,8 @@
-from ua_parser import Domain, Parser, ParseResult, PartialParseResult
+from ua_parser import Domain, Parser, PartialResult, Result
 
 
-def resolver(s: str, d: Domain) -> PartialParseResult:
-    return PartialParseResult(d, None, None, None, s)
+def resolver(s: str, d: Domain) -> PartialResult:
+    return PartialResult(d, None, None, None, s)
 
 
 def test_parser_utility() -> None:
@@ -13,7 +13,7 @@ def test_parser_utility() -> None:
     """
 
     r = Parser.parse(resolver, "a")
-    assert r == ParseResult(None, None, None, "a")
+    assert r == Result(None, None, None, "a")
 
     os = Parser.parse_os(resolver, "a")
     assert os is None

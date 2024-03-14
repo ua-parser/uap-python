@@ -46,6 +46,12 @@ except ImportError:
 
 
 def load_builtins() -> Matchers:
+    """Loads the pre-compiled matcher data into eager matchers.
+
+    The matchers data is imported lazily, and cached after imports,
+    further imports simply reference the existing datas.
+
+    """
     from ._matchers import MATCHERS
 
     # typing and mypy don't have safe upcast (#5756) and mypy is
@@ -54,6 +60,12 @@ def load_builtins() -> Matchers:
 
 
 def load_lazy_builtins() -> Matchers:
+    """Loads the pre-compiled matcher data into lazy matchers.
+
+    The matchers data is imported lazily, and cached after imports,
+    further imports simply reference the existing datas.
+
+    """
     from ._lazy import MATCHERS
 
     return cast(Matchers, MATCHERS)
@@ -93,6 +105,7 @@ DataLoader = Callable[[MatchersData], Matchers]
 
 
 def load_data(d: MatchersData) -> Matchers:
+    """Loads the input data set into eager matchers."""
     return (
         [
             matchers.UserAgentMatcher(
@@ -130,6 +143,7 @@ def load_data(d: MatchersData) -> Matchers:
 
 
 def load_lazy(d: MatchersData) -> Matchers:
+    """Loads the input data set into lazy matchers."""
     return (
         [
             lazy.UserAgentMatcher(
@@ -173,6 +187,14 @@ class FileLoader(Protocol):
 
 
 def load_json(f: PathOrFile, loader: DataLoader = load_data) -> Matchers:
+    """Loads JSON data following the ``regexes.yaml`` structure.
+
+    The ``loader`` parameter customises which matcher variant is
+    generated, by default :func:`load_data` is used to generate eager
+    matchers, :func:`load_lazy` can be used to generate lazy matchers
+    instead.
+
+    """
     if isinstance(f, (str, os.PathLike)):
         with open(f) as fp:
             regexes = json.load(fp)
@@ -194,6 +216,13 @@ if load is None:
 else:
 
     def load_yaml(path: PathOrFile, loader: DataLoader = load_data) -> Matchers:
+        """Loads YAML data following the ``regexes.yaml`` structure.
+
+        The ``loader`` parameter customises which matcher variant is
+        generated, by default :func:`load_data` is used to generate eager
+        matchers, :func:`load_lazy` cab be used to generate lazy matchers
+        instead.
+        """
         if isinstance(path, (str, os.PathLike)):
             with open(path) as fp:
                 regexes = load(fp, Loader=SafeLoader)  # type: ignore
