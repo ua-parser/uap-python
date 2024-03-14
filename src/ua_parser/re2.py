@@ -11,7 +11,7 @@ from .core import (
     Matcher,
     Matchers,
     OS,
-    PartialParseResult,
+    PartialResult,
     UserAgent,
 )
 
@@ -65,7 +65,7 @@ class Resolver:
         else:
             self.devices = DummyFilter()
 
-    def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
+    def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
         user_agent = os = device = None
         if Domain.USER_AGENT in domains:
             if matches := self.ua.Match(ua):
@@ -79,6 +79,6 @@ class Resolver:
         if Domain.DEVICE in domains:
             if matches := self.devices.Match(ua):
                 device = self.device_matchers[min(matches)](ua)
-        return PartialParseResult(
+        return PartialResult(
             domains=domains, string=ua, user_agent=user_agent, os=os, device=device
         )

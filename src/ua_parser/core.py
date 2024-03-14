@@ -1,16 +1,16 @@
 import abc
 from dataclasses import dataclass
 from enum import Flag, auto
-from typing import Callable, Generic, List, Optional, Tuple, TypeVar
+from typing import Generic, List, Optional, Protocol, Tuple, TypeVar
 
 __all__ = [
-    "DefaultedParseResult",
+    "DefaultedResult",
     "Device",
     "Domain",
     "Matchers",
     "OS",
-    "ParseResult",
-    "PartialParseResult",
+    "Result",
+    "PartialResult",
     "Resolver",
     "UserAgent",
 ]
@@ -92,7 +92,7 @@ class Device:
 
 class Domain(Flag):
     """Hint for selecting which domains are requested when asking for a
-    :class:`ParseResult`.
+    :class:`PartialResult`.
     """
 
     #: browser (user agent) domain
@@ -106,9 +106,9 @@ class Domain(Flag):
 
 
 @dataclass(frozen=True)
-class DefaultedParseResult:
-    """Variant of :class:`.ParseResult` where attributes are set
-    to a default value if the parse fails.
+class DefaultedResult:
+    """Variant of :class:`Result` where attributes are set
+    to a default value if their resolution failed.
 
     For all domains, the default value has ``family`` set to
     ``"Other"`` and every other attribute set to ``None``.
@@ -121,12 +121,13 @@ class DefaultedParseResult:
 
 
 @dataclass(frozen=True)
-class ParseResult:
-    """Complete parser result.
+class Result:
+    """Complete result.
 
-    For each attribute (and domain), either the parse was a success (a
-    match was found) and the corresponding data is set, or it was a
-    failure and the value is `None`.
+    For each attribute (and domain), either the resolution was a
+    success (a match was found) and the corresponding data is set, or
+    it was a failure and the value is `None`.
+
     """
 
     user_agent: Optional[UserAgent]
@@ -134,7 +135,7 @@ class ParseResult:
     device: Optional[Device]
     string: str
 
-    def with_defaults(self) -> DefaultedParseResult:
+    def with_defaults(self) -> DefaultedResult:
         """Replaces every failed domain by its default value.
 
         Roughly matches pre-1.0 semantics, and can allow for more
@@ -143,7 +144,7 @@ class ParseResult:
 
         """
 
-        return DefaultedParseResult(
+        return DefaultedResult(
             user_agent=self.user_agent or UserAgent(),
             os=self.os or OS(),
             device=self.device or Device(),
@@ -152,8 +153,8 @@ class ParseResult:
 
 
 @dataclass(frozen=True)
-class PartialParseResult:
-    """Potentially partial (incomplete) parser result.
+class PartialResult:
+    """Potentially partial (incomplete) result.
 
     Domain fields (``user_agent``, ``os``, and ``device``) can be:
 
@@ -161,12 +162,14 @@ class PartialParseResult:
     - set to a parsing failure
     - set to a parsing success
 
-    The `domains` flags specify which is which: if a `Domain`
+    The ``domains`` flags specify which is which: if a :class:`Domain`
     flag is set, the corresponding attribute was looked up and is
-    either ``None`` for a parsing failure (no match was found) or a
+    either ``None`` for a resolution failure (no match was found) or a
     value for a parsing success.
 
-    If the flag is unset, the field has not been looked up yet.
+    If the flag is unset, the field has not been looked up yet, in
+    which case it can be anything (but should usually be ``None``).
+
     """
 
     __slots__ = ("domains", "user_agent", "os", "device", "string")
@@ -176,7 +179,7 @@ class PartialParseResult:
     device: Optional[Device]
     string: str
 
-    def complete(self) -> ParseResult:
+    def complete(self) -> Result:
         """Requires that the result be fully resolved (every attribute is set,
         even if to a lookup failure).
 
@@ -185,7 +188,7 @@ class PartialParseResult:
         if self.domains != Domain.ALL:
             raise ValueError("Only a result with all attributes set can be completed")
 
-        return ParseResult(
+        return Result(
             user_agent=self.user_agent,
             os=self.os,
             device=self.device,
@@ -193,21 +196,61 @@ class PartialParseResult:
         )
 
 
-Resolver = Callable[[str, Domain], PartialParseResult]
+class Resolver(Protocol):
+    """Resolver()
+
+    The resolver is the thin central abstraction of ua-parser, and
+    used to compose various objects into the resolution stack which
+    best fits the system's needs.
+
+    A resolver is any callable which takes a string ``ua`` and a
+    :class:`Domain`, and returns a :class:`PartialResult` with at
+    least the requested domains marked as resolved (whether
+    successfully or not).
+
+    A resolver may resolve more domains than requested, but it needs
+    to resolve at least the requested domains.
+
+    See :class:`PartialResult` for more information about its
+    working.
+
+    """
+
+    @abc.abstractmethod
+    def __call__(self, ua: str, domain: Domain, /) -> PartialResult:
+        """Resolves the ``ua``."""
+        ...
+
 
 T = TypeVar("T")
 
 
 class Matcher(abc.ABC, Generic[T]):
+    """A matcher is an individual pattern-rule, able to match a user
+    agent string and in case of success extract the relevant data.
+
+    Matchers need to expose their pattern for bulk resolvers.
+
+    """
+
     @abc.abstractmethod
-    def __call__(self, ua: str) -> Optional[T]: ...
+    def __call__(self, ua: str) -> Optional[T]:
+        """Applies the matcher to an input."""
+        ...
 
     @property
     @abc.abstractmethod
-    def pattern(self) -> str: ...
+    def pattern(self) -> str:
+        """Returns the matcher's pattern."""
+        ...
 
     @property
     def flags(self) -> int:
+        """Returns the matcher's pattern flags (only
+        :data:`re.IGNORECASE` is supported, and only for
+        :class:`Matcher` [:class:`Device`])
+
+        """
         return 0
 
 

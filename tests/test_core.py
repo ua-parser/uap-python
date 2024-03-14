@@ -28,7 +28,7 @@ from ua_parser import (
     Device,
     OS,
     Parser,
-    ParseResult,
+    Result,
     UserAgent,
     load_builtins,
     load_lazy_builtins,
@@ -129,13 +129,13 @@ def test_results():
     assert p.parse_user_agent("x") == UserAgent("x")
     assert p.parse_user_agent("y") is None
 
-    assert p.parse("x") == ParseResult(
+    assert p.parse("x") == Result(
         user_agent=UserAgent("x"),
         os=None,
         device=None,
         string="x",
     )
-    assert p.parse("y") == ParseResult(
+    assert p.parse("y") == Result(
         user_agent=None,
         os=None,
         device=None,

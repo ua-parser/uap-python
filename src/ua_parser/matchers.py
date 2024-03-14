@@ -8,6 +8,11 @@ from .utils import get, replacer
 
 
 class UserAgentMatcher(Matcher[UserAgent]):
+    """Eager user agent matcher, compiles the input ``regex`` at
+    initialisation.
+
+    """
+
     regex: Pattern[str]
     family: str
     major: Optional[str]
@@ -64,6 +69,11 @@ class UserAgentMatcher(Matcher[UserAgent]):
 
 
 class OSMatcher(Matcher[OS]):
+    """Eager OS matcher, compiles the input ``regex`` at
+    initialisation.
+
+    """
+
     regex: Pattern[str]
     family: str
     major: str
@@ -119,6 +129,11 @@ class OSMatcher(Matcher[OS]):
 
 
 class DeviceMatcher(Matcher[Device]):
+    """Eager device matcher, compiles the input ``regex`` at
+    initialisation.
+
+    """
+
     regex: Pattern[str]
     family: str
     brand: str

@@ -9,15 +9,16 @@ from .core import (
     Matcher,
     Matchers,
     OS,
-    PartialParseResult,
+    PartialResult,
     UserAgent,
 )
 
 
 class Resolver:
-    """A simple pure-python parser based around trying a numer of regular
-    expressions in sequence for each domain, and returning a result
-    when one matches.
+    """A simple pure-python resolver based around trying a number of
+    regular expressions in sequence for each domain, and returning a
+    result when one matches.
+
     """
 
     user_agent_matchers: List[Matcher[UserAgent]]
@@ -30,9 +31,9 @@ class Resolver:
     ) -> None:
         self.user_agent_matchers, self.os_matchers, self.device_matchers = matchers
 
-    def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
+    def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
         parse = methodcaller("__call__", ua)
-        return PartialParseResult(
+        return PartialResult(
             domains=domains,
             string=ua,
             user_agent=(
