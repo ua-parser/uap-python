@@ -292,8 +292,8 @@ class CachingResolver:
 
     """
 
-    def __init__(self, parser: Resolver, cache: Cache):
-        self.parser: Resolver = parser
+    def __init__(self, resolver: Resolver, cache: Cache):
+        self.parser: Resolver = resolver
         self.cache: Cache = cache
 
     def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
