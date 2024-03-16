@@ -16,6 +16,11 @@ from .core import (
 )
 
 
+class DummyFilter:
+    def Match(self, _: str) -> None:
+        pass
+
+
 class Resolver:
     ua: re2.Filter
     user_agent_matchers: List[Matcher[UserAgent]]
@@ -30,26 +35,35 @@ class Resolver:
     ) -> None:
         self.user_agent_matchers, self.os_matchers, self.device_matchers = matchers
 
-        self.ua = re2.Filter()
-        for u in self.user_agent_matchers:
-            self.ua.Add(u.pattern)
-        self.ua.Compile()
+        if self.user_agent_matchers:
+            self.ua = re2.Filter()
+            for u in self.user_agent_matchers:
+                self.ua.Add(u.pattern)
+            self.ua.Compile()
+        else:
+            self.ua = DummyFilter()
 
-        self.os = re2.Filter()
-        for o in self.os_matchers:
-            self.os.Add(o.pattern)
-        self.os.Compile()
+        if self.os_matchers:
+            self.os = re2.Filter()
+            for o in self.os_matchers:
+                self.os.Add(o.pattern)
+            self.os.Compile()
+        else:
+            self.os = DummyFilter()
 
-        self.devices = re2.Filter()
-        for d in self.device_matchers:
-            # Prepend the i global flag if IGNORECASE is set. Assumes
-            # no pattern uses global flags, but since they're not
-            # supported in JS that seems safe.
-            if d.flags & re.IGNORECASE:
-                self.devices.Add("(?i)" + d.pattern)
-            else:
-                self.devices.Add(d.pattern)
-        self.devices.Compile()
+        if self.device_matchers:
+            self.devices = re2.Filter()
+            for d in self.device_matchers:
+                # Prepend the i global flag if IGNORECASE is set. Assumes
+                # no pattern uses global flags, but since they're not
+                # supported in JS that seems safe.
+                if d.flags & re.IGNORECASE:
+                    self.devices.Add("(?i)" + d.pattern)
+                else:
+                    self.devices.Add(d.pattern)
+            self.devices.Compile()
+        else:
+            self.devices = DummyFilter()
 
     def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
         user_agent = os = device = None

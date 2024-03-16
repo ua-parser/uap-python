@@ -51,7 +51,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-classes = ["LRU", "OS"]
+classes = ["OS"]
+known-first-party = ["ua_parser"]
 combine-as-imports = true
 
 [tool.mypy]
