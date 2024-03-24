@@ -15,26 +15,30 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
     - name: Checkout working copy
       uses: actions/checkout@v4
     - name: ruff check
       uses: chartboost/ruff-action@v1
     - name: ruff format
+      if: always()
       uses: chartboost/ruff-action@v1
       with:
         args: format --diff
     - name: Set up Python
+      id: setup_python
+      if: always()
       uses: actions/setup-python@v5
       with:
         python-version: "3.x"
     - name: Install mypy
+      id: install_mypy
+      if: ${{ always() && steps.setup_python.conclusion == 'success' }}
       run: |
         python -mpip install --upgrade pip
         python -mpip install mypy types-PyYaml
     - name: mypy
+      if: ${{ always() && steps.install_mypy.conclusion == 'success' }}
       run: mypy
 
   # REPLACE BY: job which python -mbuild, and uploads the sdist and wheel to artifacts
