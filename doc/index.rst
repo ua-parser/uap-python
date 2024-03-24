@@ -9,9 +9,11 @@ For more detailed insight and advanced uses, see the :doc:`api` and
 :doc:`guides`.
 
 .. toctree::
+   :maxdepth: 2
    :caption: Contents:
 
    installation
    quickstart
    guides
    api
+   advanced/caches

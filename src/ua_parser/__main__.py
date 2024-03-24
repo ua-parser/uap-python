@@ -1,4 +1,6 @@
 import argparse
+import bisect
+import collections
 import csv
 import gc
 import io
@@ -13,6 +15,7 @@ import tracemalloc
 from typing import (
     Any,
     Callable,
+    Deque,
     Dict,
     Iterable,
     List,
@@ -198,6 +201,54 @@ def run(
     return time.perf_counter_ns() - t
 
 
+class Belady:
+    def __init__(self, maxsize: int, data: List[str]):
+        self.maxsize = maxsize
+        self.cache: Dict[str, PartialResult] = {}
+        self.queue: Deque[Tuple[int, str]] = collections.deque()
+        self.distances: Dict[str, List[int]] = {}
+        for i, e in enumerate(data):
+            self.distances.setdefault(e, []).append(i)
+        for freqs in self.distances.values():
+            freqs.reverse()
+
+    def __getitem__(self, key: str) -> Optional[PartialResult]:
+        self.distances[key].pop()
+        if c := self.cache.get(key):
+            # on cache hit, the entry should be the lowest in the
+            # queue
+            assert self.queue.popleft()[1] == key
+            # if the key has future occurrences
+            if ds := self.distances[key]:
+                # reinsert in queue
+                bisect.insort(self.queue, (ds[-1], key))
+            else:
+                # otherwise remove from cache & occurrences map
+                del self.cache[key]
+
+        return c
+
+    def __setitem__(self, key: str, entry: PartialResult) -> None:
+        # if there are no future occurrences just bail
+        ds = self.distances[key]
+        if not ds:
+            return
+
+        next_distance = ds[-1]
+        # if the cache has room, just add the entry
+        if len(self.cache) >= self.maxsize:
+            # if the next occurrence of the new entry is later than
+            # every existing occurrence, ignore it
+            if next_distance > self.queue[-1][0]:
+                return
+            # otherwise remove the latest entry
+            _, k = self.queue.pop()
+            del self.cache[k]
+
+        self.cache[key] = entry
+        bisect.insort(self.queue, (next_distance, key))
+
+
 def run_hitrates(args: argparse.Namespace) -> None:
     r = PartialResult(
         domains=Domain.ALL,
@@ -207,31 +258,30 @@ def run_hitrates(args: argparse.Namespace) -> None:
         device=None,
     )
 
-    def noop(_ua: str, _domains: Domain, /) -> PartialResult:
-        return r
-
     class Counter:
-        def __init__(self, parser: Resolver) -> None:
+        def __init__(self) -> None:
             self.count = 0
-            self.parser = parser
 
         def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
             self.count += 1
-            return self.parser(ua, domains)
+            return r
 
     lines = list(args.file)
     total = len(lines)
     uniques = len(set(lines))
     print(total, "lines", uniques, "uniques")
-    print(f"ideal hit rate: {(total - uniques)/total:.0%}")
     print()
     w = int(math.log10(max(args.cachesizes)) + 1)
+
+    def belady(maxsize: int) -> Cache:
+        return Belady(maxsize, lines)
+
     tracemalloc.start()
     for cache, cache_size in itertools.product(
-        filter(None, CACHES.values()),
+        itertools.chain([belady], filter(None, CACHES.values())),
         args.cachesizes,
     ):
-        misses = Counter(noop)
+        misses = Counter()
         gc.collect()
         before = tracemalloc.take_snapshot()
         parser = Parser(CachingResolver(misses, cache(cache_size)))
@@ -239,9 +289,16 @@ def run_hitrates(args: argparse.Namespace) -> None:
             parser.parse(line)
         gc.collect()
         after = tracemalloc.take_snapshot()
-        diff = sum(s.size_diff for s in after.compare_to(before, "filename"))
+        if cache == belady:
+            diff = "{0:>14} {0:>12}".format("-")
+        else:
+            overhead = sum(s.size_diff for s in after.compare_to(before, "filename"))
+            diff = "{:8} bytes ({:3.0f}b/entry)".format(
+                overhead,
+                overhead / cache_size,
+            )
         print(
-            f"{cache.__name__.lower():8}({cache_size:{w}}): {(total - misses.count)/total*100:2.0f}% hit rate, {diff:9} bytes"
+            f"{cache.__name__.lower():8}({cache_size:{w}}): {(total - misses.count)/total*100:2.0f}% hit rate {diff}"
         )
         del misses, parser
 
