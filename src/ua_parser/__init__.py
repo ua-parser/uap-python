@@ -23,14 +23,14 @@ __all__ = [
     "BasicResolver",
     "CachingResolver",
     "Cache",
-    "DefaultedParseResult",
+    "DefaultedResult",
     "Device",
     "Domain",
     "Matchers",
     "OS",
-    "ParseResult",
+    "Result",
     "Resolver",
-    "PartialParseResult",
+    "PartialResult",
     "UserAgent",
     "load_builtins",
     "load_lazy_builtins",
@@ -46,14 +46,14 @@ from typing import Callable, Optional
 from .basic import Resolver as BasicResolver
 from .caching import CachingResolver, S3Fifo as Cache
 from .core import (
-    DefaultedParseResult,
+    DefaultedResult,
     Device,
     Domain,
     Matchers,
     OS,
-    ParseResult,
-    PartialParseResult,
+    PartialResult,
     Resolver,
+    Result,
     UserAgent,
 )
 from .loaders import load_builtins, load_lazy_builtins
@@ -67,8 +67,20 @@ VERSION = (1, 0, 0)
 
 
 class Parser:
+    """Wrapper object, provides convenience methods around an
+    underlying :class:`Resolver`.
+
+    """
+
     @classmethod
     def from_matchers(cls, m: Matchers, /) -> Parser:
+        """from_matchers(Matchers) -> Parser
+
+        Instantiates a parser from the provided
+        :class:`~ua_parser.core.Matchers` using the default resolver
+        stack.
+
+        """
         if Re2Resolver is not None:
             return cls(Re2Resolver(m))
         else:
@@ -82,42 +94,39 @@ class Parser:
     def __init__(self, resolver: Resolver) -> None:
         self.resolver = resolver
 
-    def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
+    def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
         """Parses the ``ua`` string, returning a parse result with *at least*
         the requested :class:`domains <Domain>` resolved (whether to success or
         failure).
-
-        A parser may resolve more :class:`domains <Domain>` than
-        requested, but it *must not* resolve less.
         """
         return self.resolver(ua, domains)
 
-    def parse(self: Resolver, ua: str) -> ParseResult:
-        """Convenience method for parsing all domains, and falling back to
-        default values for all failures.
-        """
+    def parse(self: Resolver, ua: str) -> Result:
+        """Convenience method for parsing all domains."""
         return self(ua, Domain.ALL).complete()
 
     def parse_user_agent(self: Resolver, ua: str) -> Optional[UserAgent]:
-        """Convenience method for parsing the :class:`UserAgent` domain,
-        falling back to the default value in case of failure.
-        """
+        """Convenience method for parsing the :class:`UserAgent` domain."""
         return self(ua, Domain.USER_AGENT).user_agent
 
     def parse_os(self: Resolver, ua: str) -> Optional[OS]:
-        """Convenience method for parsing the :class:`OS` domain, falling back
-        to the default value in case of failure.
-        """
+        """Convenience method for parsing the :class:`OS` domain."""
         return self(ua, Domain.OS).os
 
     def parse_device(self: Resolver, ua: str) -> Optional[Device]:
-        """Convenience method for parsing the :class:`Device` domain, falling
-        back to the default value in case of failure.
-        """
+        """Convenience method for parsing the :class:`Device` domain."""
         return self(ua, Domain.DEVICE).device
 
 
 parser: Parser
+"""Global :class:`Parser`, lazy-initialised on first access, used by
+the global helper functions.
+
+Can be *set* to configure a customised global parser.
+
+Accessing the parser explicitely can be used eagerly force its
+initialisation, rather than pay for it at first call.
+"""
 
 
 def __getattr__(name: str) -> Parser:
@@ -130,9 +139,9 @@ def __getattr__(name: str) -> Parser:
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-def parse(ua: str) -> ParseResult:
+def parse(ua: str) -> Result:
     """Parses the :class:`.UserAgent`, :class:`.OS`, and :class:`.Device`
-    information using the :func:`global parser <get_parser>`.
+    information using the :data:`global parser <parser>`.
 
     Equivalent to calling each of :func:`parse_user_agent`,
     :func:`parse_os`, and :func:`parse_device` but *may* be more
@@ -151,7 +160,7 @@ def parse(ua: str) -> ParseResult:
 
 def parse_user_agent(ua: str) -> Optional[UserAgent]:
     """Parses the :class:`browser <.UserAgent>` information using the
-    :func:`global parser <get_parser>`.
+    :data:`global parser <parser>`.
     """
     from . import parser
 
@@ -159,8 +168,8 @@ def parse_user_agent(ua: str) -> Optional[UserAgent]:
 
 
 def parse_os(ua: str) -> Optional[OS]:
-    """Parses the :class:`.OS` information using the :func:`global parser
-    <get_parser>`.
+    """Parses the :class:`.OS` information using the :data:`global parser
+    <parser>`.
     """
     from . import parser
 
@@ -168,8 +177,8 @@ def parse_os(ua: str) -> Optional[OS]:
 
 
 def parse_device(ua: str) -> Optional[Device]:
-    """Parses the :class:`.Device` information using the :func:`global
-    parser <get_parser>`.
+    """Parses the :class:`.Device` information using the :data:`global
+    parser <parser>`.
     """
     from . import parser
 

@@ -14,7 +14,7 @@ from typing import (
     Union,
 )
 
-from .core import Domain, PartialParseResult, Resolver
+from .core import Domain, PartialResult, Resolver
 
 __all__ = [
     "Cache",
@@ -26,7 +26,7 @@ __all__ = [
 
 
 class Cache(Protocol):
-    """Cache abstract protocol. The :class:`CachingParser` will look
+    """Cache abstract protocol. The :class:`CachingResolver` will look
     values up, merge what was returned (possibly nothing) with what it
     got from its actual parser, and *re-set the result*.
 
@@ -34,12 +34,12 @@ class Cache(Protocol):
     """
 
     @abc.abstractmethod
-    def __setitem__(self, key: str, value: PartialParseResult) -> None:
+    def __setitem__(self, key: str, value: PartialResult) -> None:
         """Adds or replace ``value`` to the cache at key ``key``."""
         ...
 
     @abc.abstractmethod
-    def __getitem__(self, key: str) -> Optional[PartialParseResult]:
+    def __getitem__(self, key: str) -> Optional[PartialResult]:
         """Returns a partial result for ``key`` if there is any."""
         ...
 
@@ -49,38 +49,33 @@ class Lru:
     there is no more room in the cache, whichever entry was last seen
     the least recently is removed.
 
-    Note that the cache size is adjusted after inserting the new
-    entry, so the cache will temporarily contain ``maxsize + 1``
-    items.
+    Simple LRUs are generally outdated and to avoid as they have
+    relatively low hit rates for modern caches (at lower sizes). The
+    main use case here is if the workload can lead to the cache being
+    full of popular items then all of them being replaced at once:
+    :class:`S3Fifo` and :class:`Sieve` are FIFO-based caches and have
+    worst-case O(n) eviction.
 
-    Thread-safety: non-thread-safe, the upgrade of a key on hit fails
-    if the key has already been removed, might also be possible for
-    the capacity checking to become inconsistent or incorrect or
-    incorrect on concurrent use e.g. if ``n`` threads try to set the
-    same value (because they all got a cache miss and had to process
-    the request) on a full cache of ``maxsize < n - 1``, they all set the
-    value in the cache, check the cache size, and get a ``len() >
-    maxsize``.
 
-    This will lead to ``n`` calls to ``popitem``, which is more than
-    the number of entries in the cache (``maxsize + 1``), and any
-    excess call will trigger a ``KeyError``.
+    .. note:: The cache size is adjusted after inserting the new
+              entry, so the cache will temporarily contain ``maxsize +
+              1`` items.
 
     """
 
     def __init__(self, maxsize: int):
         self.maxsize = maxsize
-        self.cache: OrderedDict[str, PartialParseResult] = OrderedDict()
+        self.cache: OrderedDict[str, PartialResult] = OrderedDict()
         self.lock = threading.Lock()
 
-    def __getitem__(self, key: str) -> Optional[PartialParseResult]:
+    def __getitem__(self, key: str) -> Optional[PartialResult]:
         with self.lock:
             e = self.cache.get(key)
             if e:
                 self.cache.move_to_end(key)
             return e
 
-    def __setitem__(self, key: str, value: PartialParseResult) -> None:
+    def __setitem__(self, key: str, value: PartialResult) -> None:
         with self.lock:
             self.cache[key] = value
             self.cache.move_to_end(key)
@@ -92,11 +87,21 @@ class Lru:
 class CacheEntry:
     __slots__ = ["key", "value", "freq"]
     key: str
-    value: PartialParseResult
+    value: PartialResult
     freq: int
 
 
 class S3Fifo:
+    """FIFO-based quick-demotion lazy-promotion cache by Yang, Zhang,
+    Qiu, Yue, Vinayak.
+
+    Experimentally provides excellent hit rate at lower cache sizes,
+    for a relatively simple and efficient implementation. Notably
+    excellent at handling "one hit wonders", aka entries seen only
+    once during a work-set (or reasonable work window).
+
+    """
+
     def __init__(self, maxsize: int):
         self.maxsize = maxsize
         self.index: Dict[str, Union[CacheEntry, str]] = {}
@@ -107,7 +112,7 @@ class S3Fifo:
         self.ghost: Deque[str] = deque()
         self.lock = threading.Lock()
 
-    def __getitem__(self, key: str) -> Optional[PartialParseResult]:
+    def __getitem__(self, key: str) -> Optional[PartialResult]:
         e = self.index.get(key)
         if e and isinstance(e, CacheEntry):
             # small race here, we could bump the freq above the limit
@@ -116,7 +121,7 @@ class S3Fifo:
 
         return None
 
-    def __setitem__(self, key: str, r: PartialParseResult) -> None:
+    def __setitem__(self, key: str, r: PartialResult) -> None:
         with self.lock:
             if len(self.small) + len(self.main) >= self.maxsize:
                 # if main is not overcapacity, resize small
@@ -164,12 +169,27 @@ class S3Fifo:
 class SieveNode:
     __slots__ = ("key", "value", "visited", "next")
     key: str
-    value: PartialParseResult
+    value: PartialResult
     visited: bool
     next: Optional[SieveNode]
 
 
 class Sieve:
+    """FIFO-based quick-demotion cache by Zhang, Yang, Yue, Vigfusson,
+    Rashmi.
+
+    Simpler FIFO-based cache, cousin of :class:`S3Fifo`.
+    Experimentally slightly lower hit rates than :class:`S3Fifo` (if
+    way superior to LRU still), but much more compact (~50% lower
+    memory overhead at larger cache sizes, up to 100% at very small
+    cache sizes).
+
+    Can be an interesting candidate when trying to save on memory,
+    although the contained entries will generally be much larger than
+    the cache itself.
+
+    """
+
     def __init__(self, maxsize: int) -> None:
         self.maxsize = maxsize
         self.cache: Dict[str, SieveNode] = {}
@@ -179,7 +199,7 @@ class Sieve:
         self.prev: Optional[SieveNode] = None
         self.lock = threading.Lock()
 
-    def __getitem__(self, key: str) -> Optional[PartialParseResult]:
+    def __getitem__(self, key: str) -> Optional[PartialResult]:
         entry = self.cache.get(key)
         if entry:
             entry.visited = True
@@ -187,7 +207,7 @@ class Sieve:
 
         return None
 
-    def __setitem__(self, key: str, value: PartialParseResult) -> None:
+    def __setitem__(self, key: str, value: PartialResult) -> None:
         with self.lock:
             if len(self.cache) >= self.maxsize:
                 self._evict()
@@ -252,30 +272,31 @@ class Local:
             self.cv.set(c)
         return c
 
-    def __getitem__(self, key: str) -> Optional[PartialParseResult]:
+    def __getitem__(self, key: str) -> Optional[PartialResult]:
         return self.cache[key]
 
-    def __setitem__(self, key: str, value: PartialParseResult) -> None:
+    def __setitem__(self, key: str, value: PartialResult) -> None:
         self.cache[key] = value
 
 
 class CachingResolver:
-    """A wrapping parser which takes an underlying concrete :class:`Cache`
-    for the actual caching and cache strategy.
+    """A wrapper resolver which takes an underlying concrete
+    :class:`Cache` for the actual caching and cache strategy.
 
-    The :class:`CachingParser` only interacts with the :class:`Cache`
-    and delegates to the wrapped parser in case of lookup failure.
+    This resolver only interacts with the :class:`Cache` and delegates
+    to the wrapped resolver in case of lookup failure.
 
     :class:`CachingParser` will set entries back in the cache when
     filling them up, it does not update results in place (and can't
     really, they're immutable).
+
     """
 
-    def __init__(self, parser: Resolver, cache: Cache):
-        self.parser: Resolver = parser
+    def __init__(self, resolver: Resolver, cache: Cache):
+        self.parser: Resolver = resolver
         self.cache: Cache = cache
 
-    def __call__(self, ua: str, domains: Domain, /) -> PartialParseResult:
+    def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
         entry = self.cache[ua]
         if entry:
             if domains in entry.domains:
@@ -285,7 +306,7 @@ class CachingResolver:
 
         r = self.parser(ua, domains)
         if entry:
-            r = PartialParseResult(
+            r = PartialResult(
                 string=ua,
                 domains=entry.domains | r.domains,
                 user_agent=entry.user_agent or r.user_agent,

@@ -7,7 +7,7 @@ from ua_parser import (
     Domain,
     OS,
     Parser,
-    PartialParseResult,
+    PartialResult,
     UserAgent,
 )
 from ua_parser.caching import Lru
@@ -26,8 +26,8 @@ def test_lru():
 
     assert cache.cache == OrderedDict(
         [
-            ("a", PartialParseResult(Domain.ALL, None, None, None, "a")),
-            ("b", PartialParseResult(Domain.ALL, None, None, None, "b")),
+            ("a", PartialResult(Domain.ALL, None, None, None, "a")),
+            ("b", PartialResult(Domain.ALL, None, None, None, "b")),
         ]
     )
 
@@ -35,8 +35,8 @@ def test_lru():
     p.parse("c")
     assert cache.cache == OrderedDict(
         [
-            ("a", PartialParseResult(Domain.ALL, None, None, None, "a")),
-            ("c", PartialParseResult(Domain.ALL, None, None, None, "c")),
+            ("a", PartialResult(Domain.ALL, None, None, None, "a")),
+            ("c", PartialResult(Domain.ALL, None, None, None, "c")),
         ]
     )
 
@@ -61,17 +61,17 @@ def test_backfill():
 
     p.parse_user_agent("a")
     assert cache.cache == {
-        "a": PartialParseResult(Domain.USER_AGENT, UserAgent("a"), None, None, "a"),
+        "a": PartialResult(Domain.USER_AGENT, UserAgent("a"), None, None, "a"),
     }
     p("a", Domain.OS)
     assert cache.cache == {
-        "a": PartialParseResult(
+        "a": PartialResult(
             Domain.USER_AGENT | Domain.OS, UserAgent("a"), OS("a"), None, "a"
         ),
     }
     p.parse("a")
     assert cache.cache == {
-        "a": PartialParseResult(
+        "a": PartialResult(
             Domain.ALL, UserAgent("a"), OS("a"), Device("a", None, "a"), "a"
         ),
     }
