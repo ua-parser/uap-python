@@ -48,6 +48,7 @@ select = ["F", "E", "W", "I", "RET", "RUF", "PT"]
 ignore = [
     "RET505",  # elif after return
     "E501",  # line too long, formatter should take care of the fixable ones
+    "E721",  # I'll compare types with `is` if I want
 ]
 
 [tool.ruff.lint.isort]

@@ -26,11 +26,11 @@ __all__ = [
 
 
 class Cache(Protocol):
-    """Cache abstract protocol. The :class:`CachingResolver` will look
+    """Cache()
+
+    Cache abstract protocol. The :class:`CachingResolver` will look
     values up, merge what was returned (possibly nothing) with what it
     got from its actual parser, and *re-set the result*.
-
-    A :class:`Cache` is responsible for its own replacement policy.
     """
 
     @abc.abstractmethod
@@ -55,12 +55,6 @@ class Lru:
     full of popular items then all of them being replaced at once:
     :class:`S3Fifo` and :class:`Sieve` are FIFO-based caches and have
     worst-case O(n) eviction.
-
-
-    .. note:: The cache size is adjusted after inserting the new
-              entry, so the cache will temporarily contain ``maxsize +
-              1`` items.
-
     """
 
     def __init__(self, maxsize: int):
@@ -77,10 +71,9 @@ class Lru:
 
     def __setitem__(self, key: str, value: PartialResult) -> None:
         with self.lock:
-            self.cache[key] = value
-            self.cache.move_to_end(key)
-            while len(self.cache) > self.maxsize:
+            if len(self.cache) >= self.maxsize and key not in self.cache:
                 self.cache.popitem(last=False)
+            self.cache[key] = value
 
 
 @dataclasses.dataclass
@@ -92,14 +85,12 @@ class CacheEntry:
 
 
 class S3Fifo:
-    """FIFO-based quick-demotion lazy-promotion cache by Yang, Zhang,
-    Qiu, Yue, Vinayak.
+    """FIFO-based quick-demotion lazy-promotion cache [S3-FIFO]_.
 
     Experimentally provides excellent hit rate at lower cache sizes,
     for a relatively simple and efficient implementation. Notably
     excellent at handling "one hit wonders", aka entries seen only
     once during a work-set (or reasonable work window).
-
     """
 
     def __init__(self, maxsize: int):
@@ -113,9 +104,8 @@ class S3Fifo:
         self.lock = threading.Lock()
 
     def __getitem__(self, key: str) -> Optional[PartialResult]:
-        e = self.index.get(key)
-        if e and isinstance(e, CacheEntry):
-            # small race here, we could bump the freq above the limit
+        if (e := self.index.get(key)) and type(e) is CacheEntry:
+            # small race here, we could miss an increment
             e.freq = min(e.freq + 1, 3)
             return e.value
 
@@ -123,6 +113,10 @@ class S3Fifo:
 
     def __setitem__(self, key: str, r: PartialResult) -> None:
         with self.lock:
+            if (e := self.index.get(key)) and type(e) is CacheEntry:
+                e.value = r
+                return
+
             if len(self.small) + len(self.main) >= self.maxsize:
                 # if main is not overcapacity, resize small
                 if len(self.main) < self.main_target:
@@ -133,7 +127,7 @@ class S3Fifo:
                     self._evict_main()
 
             entry = CacheEntry(key, r, 0)
-            if isinstance(self.index.get(key), str):
+            if type(self.index.get(key)) is str:
                 self.main.appendleft(entry)
             else:
                 self.small.appendleft(entry)
@@ -175,8 +169,7 @@ class SieveNode:
 
 
 class Sieve:
-    """FIFO-based quick-demotion cache by Zhang, Yang, Yue, Vigfusson,
-    Rashmi.
+    """FIFO-based quick-demotion cache [SIEVE]_.
 
     Simpler FIFO-based cache, cousin of :class:`S3Fifo`.
     Experimentally slightly lower hit rates than :class:`S3Fifo` (if
@@ -187,7 +180,6 @@ class Sieve:
     Can be an interesting candidate when trying to save on memory,
     although the contained entries will generally be much larger than
     the cache itself.
-
     """
 
     def __init__(self, maxsize: int) -> None:
@@ -200,8 +192,7 @@ class Sieve:
         self.lock = threading.Lock()
 
     def __getitem__(self, key: str) -> Optional[PartialResult]:
-        entry = self.cache.get(key)
-        if entry:
+        if entry := self.cache.get(key):
             entry.visited = True
             return entry.value
 
@@ -209,6 +200,10 @@ class Sieve:
 
     def __setitem__(self, key: str, value: PartialResult) -> None:
         with self.lock:
+            if e := self.cache.get(key):
+                e.value = value
+                return
+
             if len(self.cache) >= self.maxsize:
                 self._evict()
 
