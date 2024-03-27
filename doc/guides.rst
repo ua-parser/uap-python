@@ -2,6 +2,8 @@
 Guides
 ======
 
+.. _guide-custom-rulesets:
+
 Custom Rulesets
 ===============
 
@@ -35,6 +37,8 @@ ua-parser provides easy ways to load custom rolesets:
 
    parser = Parser.from_matchers(load_yaml("regexes.yaml"))
    parser.parse(some_ua)
+
+.. _guide-custom-global-parser:
 
 Custom Global Parser
 ====================

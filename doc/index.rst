@@ -17,3 +17,4 @@ For more detailed insight and advanced uses, see the :doc:`api` and
    guides
    api
    advanced/caches
+   advanced/migration
