@@ -1,17 +1,14 @@
 from collections import OrderedDict
 
+import pytest  # type: ignore
+
 from ua_parser import (
-    BasicResolver,
     CachingResolver,
-    Device,
     Domain,
-    OS,
     Parser,
     PartialResult,
-    UserAgent,
 )
-from ua_parser.caching import Lru
-from ua_parser.matchers import DeviceMatcher, OSMatcher, UserAgentMatcher
+from ua_parser.caching import Lru, S3Fifo, Sieve
 
 
 def test_lru():
@@ -19,7 +16,9 @@ def test_lru():
     popped LRU-first.
     """
     cache = Lru(2)
-    p = Parser(CachingResolver(BasicResolver(([], [], [])), cache))
+    p = Parser(
+        CachingResolver(lambda s, d: PartialResult(d, None, None, None, s), cache)
+    )
 
     p.parse("a")
     p.parse("b")
@@ -41,37 +40,36 @@ def test_lru():
     )
 
 
-def test_backfill():
-    """Tests that caches handle partial parsing correctly, by updating the
-    existing entry when new parts get parsed.
+@pytest.mark.parametrize("cache", [Lru, S3Fifo, Sieve])
+def test_backfill(cache):
+    """Tests that caches handle partial parsing correctly, by updating
+    the existing entry when new parts get parsed, without evicting
+    still-fitting entries.
     """
-    cache = Lru(2)
-    p = Parser(
-        CachingResolver(
-            BasicResolver(
-                (
-                    [UserAgentMatcher("(a)")],
-                    [OSMatcher("(a)")],
-                    [DeviceMatcher("(a)")],
-                )
-            ),
-            cache,
-        )
-    )
+    misses = 0
 
+    def resolver(ua: str, domains: Domain, /) -> PartialResult:
+        nonlocal misses
+        misses += 1
+        return PartialResult(domains, None, None, None, ua)
+
+    p = Parser(CachingResolver(resolver, cache(10)))
+
+    # fill the cache first, no need to hit the entries twice because
+    # S3 waits until it needs space in the main cache before demotes
+    # (or promotes) from the probationary cache.
+    for s in map(str, range(9)):
+        p.parse(s)
+    assert misses == 9
+    # add a partial entry
     p.parse_user_agent("a")
-    assert cache.cache == {
-        "a": PartialResult(Domain.USER_AGENT, UserAgent("a"), None, None, "a"),
-    }
-    p("a", Domain.OS)
-    assert cache.cache == {
-        "a": PartialResult(
-            Domain.USER_AGENT | Domain.OS, UserAgent("a"), OS("a"), None, "a"
-        ),
-    }
-    p.parse("a")
-    assert cache.cache == {
-        "a": PartialResult(
-            Domain.ALL, UserAgent("a"), OS("a"), Device("a", None, "a"), "a"
-        ),
-    }
+    # fill the partial entry, counts as a miss since it needs to
+    # resolve the new bit
+    p.parse_os("a")
+    assert misses == 11
+
+    misses = 0
+    # check that the original entries are all hits
+    for s in map(str, range(9)):
+        p.parse(s)
+    assert misses == 0
