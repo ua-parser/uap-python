@@ -38,7 +38,7 @@ class Resolver:
         if self.user_agent_matchers:
             self.ua = re2.Filter()
             for u in self.user_agent_matchers:
-                self.ua.Add(u.pattern)
+                self.ua.Add(u.regex)
             self.ua.Compile()
         else:
             self.ua = DummyFilter()
@@ -46,7 +46,7 @@ class Resolver:
         if self.os_matchers:
             self.os = re2.Filter()
             for o in self.os_matchers:
-                self.os.Add(o.pattern)
+                self.os.Add(o.regex)
             self.os.Compile()
         else:
             self.os = DummyFilter()
@@ -58,9 +58,9 @@ class Resolver:
                 # no pattern uses global flags, but since they're not
                 # supported in JS that seems safe.
                 if d.flags & re.IGNORECASE:
-                    self.devices.Add("(?i)" + d.pattern)
+                    self.devices.Add("(?i)" + d.regex)
                 else:
-                    self.devices.Add(d.pattern)
+                    self.devices.Add(d.regex)
             self.devices.Compile()
         else:
             self.devices = DummyFilter()

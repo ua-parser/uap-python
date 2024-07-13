@@ -17,7 +17,7 @@ class UserAgentMatcher(Matcher[UserAgent]):
 
     """
 
-    pattern: str = ""
+    regex: str = ""
     family: str
     major: Optional[str]
     minor: Optional[str]
@@ -33,7 +33,7 @@ class UserAgentMatcher(Matcher[UserAgent]):
         patch: Optional[str] = None,
         patch_minor: Optional[str] = None,
     ) -> None:
-        self.pattern = regex
+        self.regex = regex
         self.family = family or "$1"
         self.major = major
         self.minor = minor
@@ -41,7 +41,7 @@ class UserAgentMatcher(Matcher[UserAgent]):
         self.patch_minor = patch_minor
 
     def __call__(self, ua: str) -> Optional[UserAgent]:
-        if m := self.regex.search(ua):
+        if m := self.pattern.search(ua):
             return UserAgent(
                 family=(
                     self.family.replace("$1", m[1])
@@ -56,8 +56,8 @@ class UserAgentMatcher(Matcher[UserAgent]):
         return None
 
     @cached_property
-    def regex(self) -> Pattern[str]:
-        return re.compile(self.pattern)
+    def pattern(self) -> Pattern[str]:
+        return re.compile(self.regex)
 
     def __repr__(self) -> str:
         fields = [
@@ -69,7 +69,7 @@ class UserAgentMatcher(Matcher[UserAgent]):
         ]
         args = "".join(f", {k}={v!r}" for k, v in fields if v is not None)
 
-        return f"UserAgentMatcher({self.pattern!r}{args})"
+        return f"UserAgentMatcher({self.regex!r}{args})"
 
 
 class OSMatcher(Matcher[OS]):
@@ -81,7 +81,7 @@ class OSMatcher(Matcher[OS]):
 
     """
 
-    pattern: str = ""
+    regex: str = ""
     family: str
     major: str
     minor: str
@@ -97,7 +97,7 @@ class OSMatcher(Matcher[OS]):
         patch: Optional[str] = None,
         patch_minor: Optional[str] = None,
     ) -> None:
-        self.pattern = regex
+        self.regex = regex
         self.family = family or "$1"
         self.major = major or "$2"
         self.minor = minor or "$3"
@@ -105,7 +105,7 @@ class OSMatcher(Matcher[OS]):
         self.patch_minor = patch_minor or "$5"
 
     def __call__(self, ua: str) -> Optional[OS]:
-        if m := self.regex.search(ua):
+        if m := self.pattern.search(ua):
             family = replacer(self.family, m)
             if family is None:
                 raise ValueError(f"Unable to find OS family in {ua}")
@@ -119,8 +119,8 @@ class OSMatcher(Matcher[OS]):
         return None
 
     @cached_property
-    def regex(self) -> Pattern[str]:
-        return re.compile(self.pattern)
+    def pattern(self) -> Pattern[str]:
+        return re.compile(self.regex)
 
     def __repr__(self) -> str:
         fields = [
@@ -132,7 +132,7 @@ class OSMatcher(Matcher[OS]):
         ]
         args = "".join(f", {k}={v!r}" for k, v in fields if v is not None)
 
-        return f"OSMatcher({self.pattern!r}{args})"
+        return f"OSMatcher({self.regex!r}{args})"
 
 
 class DeviceMatcher(Matcher[Device]):
@@ -144,8 +144,8 @@ class DeviceMatcher(Matcher[Device]):
 
     """
 
-    pattern: str = ""
-    flags: int = 0
+    regex: str = ""
+    regex_flag: Optional[Literal["i"]] = None
     family: str
     brand: str
     model: str
@@ -158,14 +158,14 @@ class DeviceMatcher(Matcher[Device]):
         brand: Optional[str] = None,
         model: Optional[str] = None,
     ) -> None:
-        self.pattern = regex
-        self.flags = re.IGNORECASE if regex_flag == "i" else 0
+        self.regex = regex
+        self.regex_flag = regex_flag
         self.family = family or "$1"
         self.brand = brand or ""
         self.model = model or "$1"
 
     def __call__(self, ua: str) -> Optional[Device]:
-        if m := self.regex.search(ua):
+        if m := self.pattern.search(ua):
             family = replacer(self.family, m)
             if family is None:
                 raise ValueError(f"Unable to find device family in {ua}")
@@ -176,9 +176,13 @@ class DeviceMatcher(Matcher[Device]):
             )
         return None
 
+    @property
+    def flags(self) -> int:
+        return re.IGNORECASE if self.regex_flag == "i" else 0
+
     @cached_property
-    def regex(self) -> Pattern[str]:
-        return re.compile(self.pattern, flags=self.flags)
+    def pattern(self) -> Pattern[str]:
+        return re.compile(self.regex, flags=self.flags)
 
     def __repr__(self) -> str:
         fields = [
@@ -186,7 +190,7 @@ class DeviceMatcher(Matcher[Device]):
             ("brand", self.brand or None),
             ("model", self.model if self.model != "$1" else None),
         ]
-        iflag = ', "i"' if self.flags & re.IGNORECASE else ""
+        iflag = ', "i"' if self.regex_flag else ""
         args = iflag + "".join(f", {k}={v!r}" for k, v in fields if v is not None)
 
-        return f"DeviceMatcher({self.pattern!r}{args})"
+        return f"DeviceMatcher({self.regex!r}{args})"
