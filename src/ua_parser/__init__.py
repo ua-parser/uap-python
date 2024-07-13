@@ -40,7 +40,7 @@ __all__ = [
     "parse_user_agent",
 ]
 
-import contextlib
+import importlib.util
 from typing import Callable, Optional
 
 from .basic import Resolver as BasicResolver
@@ -59,7 +59,7 @@ from .core import (
 from .loaders import load_builtins, load_lazy_builtins
 
 Re2Resolver: Optional[Callable[[Matchers], Resolver]] = None
-with contextlib.suppress(ImportError):
+if importlib.util.find_spec("re2"):
     from .re2 import Resolver as Re2Resolver
 
 
