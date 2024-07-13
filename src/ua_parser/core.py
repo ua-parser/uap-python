@@ -240,7 +240,7 @@ class Matcher(abc.ABC, Generic[T]):
 
     @property
     @abc.abstractmethod
-    def pattern(self) -> str:
+    def regex(self) -> str:
         """Returns the matcher's pattern."""
         ...
 
