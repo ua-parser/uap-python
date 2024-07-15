@@ -9,7 +9,6 @@ version = "1.0.0a1"
 readme = "README.rst"
 requires-python = ">=3.8"
 dependencies = []
-optional-dependencies = { yaml = ["PyYaml"], re2 = ["google-re2"] }
 
 license = {text = "Apache 2.0"}
 urls = {repository = "https://github.com/ua-parser/uap-python"}
@@ -39,9 +38,15 @@ classifiers = [
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy"
 ]
+
+[project.optional-dependencies]
+yaml = ["PyYaml"]
+re2 = ["google-re2"]
+regex = ["ua-parser-rs"]
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "RET", "RUF", "PT"]

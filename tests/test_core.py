@@ -53,6 +53,19 @@ except ImportError:
 else:
     PARSERS.append(pytest.param(Parser(re2.Resolver(load_builtins())), id="re2"))
 
+try:
+    from ua_parser import regex
+except ImportError:
+    PARSERS.append(
+        pytest.param(
+            None,
+            id="regex",
+            marks=pytest.mark.skip(reason="regex parser not available"),
+        )
+    )
+else:
+    PARSERS.append(pytest.param(Parser(regex.Resolver(load_builtins())), id="regex"))
+
 UA_FIELDS = {f.name for f in dataclasses.fields(UserAgent)}
 
 
