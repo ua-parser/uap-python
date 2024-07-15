@@ -39,11 +39,13 @@ from . import (
 from .caching import Cache, Local
 from .loaders import load_builtins, load_yaml
 from .re2 import Resolver as Re2Resolver
+from .regex import Resolver as RegexResolver
 from .user_agent_parser import Parse
 
 CACHEABLE = {
     "basic": True,
     "re2": True,
+    "regex": True,
     "legacy": False,
 }
 
@@ -178,6 +180,8 @@ def get_parser(
         r = BasicResolver(rules)
     elif parser == "re2":
         r = Re2Resolver(rules)
+    elif parser == "regex":
+        r = RegexResolver(rules)
     else:
         sys.exit(f"unknown parser {parser!r}")
 
@@ -327,6 +331,7 @@ def run_threaded(args: argparse.Namespace) -> None:
         ("locking-lru", CachingResolver(basic, caching.Lru(CACHESIZE))),
         ("local-lru", CachingResolver(basic, Local(lambda: caching.Lru(CACHESIZE)))),
         ("re2", Re2Resolver(load_builtins())),
+        ("regex", RegexResolver(load_builtins())),
     ]
     for name, resolver in resolvers:
         print(f"{name:11}: ", end="", flush=True)
@@ -436,14 +441,14 @@ bench.add_argument(
 bench.add_argument(
     "--bases",
     nargs="+",
-    choices=["basic", "re2", "legacy"],
-    default=["basic", "re2", "legacy"],
+    choices=["basic", "re2", "regex", "legacy"],
+    default=["basic", "re2", "regex", "legacy"],
     help="""Base resolvers to benchmark. `basic` is a linear search
     through the regexes file, `re2` is a prefiltered regex set
-    implemented in C++, `legacy` is the legacy API (essentially a
-    basic resolver with a clearing cache of fixed 200 entries, but
-    less layered so usually slightly faster than an equivalent
-    basic-based resolver).""",
+    implemented in C++, `regex` is a prefiltered regex set implemented
+    in Rust, `legacy` is the legacy API (essentially a basic resolver
+    with a clearing cache of fixed 200 entries, but less layered so
+    usually slightly faster than an equivalent basic-based resolver).""",
 )
 bench.add_argument(
     "--caches",
