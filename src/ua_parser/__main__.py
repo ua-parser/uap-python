@@ -11,7 +11,7 @@ import random
 import sys
 import threading
 import time
-import tracemalloc
+import types
 from typing import (
     Any,
     Callable,
@@ -38,8 +38,15 @@ from . import (
 )
 from .caching import Cache, Local
 from .loaders import load_builtins, load_yaml
-from .re2 import Resolver as Re2Resolver
-from .regex import Resolver as RegexResolver
+
+try:
+    from .re2 import Resolver as Re2Resolver
+except ImportError:
+    pass
+try:
+    from .regex import Resolver as RegexResolver
+except ImportError:
+    pass
 from .user_agent_parser import Parse
 
 CACHEABLE = {
@@ -59,6 +66,17 @@ CACHES.update(
         caching.Sieve,
     ]
 )
+
+try:
+    import tracemalloc
+except ImportError:
+    snapshot = types.SimpleNamespace(
+        compare_to=lambda _1, _2: [],
+    )
+    tracemalloc = types.SimpleNamespace(  # type: ignore
+        start=lambda: None,
+        take_snapshot=lambda: snapshot,
+    )
 
 
 def get_rules(parsers: List[str], regexes: Optional[io.IOBase]) -> Matchers:

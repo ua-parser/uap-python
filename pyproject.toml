@@ -40,7 +40,8 @@ classifiers = [
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
-        "Programming Language :: Python :: Implementation :: GraalPy",
+        # no graalpy classifier yet (pypa/trove-classifiers#188)
+        # "Programming Language :: Python :: Implementation :: GraalPy",
 ]
 
 [project.optional-dependencies]
@@ -53,6 +54,12 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "ua_parser" = ["py.typed"]
+
+[tool.ruff]
+exclude = [
+    "src/ua_parser/_lazy.py",
+    "src/ua_parser/_matchers.py",
+]
 
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "RET", "RUF", "PT"]
