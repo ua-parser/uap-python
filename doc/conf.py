@@ -19,9 +19,11 @@ release = "1.0"
 rst_epilog = """
 .. |pyyaml| replace:: ``PyYaml``
 .. |re2| replace:: ``google-re2``
+.. |regex| replace:: ``regex``
 
 .. _pyyaml: https://pyyaml.org
 .. _re2: https://pypi.org/project/google-re2
+.. _regex: https://pypi.org/project/ua-parser-rs
 """
 
 # -- General configuration ---------------------------------------------------

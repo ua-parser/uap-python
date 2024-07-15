@@ -53,6 +53,19 @@ except ImportError:
 else:
     PARSERS.append(pytest.param(Parser(re2.Resolver(load_builtins())), id="re2"))
 
+try:
+    from ua_parser import regex
+except ImportError:
+    PARSERS.append(
+        pytest.param(
+            None,
+            id="regex",
+            marks=pytest.mark.skip(reason="regex parser not available"),
+        )
+    )
+else:
+    PARSERS.append(pytest.param(Parser(regex.Resolver(load_builtins())), id="regex"))
+
 UA_FIELDS = {f.name for f in dataclasses.fields(UserAgent)}
 
 
@@ -64,7 +77,7 @@ UA_FIELDS = {f.name for f in dataclasses.fields(UserAgent)}
         CORE_DIR / "test_resources" / "firefox_user_agent_strings.yaml",
         CORE_DIR / "test_resources" / "pgts_browser_list.yaml",
     ],
-    ids=attrgetter("name"),
+    ids=attrgetter("stem"),
 )
 def test_ua(parser, test_file):
     with test_file.open("rb") as f:
@@ -90,7 +103,7 @@ OS_FIELDS = {f.name for f in dataclasses.fields(OS)}
         CORE_DIR / "tests" / "test_os.yaml",
         CORE_DIR / "test_resources" / "additional_os_tests.yaml",
     ],
-    ids=attrgetter("name"),
+    ids=attrgetter("stem"),
 )
 def test_os(parser, test_file):
     with test_file.open("rb") as f:
@@ -111,7 +124,7 @@ DEVICE_FIELDS = {f.name for f in dataclasses.fields(Device)}
     [
         CORE_DIR / "tests" / "test_device.yaml",
     ],
-    ids=attrgetter("name"),
+    ids=attrgetter("stem"),
 )
 def test_devices(parser, test_file):
     with test_file.open("rb") as f:

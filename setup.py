@@ -67,16 +67,20 @@ class CompileRegexes(Command, SubCommand):
         dest_lazy = outdir / "_lazy.py"
         dest_legacy = outdir / "_regexes.py"
 
-        with dest.open("wb") as eager, dest_lazy.open("wb") as lazy, dest_legacy.open(
-            "wb"
-        ) as legacy:
+        with (
+            dest.open("wb") as eager,
+            dest_lazy.open("wb") as lazy,
+            dest_legacy.open("wb") as legacy,
+        ):
             eager = EagerWriter(eager)
             lazy = LazyWriter(lazy)
             legacy = LegacyWriter(legacy)
 
             for section in ["user_agent_parsers", "os_parsers", "device_parsers"]:
-                with eager.section(section), lazy.section(section), legacy.section(
-                    section
+                with (
+                    eager.section(section),
+                    lazy.section(section),
+                    legacy.section(section),
                 ):
                     extract = EXTRACTORS[section]
                     for p in regexes[section]:

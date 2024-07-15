@@ -2,15 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [ '*' ]
   pull_request:
-    branches: [ '*' ]
   workflow_dispatch:
-  schedule:
-    # cron is kinda random, assumes 22:00 UTC is a low ebb, eastern
-    # countries are very early morning, and US are mid-day to
-    # mid-afternoon
-    - cron: '0 22 * * 2'
 
 jobs:
   checks:
@@ -79,7 +72,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: compile
-    continue-on-error: ${{ matrix.python-version == '3.13' || matrix.python-version == 'pypy-3.11' }}
     strategy:
       fail-fast: false
       matrix:
@@ -88,19 +80,14 @@ jobs:
           - sdist
           - source
         python-version:
-          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
-          - "pypy-3.8"
-          - "pypy-3.9"
           - "pypy-3.10"
           # - "pypy-3.11"
-          # don't enable graal because it's slower than even pypy and
-          # fails because oracle/graalpython#385
-          # - "graalpy-23"
+          - "graalpy-24"
         include:
           - source: sdist
             artifact: dist/*.tar.gz
@@ -116,26 +103,23 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
-    - name: Install test dependencies
-      run: |
-        python -mpip install --upgrade pip
-        # cyaml is outright broken on pypy
-        if ! ${{ startsWith(matrix.python-version, 'pypy-') }}; then
-            # if binary wheels are not available for the current
-            # package install libyaml-dev so we can install pyyaml
-            # from source
-            if ! pip download --only-binary pyyaml -rrequirements_dev.txt > /dev/null 2>&1; then
-                sudo apt install libyaml-dev
-            fi
+    - run: python -mpip install --upgrade pip
+    - run: |
+        # if binary wheels are not available for the current
+        # package install libyaml-dev so we can install pyyaml
+        # from source
+        if ! pip download --only-binary :all: pyyaml > /dev/null 2>&1; then
+            sudo apt install libyaml-dev
         fi
-        python -mpip install pytest pyyaml
-
-        # re2 is basically impossible to install from source so don't
-        # bother, and suppress installation failure so the test does
-        # not fail (re2 tests will just be skipped for versions /
-        # implementations for which google does not provide a binary
-        # wheel)
-        python -mpip install --only-binary :all: google-re2 || true
+    - run: python -mpip install pytest pyyaml
+    # install rs accelerator if available, ignore if not
+    - run: python -mpip install ua-parser-rs || true
+    # re2 is basically impossible to install from source so don't
+    # bother, and suppress installation failure so the test does
+    # not fail (re2 tests will just be skipped for versions /
+    # implementations for which google does not provide a binary
+    # wheel)
+    - run: 'python -mpip install --only-binary :all: google-re2 || true'
     - name: download ${{ matrix.source }} artifact
       if: matrix.artifact
       uses: actions/download-artifact@v4
@@ -143,7 +127,6 @@ jobs:
         name: ${{ matrix.source }}
         path: dist/
     - name: install package in environment
-      run: |
-        pip install ${{ matrix.artifact || '.' }}
+      run: pip install ${{ matrix.artifact || '.' }}
     - name: run tests
       run: pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst" -ra
