@@ -98,9 +98,7 @@ jobs:
           - "pypy-3.9"
           - "pypy-3.10"
           # - "pypy-3.11"
-          # don't enable graal because it's slower than even pypy and
-          # fails because oracle/graalpython#385
-          # - "graalpy-23"
+          - "graalpy-24"
         include:
           - source: sdist
             artifact: dist/*.tar.gz
