@@ -43,6 +43,12 @@ classifiers = [
         "Programming Language :: Python :: Implementation :: PyPy"
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"ua_parser" = ["py.typed"]
+
 [tool.ruff.lint]
 select = ["F", "E", "W", "I", "RET", "RUF", "PT"]
 ignore = [
