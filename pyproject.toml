@@ -110,6 +110,7 @@ module = [
        "test_core",
        "test_caches",
        "test_parsers_basics",
+       "test_fa_simplifier",
 ]
 
 #check_untyped_defs = false

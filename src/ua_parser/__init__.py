@@ -57,6 +57,7 @@ from .core import (
     UserAgent,
 )
 from .loaders import load_builtins, load_lazy_builtins
+from .utils import IS_GRAAL
 
 Re2Resolver: Optional[Callable[[Matchers], Resolver]] = None
 if importlib.util.find_spec("re2"):
@@ -132,10 +133,11 @@ initialisation, rather than pay for it at first call.
 def __getattr__(name: str) -> Parser:
     global parser
     if name == "parser":
-        parser = Parser.from_matchers(
-            load_builtins() if Re2Resolver is None else load_lazy_builtins()
-        )
-        return parser
+        if Re2Resolver or IS_GRAAL:
+            matchers = load_lazy_builtins()
+        else:
+            matchers = load_builtins()
+        return Parser.from_matchers(matchers)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 

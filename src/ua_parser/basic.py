@@ -1,7 +1,9 @@
 __all__ = ["Resolver"]
 
+import re
+from itertools import chain
 from operator import methodcaller
-from typing import List
+from typing import Any, List
 
 from .core import (
     Device,
@@ -12,6 +14,7 @@ from .core import (
     PartialResult,
     UserAgent,
 )
+from .utils import IS_GRAAL, fa_simplifier
 
 
 class Resolver:
@@ -30,6 +33,24 @@ class Resolver:
         matchers: Matchers,
     ) -> None:
         self.user_agent_matchers, self.os_matchers, self.device_matchers = matchers
+        if IS_GRAAL:
+            matcher: Any
+            kind = next(
+                (
+                    "eager" if hasattr(type(m), "regex") else "lazy"
+                    for m in chain.from_iterable(matchers)
+                ),
+                None,
+            )
+            if kind == "eager":
+                for matcher in chain.from_iterable(matchers):
+                    matcher.pattern = re.compile(
+                        fa_simplifier(matcher.pattern.pattern),
+                        flags=matcher.pattern.flags,
+                    )
+            elif kind == "lazy":
+                for matcher in chain.from_iterable(matchers):
+                    matcher.regex = fa_simplifier(matcher.pattern.pattern)
 
     def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
         parse = methodcaller("__call__", ua)
