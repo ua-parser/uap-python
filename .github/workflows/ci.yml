@@ -93,6 +93,9 @@ jobs:
             artifact: dist/*.tar.gz
           - source: wheel
             artifact: dist/*.whl
+          - opts: ""
+          - python-version: graalpy-24
+            opts: "--experimental-options --engine.CompileOnly='~tregex re'"
     steps:
     - name: Checkout working copy
       uses: actions/checkout@v4
@@ -127,6 +130,6 @@ jobs:
         name: ${{ matrix.source }}
         path: dist/
     - name: install package in environment
-      run: pip install ${{ matrix.artifact || '.' }}
+      run: python -m pip install ${{ matrix.artifact || '.' }}
     - name: run tests
-      run: pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst" -ra
+      run: python ${{ matrix.opts }} -m pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst" -ra
