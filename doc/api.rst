@@ -75,6 +75,19 @@ from user agent strings.
 
    .. warning:: Only available if |re2|_ is installed.
 
+.. class::ua_parser.regex.Resolver(Matchers)
+
+   An advanced resolver based on |regex|_ and a bespoke implementation
+   of regex prefiltering, by the sibling project `ua-rust
+   <https://github.com/ua-parser/uap-rust`_.
+
+   Sufficiently fast that a cache may not be necessary, and may even
+   be detrimental at smaller cache sizes
+
+   .. warning:: Only available if `ua-parser-rs
+                <https://pypi.org/project/ua-parser-rs/`>_ is
+                installed.
+
 Eager Matchers
 ''''''''''''''
 
