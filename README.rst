@@ -30,17 +30,20 @@ Just add ``ua-parser`` to your project's dependencies, or run
 
 to install in the current environment.
 
-Installing `google-re2 <https://pypi.org/project/google-re2/>`_ is
-*strongly* recommended as it leads to *significantly* better
-performances. This can be done directly via the ``re2`` optional
-dependency:
+Installing `ua-parser-rs <https://pypi.org/project/ua-parser-rs>`_ or
+`google-re2 <https://pypi.org/project/google-re2/>`_ is *strongly*
+recommended as they yield *significantly* better performances. This
+can be done directly via the ``regex`` and ``re2`` optional
+dependencies respectively:
 
 .. code-block:: sh
 
+    $ pip install 'ua_parser[regex]'
     $ pip install 'ua_parser[re2]'
 
-If ``re2`` is available, ``ua-parser`` will simply use it by default
-instead of the pure-python resolver.
+If either dependency is already available (e.g. because the software
+makes use of re2 for other reasons) ``ua-parser`` will use the
+corresponding resolver automatically.
 
 Quick Start
 -----------

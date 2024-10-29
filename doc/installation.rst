@@ -35,3 +35,9 @@ if installed, but can also be installed via and alongside ua-parser:
    $ pip install 'ua-parser[yaml]'
    $ pip install 'ua-parser[regex,yaml]'
 
+``yaml`` simply enables the ability to :func:`load yaml rulesets
+<ua_parser.loaders.load_yaml>`.
+
+The other two dependencies enable more efficient resolvers. By
+default, ``ua-parser`` will select the fastest resolver it finds out
+of the available set. For more, see :ref:`builtin resolvers`.

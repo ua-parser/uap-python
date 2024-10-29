@@ -129,6 +129,103 @@ from here on::
    :class:`~ua_parser.caching.Local`, which is also caching-related,
    and serves to use thread-local caches rather than a shared cache.
 
+Builtin Resolvers
+=================
+
+.. list-table::
+   :header-rows: 1
+   :stub-columns: 1
+
+   * -
+     - speed
+     - portability
+     - memory use
+     - safety
+   * - ``regex``
+     - great
+     - good
+     - bad
+     - great
+   * - ``re2``
+     - good
+     - bad
+     - good
+     - good
+   * - ``basic``
+     - terrible
+     - great
+     - great
+     - great
+
+``regex``
+---------
+
+The ``regex`` resolver is a bespoke effort as part of the `uap-rust
+<https://github.com/ua-parser/uap-rust>`_ sibling project, built on
+`rust-regex <https://github.com/rust-lang/regex>`_ and `a bespoke
+regex-prefiltering implementation
+<https://github.com/ua-parser/uap-rust/tree/main/regex-filtered>`_,
+it:
+
+- Is the fastest available resolver, usually edging out ``re2`` by a
+  significant margin (when that is even available).
+- Is fully controlled by the project, and thus can be built for all
+  interpreters and platforms supported by pyo3 (currently: cpython,
+  pypy, and graalpy, on linux, macos and linux, intel and arm). It is
+  also built as a cpython abi3 wheel and should thus suffer from no
+  compatibility issues with new release.
+- Built entirely out of safe rust code, its safety risks are entirely
+  in ``regex`` and ``pyo3``.
+- Its biggest drawback is that it is a lot more memory intensive than
+  the other resolvers, because ``regex`` tends to trade memory for
+  speed (~155MB high water mark on a real-world dataset).
+
+If available, it is the default resolver, without a cache.
+
+``re2``
+-------
+
+The ``re2`` resolver is built atop the widely used `google-re2
+<https://github.com/google/re2>`_ via its built-in Python bindings.
+It:
+
+- Is extremely fast, though around 80% slower than ``regex`` on
+  real-world data.
+- Is only compatible with CPython, and uses pure API wheels, so needs
+  a different release for each cpython version, for each OS, for each
+  architecture.
+- Is built entirely in C++, but by experienced Google developers.
+- Is more memory intensive than the pure-python ``basic`` resolver,
+  but quite slim all things considered (~55MB high water mark on a
+  real-world dataset).
+
+If available, it is the second-preferred resolver, without a cache.
+
+``basic``
+---------
+
+The ``basic`` resolver is a naive linear traversal of all rules, using
+the standard library's ``re``. It:
+
+- Is *extremely* slow, about 10x slower than ``re2`` in cpython, and
+  pypy and graal's regex implementations do *not* like the workload
+  and behind cpython by a factor of 3~4.
+- Has perfect compatibility, with the caveat above, by virtue of being
+  built entirely out of standard library code.
+- Is basically as safe as Python software can be by virtue of being
+  just Python, with the native code being the standard library's.
+- Is the slimmest resolver at about 40MB.
+
+This is caveated by a hard requirement to use caches which makes it
+workably faster on real-world datasets (if still nowhere near
+*uncached* ``re2`` or ``regex``) but increases its memory requirement
+significantly e.g. using "sieve" and a cache size of 20000 on a
+real-world dataset, it is about 4x slower than ``re2`` for about the
+same memory requirements.
+
+It is the fallback and least preferred resolver, with a medium
+(currently 2000 entries) cache by default.
+
 Writing Custom Resolvers
 ========================
 

@@ -72,7 +72,7 @@ BestAvailableResolver: _ResolverCtor = next(
         (
             RegexResolver,
             Re2Resolver,
-            lambda m: CachingResolver(BasicResolver(m), Cache(200)),
+            lambda m: CachingResolver(BasicResolver(m), Cache(2000)),
         ),
     )
 )
