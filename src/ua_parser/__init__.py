@@ -59,9 +59,23 @@ from .core import (
 from .loaders import load_builtins, load_lazy_builtins
 from .utils import IS_GRAAL
 
-Re2Resolver: Optional[Callable[[Matchers], Resolver]] = None
+_ResolverCtor = Callable[[Matchers], Resolver]
+Re2Resolver: Optional[_ResolverCtor] = None
 if importlib.util.find_spec("re2"):
     from .re2 import Resolver as Re2Resolver
+RegexResolver: Optional[_ResolverCtor] = None
+if importlib.util.find_spec("ua_parser_rs"):
+    from .regex import Resolver as RegexResolver
+BestAvailableResolver: _ResolverCtor = next(
+    filter(
+        None,
+        (
+            RegexResolver,
+            Re2Resolver,
+            lambda m: CachingResolver(BasicResolver(m), Cache(200)),
+        ),
+    )
+)
 
 
 VERSION = (1, 0, 0)
@@ -82,15 +96,7 @@ class Parser:
         stack.
 
         """
-        if Re2Resolver is not None:
-            return cls(Re2Resolver(m))
-        else:
-            return cls(
-                CachingResolver(
-                    BasicResolver(m),
-                    Cache(200),
-                )
-            )
+        return cls(BestAvailableResolver(m))
 
     def __init__(self, resolver: Resolver) -> None:
         self.resolver = resolver
@@ -133,7 +139,7 @@ initialisation, rather than pay for it at first call.
 def __getattr__(name: str) -> Parser:
     global parser
     if name == "parser":
-        if Re2Resolver or IS_GRAAL:
+        if RegexResolver or Re2Resolver or IS_GRAAL:
             matchers = load_lazy_builtins()
         else:
             matchers = load_builtins()
