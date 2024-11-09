@@ -1,4 +1,4 @@
-__all__ = ["UserAgentMatcher", "OSMatcher", "DeviceMatcher"]
+__all__ = ["DeviceMatcher", "OSMatcher", "UserAgentMatcher"]
 
 import re
 from typing import Literal, Optional, Pattern

@@ -78,7 +78,7 @@ class Lru:
 
 @dataclasses.dataclass
 class CacheEntry:
-    __slots__ = ["key", "value", "freq"]
+    __slots__ = ["freq", "key", "value"]
     key: str
     value: PartialResult
     freq: int
@@ -161,7 +161,7 @@ class S3Fifo:
 
 @dataclasses.dataclass
 class SieveNode:
-    __slots__ = ("key", "value", "visited", "next")
+    __slots__ = ("key", "next", "value", "visited")
     key: str
     value: PartialResult
     visited: bool

@@ -20,17 +20,17 @@ necessary unless you want to *implement* a parser.
 from __future__ import annotations
 
 __all__ = [
+    "OS",
     "BasicResolver",
-    "CachingResolver",
     "Cache",
+    "CachingResolver",
     "DefaultedResult",
     "Device",
     "Domain",
     "Matchers",
-    "OS",
-    "Result",
-    "Resolver",
     "PartialResult",
+    "Resolver",
+    "Result",
     "UserAgent",
     "load_builtins",
     "load_lazy_builtins",
