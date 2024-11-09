@@ -521,4 +521,8 @@ if UA_PARSER_YAML:
     del SafeLoader
 else:
     # Just load our pre-compiled versions
-    from ._regexes import DEVICE_PARSERS, OS_PARSERS, USER_AGENT_PARSERS
+    from ua_parser_builtins.regexes import (
+        DEVICE_PARSERS,
+        OS_PARSERS,
+        USER_AGENT_PARSERS,
+    )

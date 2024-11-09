@@ -52,7 +52,7 @@ def load_builtins() -> Matchers:
     further imports simply reference the existing datas.
 
     """
-    from ._matchers import MATCHERS
+    from ua_parser_builtins.matchers import MATCHERS
 
     # typing and mypy don't have safe upcast (#5756) and mypy is
     # unhappy about returning concrete matchers for a mixed type
@@ -66,7 +66,7 @@ def load_lazy_builtins() -> Matchers:
     further imports simply reference the existing datas.
 
     """
-    from ._lazy import MATCHERS
+    from ua_parser_builtins.lazy import MATCHERS
 
     return cast(Matchers, MATCHERS)
 

@@ -4,14 +4,14 @@ from enum import Flag, auto
 from typing import Generic, List, Optional, Protocol, Tuple, TypeVar
 
 __all__ = [
+    "OS",
     "DefaultedResult",
     "Device",
     "Domain",
     "Matchers",
-    "OS",
-    "Result",
     "PartialResult",
     "Resolver",
+    "Result",
     "UserAgent",
 ]
 
@@ -74,7 +74,7 @@ class OS:
 class Device:
     """Device information parsed from the user agent string."""
 
-    __slots__ = ("family", "brand", "model")
+    __slots__ = ("brand", "family", "model")
     family: str
     brand: Optional[str]
     model: Optional[str]
@@ -172,7 +172,7 @@ class PartialResult:
 
     """
 
-    __slots__ = ("domains", "user_agent", "os", "device", "string")
+    __slots__ = ("device", "domains", "os", "string", "user_agent")
     domains: Domain
     user_agent: Optional[UserAgent]
     os: Optional[OS]

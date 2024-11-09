@@ -3,25 +3,22 @@
 import dataclasses
 import logging
 import pathlib
-import platform
 from operator import attrgetter
+from typing import cast
 
 import pytest  # type: ignore
 
-if platform.python_implementation() == "PyPy":
-    from yaml import SafeLoader, load
-else:
-    try:
-        from yaml import (  # type: ignore
-            CSafeLoader as SafeLoader,
-            load,
-        )
-    except ImportError:
-        logging.getLogger(__name__).warning(
-            "PyYaml C extension not available to run tests, this will result "
-            "in dramatic tests slowdown."
-        )
-        from yaml import SafeLoader, load
+try:
+    from yaml import (
+        CSafeLoader as SafeLoader,
+        load,
+    )
+except ImportError:
+    logging.getLogger(__name__).warning(
+        "PyYaml C extension not available to run tests, this will result "
+        "in tests slowdown."
+    )
+    from yaml import SafeLoader, load  # type: ignore
 
 from ua_parser import (
     BasicResolver,
@@ -32,15 +29,22 @@ from ua_parser import (
     UserAgent,
     load_builtins,
     load_lazy_builtins,
+    loaders,
 )
 from ua_parser.matchers import UserAgentMatcher
 
 CORE_DIR = (pathlib.Path(__name__).parent.parent / "uap-core").resolve()
 
 
+data = cast(loaders.FileLoader, loaders.load_yaml)(CORE_DIR / "regexes.yaml")
+data_lazy = cast(loaders.FileLoader, loaders.load_yaml)(
+    CORE_DIR / "regexes.yaml", loader=loaders.load_lazy
+)
 PARSERS = [
     pytest.param(Parser(BasicResolver(load_builtins())), id="basic"),
     pytest.param(Parser(BasicResolver(load_lazy_builtins())), id="lazy"),
+    pytest.param(Parser(BasicResolver(data)), id="basic-yaml"),
+    pytest.param(Parser(BasicResolver(data_lazy)), id="lazy-yaml"),
 ]
 try:
     from ua_parser import re2
@@ -51,7 +55,7 @@ except ImportError:
         )
     )
 else:
-    PARSERS.append(pytest.param(Parser(re2.Resolver(load_builtins())), id="re2"))
+    PARSERS.append(pytest.param(Parser(re2.Resolver(data)), id="re2"))
 
 try:
     from ua_parser import regex
@@ -64,7 +68,7 @@ except ImportError:
         )
     )
 else:
-    PARSERS.append(pytest.param(Parser(regex.Resolver(load_builtins())), id="regex"))
+    PARSERS.append(pytest.param(Parser(regex.Resolver(data)), id="regex"))
 
 UA_FIELDS = {f.name for f in dataclasses.fields(UserAgent)}
 
