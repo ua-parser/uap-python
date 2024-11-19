@@ -1,0 +1,90 @@
+name: Publish Python distribution to PyPI and TestPyPI
+
+on:
+  schedule:
+    # schedule a dev release on every 1st of the month, at 2034 UTC
+    - cron: "34 20 1 * *"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "uap-core ref to release"
+        type: string
+      environment:
+        description: "environment to release for (testpypy or pypy)"
+        type: environment
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+        fetch-depth: 0
+    - name: update core
+      # needs to detach because we can update to a tag
+      run: git -C uap-core switch --detach ${{ inputs.tag || 'master' }}
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install pypa/build
+      run: python3 -m pip install build --user
+    - name: Build wheel
+      run: |
+        python3 -m build -w ua-parser-builtins
+        mv ua-parser-builtins/dist .
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+  publish-to-testpypi:
+    name: Publish to TestPyPI
+    if: ${{ github.event.inputs.environment == 'testpypi' }}
+    needs:
+    - build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/ua-parser-builtins
+
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+  publish-to-pypi:
+    name: publish
+    if: ${{ github.event_name == 'schedule' || github.event.inputs.environment == 'pypi' }}
+    needs:
+    - build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/ua-parser-builtins
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
