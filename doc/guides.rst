@@ -7,10 +7,8 @@ Guides
 Custom Rulesets
 ===============
 
-ua-parser defaults to the version of `ua-core
-<https://github.com/ua-parser/uap-core/blob/master/regexes.yaml>`_
-current when it was packaged, using a precompiled version of
-``regexes.yaml``.
+ua-parser defaults to the latest stable release of `ua-core`_ via
+`precompiled regexes.yaml`__.
 
 That is a suitable defaut, but there are plenty of reasons to use
 custom rulesets:
@@ -18,10 +16,13 @@ custom rulesets:
 - trim down the default ruleset to only the most current or relevant
   rules for efficiency e.g. you might not care about CalDav or podcast
   applications
-- add new rules relevant to your own traffic but which don't (possibly
-  can't) be in the main project
+- add new rules relevant to your own traffic but which aren't (possibly
+  can't be) in the main project
 - experiment with the creation of new rules
 - use a completely bespoke ruleset to track UA-identified API clients
+- use "experimental" rules which haven't been released yet (although
+  `ua-parser-builtins`_ provides regular prerelease versions which may
+  be suitable for this)
 
 ua-parser provides easy ways to load custom rolesets:
 
@@ -37,6 +38,12 @@ ua-parser provides easy ways to load custom rolesets:
 
    parser = Parser.from_matchers(load_yaml("regexes.yaml"))
    parser.parse(some_ua)
+
+.. _ua-parser-builtins: https://pypi.org/project/ua-parser-builtins
+
+__ ua-parser-builtins_
+
+.. _ua-core: https://github.com/ua-parser/uap-core/blob/master/regexes.yaml
 
 .. _guide-custom-global-parser:
 
@@ -129,6 +136,8 @@ from here on::
    :class:`~ua_parser.caching.Local`, which is also caching-related,
    and serves to use thread-local caches rather than a shared cache.
 
+.. _builtin-resolvers:
+
 Builtin Resolvers
 =================
 
@@ -207,9 +216,9 @@ If available, it is the second-preferred resolver, without a cache.
 The ``basic`` resolver is a naive linear traversal of all rules, using
 the standard library's ``re``. It:
 
-- Is *extremely* slow, about 10x slower than ``re2`` in cpython, and
+- Is *extremely* slow: about 10x slower than ``re2`` on cpython, and
   pypy and graal's regex implementations do *not* like the workload
-  and behind cpython by a factor of 3~4.
+  and are 3x-4x slower than *cpython*.
 - Has perfect compatibility, with the caveat above, by virtue of being
   built entirely out of standard library code.
 - Is basically as safe as Python software can be by virtue of being

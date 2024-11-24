@@ -3,4 +3,4 @@ Quick Start
 ===========
 
 .. include:: ../README.rst
-   :start-line: 47
+   :start-line: 44

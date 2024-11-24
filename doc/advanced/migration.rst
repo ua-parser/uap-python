@@ -5,11 +5,13 @@ From 0.x to 1.0
 Don't Touch A Thing
 ===================
 
-The first and simplest way to transition is to not transition: the 0.x
-API won't be removed for a long time, possibly ever. While it is
-unlikely to get updated any further and will eventually (hopefully?)
-fall behind, if you can't be arsed you probably don't have to until an
-unlikely 2.0.
+The first and simplest way to upgrade is to not do anything: the 0.x
+API is still present in 1.x and won't be removed for a long time,
+possibly ever.
+
+While it is unlikely to get updated any further and will eventually
+(hopefully?) fall behind, if you can't be arsed you probably don't
+have to do anything for now, or just now.
 
 Unavoidable Divergences
 =======================
@@ -29,20 +31,20 @@ special attention:
       # force initialisation of global parser
       ua_parser.parser
 
-- The 1.0 API defaults to an :class:`re2-based parser
-  <ua_parser.re2.Resolver>` if |re2|_ is installed, although it seems
-  unlikely you may wish to consider replacing it with configuring a
-  :class:`~ua_parser.Parser` with a :class:`ua_parser.basic.Resolver`
-  if |re2|_ is one of your dependencies.
+- The 1.0 API defaults to powerful native parsers (based on |regex|_
+  or |re2|_) if available, although it seems unlikely you may wish to
+  consider replacing it with configuring a :class:`~ua_parser.Parser`
+  with a :class:`ua_parser.basic.Resolver`, especially if for some
+  reason |re2| is already one of your dependencies but you want to
+  *avoid* the |re2|-based resolver.
 
 Default Ruleset
 ===============
 
 While the 1.0 API was designed to better respect :pep:`8` and support
-:mod:`typing`, it was also designed to easily be transitioned from.
+:mod:`typing`, it was also designed to easily be transitioned to.
 
-Given a 0.x API not using YAML, the conversion should be very easy and
-consists of:
+Given a 0.x API not using YAML, the conversion consists of:
 
 - updating the import from ``ua_parser.user_agent_parser`` to just
   ``ua_parser``
@@ -116,7 +118,7 @@ Legacy YAML support can be added via a pretty small shim::
   import ua_parser
   from ua_parser.loaders import load_yaml
 
-  if yaml_path = os.environ.get("UA_PARSER_YAML"):
+  if yaml_path := os.environ.get("UA_PARSER_YAML"):
       ua_parser.parser = ua_parser.Parser.from_matchers(
           load_yaml(yaml_path))
 

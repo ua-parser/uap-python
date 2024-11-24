@@ -10,40 +10,34 @@ Build Status
 .. image:: https://github.com/ua-parser/uap-python/actions/workflows/ci.yml/badge.svg
    :alt: CI on the master branch
 
-⚠️ THIS IS NOT THE DOCUMENTATION YOU ARE LOOKING FOR (probably) ⚠️
-------------------------------------------------------------------
-
-This is the readme for the `future 1.0 <https://github.com/ua-
-parser/uap-python/milestone/1>`_.
-
-For the current releases, see `the 0.x branch
-<https://github.com/ua-parser/uap-python/tree/0.x#uap- python>`_.
-
 Installing
 ----------
 
-Just add ``ua-parser`` to your project's dependencies, or run
+Add ``ua-parser[regex]`` to your project's dependencies, or run
 
 .. code-block:: sh
 
-    $ pip install ua-parser
+    $ pip install 'ua-parser[regex]'
 
 to install in the current environment.
 
-Installing `ua-parser-rs <https://pypi.org/project/ua-parser-rs>`_ or
-`google-re2 <https://pypi.org/project/google-re2/>`_ is *strongly*
-recommended as they yield *significantly* better performances. This
-can be done directly via the ``regex`` and ``re2`` optional
-dependencies respectively:
+ua-parser supports CPython 3.9 and newer, recent pypy (supporting
+3.10), and GraalPy 24.
 
-.. code-block:: sh
+.. note::
 
-    $ pip install 'ua_parser[regex]'
-    $ pip install 'ua_parser[re2]'
+   The ``[regex]`` feature is *strongly* recommended:
 
-If either dependency is already available (e.g. because the software
-makes use of re2 for other reasons) ``ua-parser`` will use the
-corresponding resolver automatically.
+   - ``[re2]`` is slightly slower and only works with cpython, though
+     it is still a great option then (and is more memory-efficient).
+   - Pure python (no feature) is *significantly* slower, especially on
+     non-cpython runtimes, but it is the most memory efficient even
+     with caches.
+
+   See `builtin resolvers`_ for more explanation of the tradeoffs
+   between the different options.
+
+.. _builtin resolvers: https://readthedocs.org/ua-parser/uap-python/guides#builtin-resolvers
 
 Quick Start
 -----------
@@ -109,3 +103,10 @@ Extract device information from user-agent string
     >>> ua_string = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.104 Safari/537.36'
     >>> parse_device(ua_string)
     Device(family='Mac', brand='Apple', model='Mac')
+
+Upgrading
+---------
+
+Upgrading from 0.x? See `the upgrade guide`_.
+
+.. _the upgrade guide: https://readthedocs.org/ua-parser/uap-python/advanced/migration
