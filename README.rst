@@ -8,7 +8,12 @@ Build Status
 ------------
 
 .. image:: https://github.com/ua-parser/uap-python/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/ua-parser/uap-python/actions/workflows/ci.yml?query=branch%3Amaster
    :alt: CI on the master branch
+
+.. image:: https://readthedocs.org/projects/uap-python/badge/?version=latest
+   :target: https://readthedocs.org/project/uap-python/en/latest/
+   :alt: Documentation Status
 
 Installing
 ----------
