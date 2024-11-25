@@ -1,0 +1,32 @@
+# Read the Docs configuration file for Sphinx projects
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version: 2
+
+# needed for uap-core to get initialised properly
+submodules:
+  include: all
+
+build:
+  os: ubuntu-24.04
+  tools:
+    python: "3.12"
+  jobs:
+    post_checkout:
+      # rtfd doesn't retrieve tags by default, but we need them for `git
+      # describe` in order to build the parser builtins
+      # FIXME: remove once upb is published and can be installed from pypi)
+      - git fetch --unshallow --tags || true
+
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - yaml
+        - regex
+        - re2
+
+sphinx:
+  configuration: doc/conf.py
+  fail_on_warning: true
