@@ -45,14 +45,14 @@ exercises the caches themselves and barely looks at the data.
 ----------------------------
 
 ``bench`` is much more expensive in both CPU and wallclock as it
-actually runs the base resolvers, combined with various caches of
-various sizes. For usability, it can report its data (the average
-parse time per input entry) in both human-readable text with one
-result per line and CSV with resolver configurations as the columns
-and cache sizes as the rows.
+actually runs the resolvers on the sample file, combined with various
+caches of various sizes. For usability, it can report its data (the
+average parse time per input entry) in both human-readable text with
+one result per line and CSV with resolver configurations as the
+columns and cache sizes as the rows.
 
 ``hitrates`` is generally sufficient as generally speaking for the
-same base resolver performances tend to more or less follo hit rates:
+same base resolver performances tend to more or less follow hit rates:
 a cache hit is close to free compared to a cache miss. Although this
 is truer for the basic resolver (for which misses tend to be very
 expensive). ``bench`` is mostly useful to validate or tie-break
