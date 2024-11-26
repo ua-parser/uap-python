@@ -1,0 +1,49 @@
+name: Publish ua-parser
+
+on:
+  workflow_dispatch:
+  release:
+    types: [created]
+
+env:
+  ENVNAME: ${{ github.event_name == 'release' && 'pypi' || 'testpypi' }}
+  ENVURL: https://${{ github.event_name != 'release' && 'test.' || '' }}pypy.org/p/ua-parser
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ github.event_name == 'release' && 'pypi' || 'testpypi' }}
+      url: https://${{ github.event_name != 'release' && 'test.' || '' }}pypy.org/p/ua-parser
+
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Checkout working copy
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+    - name: Install dependency
+      run: |
+        python -mpip install --upgrade pip
+        python -mpip install build
+    - name: Build sdist and wheel
+      run: python -mbuild
+    - name: Publish to testpypi
+      if: ${{ env.ENVNAME == 'testpypi' }}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
+        verbose: true
+        password: ${{ secrets.PUBLISH_TOKEN }}
+    - name: Publish to pypi
+      if: ${{ env.ENVNAME == 'pypi' }}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        verbose: true
+        password: ${{ secrets.PUBLISH_TOKEN }}

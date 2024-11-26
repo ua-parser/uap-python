@@ -1,4 +1,6 @@
-name: Publish Python distribution to PyPI and TestPyPI
+name: Publish ua-parser builtins
+
+run-name: Publish ${{ inputs.tag || 'master' }} to ${{ inputs.environment || 'dummy' }}
 
 on:
   schedule:
@@ -67,6 +69,8 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
+        verbose: true
 
   publish-to-pypi:
     name: publish
@@ -88,3 +92,5 @@ jobs:
         path: dist/
     - name: Publish
       uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        verbose: true
