@@ -7,7 +7,6 @@ on:
 
 env:
   ENVNAME: ${{ github.event_name == 'release' && 'pypi' || 'testpypi' }}
-  ENVURL: https://${{ github.event_name != 'release' && 'test.' || '' }}pypy.org/p/ua-parser
 
 jobs:
   release:
@@ -15,7 +14,7 @@ jobs:
 
     environment:
       name: ${{ github.event_name == 'release' && 'pypi' || 'testpypi' }}
-      url: https://${{ github.event_name != 'release' && 'test.' || '' }}pypy.org/p/ua-parser
+      url: https://${{ github.event_name != 'release' && 'test.' || '' }}pypi.org/p/ua-parser
 
     permissions:
       id-token: write
