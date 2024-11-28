@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ua-parser"
 description = "Python port of Browserscope's user agent parser"
-version = "1.0.0a2"
+version = "1.0.0"
 readme = "README.rst"
 requires-python = ">=3.9"
 dependencies = ["ua-parser-builtins"]
@@ -24,7 +24,7 @@ maintainers = [
 ]
 
 classifiers = [
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
