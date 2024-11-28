@@ -12,7 +12,7 @@ Build Status
    :alt: CI on the master branch
 
 .. image:: https://readthedocs.org/projects/uap-python/badge/?version=latest
-   :target: https://uap-python.readthedocs.io/en/latest/
+   :target: https://uap-python.readthedocs.io/
    :alt: Documentation Status
 
 Installing
@@ -42,7 +42,7 @@ ua-parser supports CPython 3.9 and newer, recent pypy (supporting
    See `builtin resolvers`_ for more explanation of the tradeoffs
    between the different options.
 
-.. _builtin resolvers: https://uap-python.readthedocs.io/en/latest/guides.html#builtin-resolvers
+.. _builtin resolvers: https://uap-python.readthedocs.io/stable/guides.html#builtin-resolvers
 
 Quick Start
 -----------
@@ -114,4 +114,4 @@ Upgrading
 
 Upgrading from 0.x? See `the upgrade guide`_.
 
-.. _the upgrade guide: https://uap-python.readthedocs.io/en/latest/advanced/migration.html
+.. _the upgrade guide: https://uap-python.readthedocs.io/stable/advanced/migration.html
