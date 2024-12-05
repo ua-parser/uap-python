@@ -23,6 +23,9 @@ class MetadataHook(MetadataHookInterface):
                 }
             },
         )
+        if v in ("0.15.0", "0.16.0", "0.18.0"):
+            v = f"{v}.post1"
+
         metadata["version"] = v
 
 
