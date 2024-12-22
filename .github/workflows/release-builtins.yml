@@ -25,9 +25,12 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
+        persist-credentials: false
     - name: update core
+      env:
+        TAG: ${{ inputs.tag || 'master '}}
       # needs to detach because we can update to a tag
-      run: git -C uap-core switch --detach ${{ inputs.tag || 'master' }}
+      run: git -C uap-core switch --detach "$TAG"
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
