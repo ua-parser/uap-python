@@ -41,7 +41,8 @@ __all__ = [
 ]
 
 import importlib.util
-from typing import Callable, Optional
+import threading
+from typing import Callable, Optional, cast
 
 from .basic import Resolver as BasicResolver
 from .caching import CachingResolver, S3Fifo as Cache
@@ -78,7 +79,7 @@ BestAvailableResolver: _ResolverCtor = next(
 )
 
 
-VERSION = (1, 0, 0)
+VERSION = (1, 0, 1)
 
 
 class Parser:
@@ -135,15 +136,27 @@ Accessing the parser explicitely can be used eagerly force its
 initialisation, rather than pay for it at first call.
 """
 
+_lazy_globals_lock = threading.Lock()
+
 
 def __getattr__(name: str) -> Parser:
     global parser
-    if name == "parser":
-        if RegexResolver or Re2Resolver or IS_GRAAL:
-            matchers = load_lazy_builtins()
-        else:
-            matchers = load_builtins()
-        return Parser.from_matchers(matchers)
+    with _lazy_globals_lock:
+        if name == "parser":
+            # if two threads access `ua_parser.parser` before it's
+            # initialised, the second one will wait until the first
+            # one's finished by which time the parser global should be
+            # set and can be returned with no extra work
+            if p := globals().get("parser"):
+                return cast(Parser, p)
+
+            if RegexResolver or Re2Resolver or IS_GRAAL:
+                matchers = load_lazy_builtins()
+            else:
+                matchers = load_builtins()
+            parser = Parser.from_matchers(matchers)
+            return parser
+
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
