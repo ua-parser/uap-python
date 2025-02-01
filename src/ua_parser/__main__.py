@@ -101,7 +101,7 @@ def run_stdout(args: argparse.Namespace) -> None:
     lines = list(args.file)
     count = len(lines)
     uniques = len(set(lines))
-    print(f"{args.file.name}: {count} lines, {uniques} unique ({uniques/count:.0%})")
+    print(f"{args.file.name}: {count} lines, {uniques} unique ({uniques / count:.0%})")
 
     rules = get_rules(args.bases, args.regexes)
 
@@ -320,7 +320,7 @@ def run_hitrates(args: argparse.Namespace) -> None:
                 overhead / cache_size,
             )
         print(
-            f"{cache.__name__.lower():8}({cache_size:{w}}): {(total - misses.count)/total*100:2.0f}% hit rate {diff}"
+            f"{cache.__name__.lower():8}({cache_size:{w}}): {(total - misses.count) / total * 100:2.0f}% hit rate {diff}"
         )
         del misses, parser
 
@@ -378,7 +378,7 @@ def run_threaded(args: argparse.Namespace) -> None:
         totlines = len(lines) * args.threads
         # runtime in us
         t = (time.perf_counter_ns() - st) / 1000
-        print(f"{t/totlines:>4.0f}us/line", flush=True)
+        print(f"{t / totlines:>4.0f}us/line", flush=True)
 
 
 EPILOG = """For good results the sample `file` should be an actual

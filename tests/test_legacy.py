@@ -107,18 +107,18 @@ class TestParse:
 
             result = {}
             result = user_agent_parser.ParseUserAgent(user_agent_string)
-            assert (
-                result == expected
-            ), "UA: {0}\n expected<{1}, {2}, {3}, {4}> != actual<{5}, {6}, {7}, {8}>".format(
-                user_agent_string,
-                expected["family"],
-                expected["major"],
-                expected["minor"],
-                expected["patch"],
-                result["family"],
-                result["major"],
-                result["minor"],
-                result["patch"],
+            assert result == expected, (
+                "UA: {0}\n expected<{1}, {2}, {3}, {4}> != actual<{5}, {6}, {7}, {8}>".format(
+                    user_agent_string,
+                    expected["family"],
+                    expected["major"],
+                    expected["minor"],
+                    expected["patch"],
+                    result["family"],
+                    result["major"],
+                    result["minor"],
+                    result["patch"],
+                )
             )
             assert (
                 len(user_agent_parser._PARSE_CACHE) <= user_agent_parser.MAX_CACHE_SIZE
@@ -143,20 +143,20 @@ class TestParse:
             }
 
             result = user_agent_parser.ParseOS(user_agent_string)
-            assert (
-                result == expected
-            ), "UA: {0}\n expected<{1} {2} {3} {4} {5}> != actual<{6} {7} {8} {9} {10}>".format(
-                user_agent_string,
-                expected["family"],
-                expected["major"],
-                expected["minor"],
-                expected["patch"],
-                expected["patch_minor"],
-                result["family"],
-                result["major"],
-                result["minor"],
-                result["patch"],
-                result["patch_minor"],
+            assert result == expected, (
+                "UA: {0}\n expected<{1} {2} {3} {4} {5}> != actual<{6} {7} {8} {9} {10}>".format(
+                    user_agent_string,
+                    expected["family"],
+                    expected["major"],
+                    expected["minor"],
+                    expected["patch"],
+                    expected["patch_minor"],
+                    result["family"],
+                    result["major"],
+                    result["minor"],
+                    result["patch"],
+                    result["patch_minor"],
+                )
             )
 
     def runDeviceTestsFromYAML(self, file_name):
@@ -176,16 +176,16 @@ class TestParse:
             }
 
             result = user_agent_parser.ParseDevice(user_agent_string)
-            assert (
-                result == expected
-            ), "UA: {0}\n expected<{1} {2} {3}> != actual<{4} {5} {6}>".format(
-                user_agent_string,
-                expected["family"],
-                expected["brand"],
-                expected["model"],
-                result["family"],
-                result["brand"],
-                result["model"],
+            assert result == expected, (
+                "UA: {0}\n expected<{1} {2} {3}> != actual<{4} {5} {6}>".format(
+                    user_agent_string,
+                    expected["family"],
+                    expected["brand"],
+                    expected["model"],
+                    result["family"],
+                    result["brand"],
+                    result["model"],
+                )
             )
 
 
