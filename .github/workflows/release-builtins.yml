@@ -11,9 +11,11 @@ on:
       tag:
         description: "uap-core ref to release"
         type: string
+        required: true
       environment:
         description: "environment to release for (testpypy or pypy)"
         type: environment
+        required: true
 
 jobs:
   build:
