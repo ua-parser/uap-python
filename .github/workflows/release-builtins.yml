@@ -28,7 +28,7 @@ jobs:
         persist-credentials: false
     - name: update core
       env:
-        TAG: ${{ inputs.tag || 'master '}}
+        TAG: ${{ inputs.tag || 'origin/master '}}
       # needs to detach because we can update to a tag
       run: git -C uap-core switch --detach "$TAG"
     - name: Set up Python
