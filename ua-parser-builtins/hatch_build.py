@@ -26,9 +26,9 @@ class MetadataHook(MetadataHookInterface):
                 },
             )
         except errors.NotSdistError:
-            with open(os.path.join(self.root, "uap-core", 'package.json')) as ufile:
+            with open(os.path.join(self.root, "uap-core", "package.json")) as ufile:
                 ujson = json.load(ufile)
-                v = ujson['version']
+                v = ujson["version"]
         if v in ("0.15.0", "0.16.0", "0.18.0"):
             v = f"{v}.post1"
 
