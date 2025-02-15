@@ -1,6 +1,6 @@
 name: Publish ua-parser builtins
 
-run-name: Publish ${{ inputs.tag || 'master' }} to ${{ inputs.environment || 'dummy' }}
+run-name: Publish ${{ inputs.tag || 'master' }} to ${{ inputs.environment || 'pypy (scheduled)' }}
 
 on:
   schedule:
