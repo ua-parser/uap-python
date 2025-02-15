@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 import os
 import os.path
 import tempfile
@@ -10,19 +11,24 @@ from typing import Any, Callable, ClassVar, Iterator, cast
 import yaml
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 from hatchling.metadata.plugin.interface import MetadataHookInterface
-from versioningit import get_version
+from versioningit import errors, get_version
 
 
 class MetadataHook(MetadataHookInterface):
     def update(self, metadata: dict[str, Any]) -> None:
-        v = get_version(
-            os.path.join(self.root, "uap-core"),
-            config={
-                "format": {
-                    "distance": "{next_version}.dev{distance}",
-                }
-            },
-        )
+        try:
+            v = get_version(
+                os.path.join(self.root, "uap-core"),
+                config={
+                    "format": {
+                        "distance": "{next_version}.dev{distance}",
+                    }
+                },
+            )
+        except errors.NotSdistError:
+            with open(os.path.join(self.root, "uap-core", "package.json")) as ufile:
+                ujson = json.load(ufile)
+                v = ujson["version"]
         if v in ("0.15.0", "0.16.0", "0.18.0"):
             v = f"{v}.post1"
 
