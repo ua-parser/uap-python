@@ -93,10 +93,10 @@ composing :class:`~ua_parser.Resolver` objects.
 The most basic such customisation is simply configuring caching away
 from the default setup.
 
-As an example, in the default configuration if |re2|_ is available the
-RE2-based resolver is not cached, a user might consider the memory
-investment worth it and want to reconfigure the stack for a cached
-base.
+As an example, in the default configuration if |regex|_ is available
+the regex-based resolver is not cached, a user might consider the
+memory investment worth it and want to reconfigure the stack for a
+cached base.
 
 The process is uncomplicated as the APIs are designed to compose
 together.
@@ -105,8 +105,8 @@ The first step is to instantiate a base resolver, instantiated with
 the relevant :class:`Matchers` data::
 
     import ua_parser.loaders
-    import ua_parser.re2
-    base = ua_parser.re2.Resolver(
+    import ua_parser.regex
+    base = ua_parser.regex.Resolver(
         ua_parser.loaders.load_lazy_builtins())
 
 The next step is to instantiate the cache [#cache]_ suitably
@@ -295,7 +295,7 @@ could then use something like::
 
     Parser(FallbackResolver([
         foo_resolver,
-        re2.Resolver(load_lazy_builtins()),
+        regex.Resolver(load_lazy_builtins()),
     ]))
 
 to prioritise cheap resolving of our application while still resolving
