@@ -153,7 +153,7 @@ Builtin Resolvers
    * - ``regex``
      - great
      - good
-     - bad
+     - fine
      - great
    * - ``re2``
      - good
@@ -182,12 +182,11 @@ it:
   interpreters and platforms supported by pyo3 (currently: cpython,
   pypy, and graalpy, on linux, macos and linux, intel and arm). It is
   also built as a cpython abi3 wheel and should thus suffer from no
-  compatibility issues with new release.
+  compatibility issues with new releases of cpython at least.
 - Built entirely out of safe rust code, its safety risks are entirely
   in ``regex`` and ``pyo3``.
-- Its biggest drawback is that it is a lot more memory intensive than
-  the other resolvers, because ``regex`` tends to trade memory for
-  speed (~155MB high water mark on a real-world dataset).
+- Uses somewhat more memory than the other resolvers (~85MB high water
+  mark on a real-world dataset).
 
 If available, it is the default resolver, without a cache.
 
@@ -198,7 +197,7 @@ The ``re2`` resolver is built atop the widely used `google-re2
 <https://github.com/google/re2>`_ via its built-in Python bindings.
 It:
 
-- Is extremely fast, though around 80% slower than ``regex`` on
+- Is quite fast, though only about half the speed of ``regex`` on
   real-world data.
 - Is only compatible with CPython, and uses pure API wheels, so needs
   a different release for each cpython version, for each OS, for each
@@ -209,6 +208,9 @@ It:
   real-world dataset).
 
 If available, it is the second-preferred resolver, without a cache.
+
+At the end of the day, it is really only useful if the codebase
+already uses ``re2``.
 
 ``basic``
 ---------
