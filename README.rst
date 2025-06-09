@@ -31,13 +31,9 @@ ua-parser supports CPython 3.9 and newer, recent pypy (supporting
 
 .. note::
 
-   The ``[regex]`` feature is *strongly* recommended:
-
-   - ``[re2]`` is slightly slower and only works with cpython, though
-     it is still a great option then (and is more memory-efficient).
-   - Pure python (no feature) is *significantly* slower, especially on
-     non-cpython runtimes, but it is the most memory efficient even
-     with caches.
+   The ``[regex]`` feature is *strongly* recommended, the Pure python
+   (no feature) is *significantly* slower, especially on non-cpython
+   runtimes, though it is the most memory efficient.
 
    See `builtin resolvers`_ for more explanation of the tradeoffs
    between the different options.
