@@ -77,6 +77,9 @@ classes = ["OS"]
 known-first-party = ["ua_parser"]
 combine-as-imports = true
 
+[tool.ruff.lint.per-file-ignores]
+"tests/test_legacy.py" = ["PT030"]
+
 [tool.mypy]
 python_version = "3.9"
 files = "src,tests"
