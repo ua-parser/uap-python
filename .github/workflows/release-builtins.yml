@@ -20,30 +20,56 @@ jobs:
   build:
     name: Build distribution
     runs-on: ubuntu-latest
-
+    outputs:
+      release: ${{ steps.check.outputs.release }}
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: true
         fetch-depth: 0
         persist-credentials: false
-    - name: update core
-      env:
-        TAG: ${{ inputs.tag || 'origin/master' }}
-      # needs to detach because we can update to a tag
-      run: git -C uap-core switch --detach "$TAG"
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: "3.x"
 
+    - name: Check necessity of release
+      id: check
+      env:
+        PYPI: ${{ github.event.inputs.environment }}
+        REF: ${{ inputs.tag || 'HEAD' }}
+      run: |
+        case $PYPI in
+            pypi)
+                DOMAIN=pypi.org
+                ;;
+            testpypi)
+                DOMAIN=test.pypi.org
+                ;;
+            *)
+                exit 1
+        esac
+
+        RELREV=$(python scripts/relrev.py --domain "$DOMAIN")
+        VERSION=$(date +%Y%m)
+        CURREV=$(python scripts/tagcore.py --ref $REF --version $VERSION)
+
+        if [ -n "$CURREV" -a "$RELREV" = "$CURREV" ]
+        then
+            echo "current rev matches latest release, skip new release"
+        else
+            echo release=true >> $GITHUB_OUTPUT
+        fi
     - name: Install pypa/build
+      if: ${{ steps.check.outputs.release == 'true' }}
       run: python3 -m pip install build --user
     - name: Build wheel
+      if: ${{ steps.check.outputs.release == 'true' }}
       run: |
         python3 -m build -w ua-parser-builtins
         mv ua-parser-builtins/dist .
     - name: Store the distribution packages
+      if: ${{ steps.check.outputs.release == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: python-package-distributions
@@ -51,9 +77,8 @@ jobs:
 
   publish-to-testpypi:
     name: Publish to TestPyPI
-    if: ${{ github.event.inputs.environment == 'testpypi' }}
-    needs:
-    - build
+    needs: build
+    if: ${{ github.event.inputs.environment == 'testpypi' && needs.build.outputs.release == 'true' }}
     runs-on: ubuntu-latest
 
     environment:
@@ -78,9 +103,8 @@ jobs:
 
   publish-to-pypi:
     name: publish
-    if: ${{ github.event_name == 'schedule' || github.event.inputs.environment == 'pypi' }}
-    needs:
-    - build
+    needs: build
+    if: ${{ (github.event_name == 'schedule' || github.event.inputs.environment == 'pypi') && needs.build.outputs.release == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: pypi

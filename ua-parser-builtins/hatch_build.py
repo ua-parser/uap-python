@@ -41,6 +41,10 @@ class CompilerHook(BuildHookInterface):
         version: str,
         build_data: dict[str, Any],
     ) -> None:
+        rev = os.path.join(self.root, "uap-core/REVISION")
+        if os.path.exists(rev):
+            build_data["force_include"][rev] = "REVISION"
+
         with open(os.path.join(self.root, "uap-core/regexes.yaml"), "rb") as f:
             data = yaml.safe_load(f)
 
