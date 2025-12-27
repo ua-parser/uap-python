@@ -5,6 +5,8 @@ on:
   release:
     types: [created]
 
+permissions: {}
+
 env:
   ENVNAME: ${{ github.event_name == 'release' && 'pypi' || 'testpypi' }}
 
@@ -21,11 +23,11 @@ jobs:
 
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
       with:
         persist-credentials: false
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
       with:
         python-version: "3.x"
     - name: Install dependency
@@ -36,7 +38,7 @@ jobs:
       run: python -mbuild
     - name: Publish to testpypi
       if: ${{ env.ENVNAME == 'testpypi' }}
-      uses: pypa/gh-action-pypi-publish@release/v1  # zizmor: ignore[use-trusted-publishing]
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # 1.13.0
       with:
         repository-url: https://test.pypi.org/legacy/
         skip-existing: true
@@ -44,7 +46,7 @@ jobs:
         password: ${{ secrets.PUBLISH_TOKEN }}
     - name: Publish to pypi
       if: ${{ env.ENVNAME == 'pypi' }}
-      uses: pypa/gh-action-pypi-publish@release/v1  # zizmor: ignore[use-trusted-publishing]
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # 1.13.0
       with:
         verbose: true
         password: ${{ secrets.PUBLISH_TOKEN }}

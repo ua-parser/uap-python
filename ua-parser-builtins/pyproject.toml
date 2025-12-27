@@ -7,7 +7,7 @@ name = "ua-parser-builtins"
 description = "Precompiled rules for User Agent Parser"
 readme = "README.md"
 dependencies = []
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "Apache 2.0"}
 urls = {repository = "https://github.com/ua-parser/uap-python"}
 dynamic = ["version"]
@@ -25,11 +25,11 @@ classifiers = [
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Programming Language :: Python :: Implementation :: GraalPy",

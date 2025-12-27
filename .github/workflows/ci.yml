@@ -4,27 +4,32 @@ on:
   push:
   pull_request:
 
+permissions: {}
+
 jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
       with:
         submodules: true
         fetch-depth: 0
         persist-credentials: false
     - name: ruff check
-      uses: chartboost/ruff-action@v1
+      uses: astral-sh/ruff-action@57714a7c8a2e59f32539362ba31877a1957dded1  # 3.5.1
+      with:
+        version: "latest"
     - name: ruff format
       if: always()
-      uses: chartboost/ruff-action@v1
+      uses: astral-sh/ruff-action@57714a7c8a2e59f32539362ba31877a1957dded1  # 3.5.1
       with:
-        args: format --diff
+        version: "latest"
+        args: format --check --diff
     - name: Set up Python
       id: setup_python
       if: always()
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
       with:
         python-version: "3.x"
     - name: Install mypy
@@ -44,12 +49,12 @@ jobs:
 
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
       with:
         submodules: true
         persist-credentials: false
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
       with:
         python-version: "3.x"
     - name: Install dependency
@@ -60,14 +65,14 @@ jobs:
       run: |
         python -mbuild
     - name: Upload sdist
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # 6.0.0
       with:
         name: sdist
         path: dist/*.tar.gz
         retention-days: 1
 
     - name: Upload wheel
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # 6.0.0
       with:
         name: wheel
         path: dist/*.whl
@@ -84,31 +89,31 @@ jobs:
           - sdist
           - source
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
-          - "pypy-3.10"
+          - "3.14"
+          - "3.14t"
           - "pypy-3.11"
-          - "graalpy-24"
+          - "graalpy-25"
         include:
           - source: sdist
             artifact: dist/*.tar.gz
           - source: wheel
             artifact: dist/*.whl
           - opts: ""
-          - python-version: graalpy-24
+          - python-version: graalpy-25
             opts: "--experimental-options --engine.CompileOnly='~tregex re'"
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
       with:
         submodules: true
         fetch-depth: 0
         persist-credentials: false
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -132,7 +137,7 @@ jobs:
     - run: 'python -mpip install --only-binary :all: google-re2 || true'
     - name: download ${{ matrix.source }} artifact
       if: matrix.artifact
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # 7.0.0
       with:
         name: ${{ matrix.source }}
         path: dist/
@@ -140,3 +145,12 @@ jobs:
       run: python -m pip install ${{ matrix.artifact || '.' }}
     - name: run tests
       run: python ${{ matrix.opts }} -m pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst" -ra
+  # necessary to create a unified CI result and not have to update
+  # branch protection rules every time the matrix gets updated
+  results:
+    name: "CI Results"
+    needs: ["checks", "test"]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+    - run: exit 0
