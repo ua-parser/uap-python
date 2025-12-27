@@ -140,3 +140,12 @@ jobs:
       run: python -m pip install ${{ matrix.artifact || '.' }}
     - name: run tests
       run: python ${{ matrix.opts }} -m pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst" -ra
+  # necessary to create a unified CI result and not have to update
+  # branch protection rules every time the matrix gets updated
+  results:
+    name: "CI Results"
+    needs: ["checks", "test"]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+    - run: exit 0
