@@ -90,14 +90,14 @@ jobs:
           - "3.13"
           - "3.14"
           - "pypy-3.11"
-          - "graalpy-24"
+          - "graalpy-25"
         include:
           - source: sdist
             artifact: dist/*.tar.gz
           - source: wheel
             artifact: dist/*.whl
           - opts: ""
-          - python-version: graalpy-24
+          - python-version: graalpy-25
             opts: "--experimental-options --engine.CompileOnly='~tregex re'"
     steps:
     - name: Checkout working copy
