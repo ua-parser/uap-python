@@ -2,6 +2,8 @@ name: Publish ua-parser builtins
 
 run-name: Publish ${{ inputs.tag || 'master' }} to ${{ inputs.environment || 'pypy (scheduled)' }}
 
+permissions: {}
+
 on:
   schedule:
     # schedule a dev release on every 1st of the month, at 2034 UTC
@@ -23,13 +25,13 @@ jobs:
     outputs:
       release: ${{ steps.check.outputs.release }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
       with:
         submodules: true
         fetch-depth: 0
         persist-credentials: false
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
       with:
         python-version: "3.x"
 
@@ -70,7 +72,7 @@ jobs:
         mv ua-parser-builtins/dist .
     - name: Store the distribution packages
       if: ${{ steps.check.outputs.release == 'true' }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # 6.0.0
       with:
         name: python-package-distributions
         path: dist/
@@ -90,12 +92,12 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # 7.0.0
       with:
         name: python-package-distributions
         path: dist/
     - name: Publish
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # 1.13.0
       with:
         repository-url: https://test.pypi.org/legacy/
         skip-existing: true
@@ -114,11 +116,11 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # 7.0.0
       with:
         name: python-package-distributions
         path: dist/
     - name: Publish
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # 1.13.0
       with:
         verbose: true

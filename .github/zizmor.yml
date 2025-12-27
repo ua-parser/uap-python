@@ -1,0 +1,4 @@
+rules:
+  use-trusted-publishing:
+    ignore:
+      - release-main.yml  # can't do that until pypi/support#6661
