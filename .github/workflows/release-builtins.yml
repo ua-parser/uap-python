@@ -38,7 +38,7 @@ jobs:
     - name: Check necessity of release
       id: check
       env:
-        PYPI: ${{ github.event.inputs.environment }}
+        PYPI: ${{ github.event.inputs.environment || 'pypy' }}
         REF: ${{ inputs.tag || 'HEAD' }}
       run: |
         case $PYPI in
