@@ -1,6 +1,6 @@
 name: Publish ua-parser builtins
 
-run-name: Publish ${{ inputs.tag || 'master' }} to ${{ inputs.environment || 'pypy (scheduled)' }}
+run-name: Publish ${{ inputs.tag || 'master' }} to ${{ inputs.environment || 'pypi (scheduled)' }}
 
 permissions: {}
 
@@ -14,7 +14,7 @@ on:
         description: "uap-core ref to release"
         type: string
       environment:
-        description: "environment to release for (testpypy or pypy)"
+        description: "environment to release for (testpypi or pypi)"
         type: environment
         required: true
 
@@ -38,7 +38,7 @@ jobs:
     - name: Check necessity of release
       id: check
       env:
-        PYPI: ${{ github.event.inputs.environment || 'pypy' }}
+        PYPI: ${{ github.event.inputs.environment || 'pypi' }}
         REF: ${{ inputs.tag || 'HEAD' }}
       run: |
         case $PYPI in
