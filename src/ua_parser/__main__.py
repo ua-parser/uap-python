@@ -97,27 +97,45 @@ def get_rules(parsers: List[str], regexes: Optional[io.IOBase]) -> Matchers:
     return rules
 
 
+def parse_item(item: str, all: list[str] | None) -> list[str]:
+    if item == '*':
+        assert all
+        return all
+    elif item.startswith('{'):
+        assert item.endswith('}')
+        return item[1:-1].split(',')
+    else:
+        return [item]
+
+def rules_to_parsers(args: argparse.Namespace) -> Iterator[tuple[str, str, int]]:
+    seen = set()
+    for selector in args.selector:
+        p, c, s = selector.split(':')
+        for triplet in (
+            (pp, 'none' if ss == 0 else cc, ss)
+            for pp in parse_item(p, ['basic', 're2', 'regex', 'legacy'])
+            for cc in (parse_item(c, list(CACHES)) if CACHEABLE[pp] else ['none'])
+            for ss in (map(int, parse_item(s, None)) if cc != 'none' else [0])
+        ):
+            if triplet not in seen:
+                seen.add(triplet)
+                yield triplet
+
 def run_stdout(args: argparse.Namespace) -> None:
     lines = list(map(sys.intern, args.file))
     count = len(lines)
     uniques = len(set(lines))
     print(f"{args.file.name}: {count} lines, {uniques} unique ({uniques / count:.0%})")
 
-    rules = get_rules(args.bases, args.regexes)
+    parsers = list(rules_to_parsers(args))
 
-    # width of the parser label
-    w = math.ceil(
-        3
-        + max(map(len, args.bases))
-        + max(map(len, args.caches))
-        + max(map(math.log10, args.cachesizes))
+    rules = get_rules([*{p for p, _, _ in parsers}], args.regexes)
+
+    w = max(
+        math.ceil(3 + len(p) + len(c) + (s and math.log10(s)))
+        for p, c, s in parsers
     )
-    for p, c, n in (
-        (p, c, n)
-        for p in args.bases
-        for c in (args.caches if CACHEABLE[p] and args.cachesizes != [0] else ["none"])
-        for n in (args.cachesizes if c != "none" else [0])
-    ):
+    for p, c, n in parsers:
         name = "-".join(map(str, filter(None, (p, c != "none" and c, n))))
         print(f"{name:{w}}", end=": ", flush=True)
 
@@ -133,22 +151,16 @@ def run_stdout(args: argparse.Namespace) -> None:
 def run_csv(args: argparse.Namespace) -> None:
     lines = list(map(sys.intern, args.file))
     LEN = len(lines) * 1000
-    rules = get_rules(args.bases, args.regexes)
 
-    parsers = [
-        (p, c, n)
-        for p in args.bases
-        for c in (args.caches if CACHEABLE[p] else ["none"])
-        for n in (args.cachesizes if c != "none" else [0])
-    ]
+    parsers = list(rules_to_parsers(args))
     if not parsers:
         sys.exit("No parser selected")
 
+    rules = get_rules([*{p for p, _, _ in parsers}], args.regexes)
     columns = {"size": ""}
     columns.update(
         (f"{p}-{c}", p if c == "none" else f"{p}-{c}")
-        for p in args.bases
-        for c in (args.caches if CACHEABLE[p] else ["none"])
+        for p, c, _ in parsers
     )
     w = csv.DictWriter(
         sys.stdout,
@@ -171,11 +183,13 @@ def run_csv(args: argparse.Namespace) -> None:
         # cache could be ignored as it should always be `"none"`
         for parser, cache, _ in ps:
             p = get_parser(parser, cache, 0, rules)
-            zeroes[f"{parser}-{cache}"] = run(p, lines) // LEN
+            zeroes[f"{parser}-{cache}"] = run(p, linges) // LEN
 
     # special cases for configurations where we can't have
     # cachesize lines, write the template row out directly
-    if args.bases == ["legacy"] or args.caches == ["none"] or args.cachesizes == [0]:
+    if all(p == 'legacy' for p, _, _ in parsers)\
+       or all(c == 'none' for _, c, _ in parsers)\
+       or all(s == 0 for _, _, s in parsers):
         zeroes["size"] = 0
         w.writerow(zeroes)
         return
@@ -457,37 +471,14 @@ bench.add_argument(
     with a first cell of value 0.""",
 )
 bench.add_argument(
-    "--bases",
-    nargs="+",
-    choices=["basic", "re2", "regex", "legacy"],
-    default=["basic", "re2", "regex", "legacy"],
-    help="""Base resolvers to benchmark. `basic` is a linear search
-    through the regexes file, `re2` is a prefiltered regex set
-    implemented in C++, `regex` is a prefiltered regex set implemented
-    in Rust, `legacy` is the legacy API (essentially a basic resolver
-    with a clearing cache of fixed 200 entries, but less layered so
-    usually slightly faster than an equivalent basic-based resolver).""",
-)
-bench.add_argument(
-    "--caches",
-    nargs="+",
-    choices=list(CACHES),
-    default=list(CACHES),
-    help="""Cache implementations to test. `clearing` completely
-    clears the cache when full, `lru` uses a least-recently-eviction
-    policy. `lru` is not thread-safe, so `lru-threadsafe` adds a mutex
-    and measures *uncontended* locking overhead.""",
-)
-bench.add_argument(
-    "--cachesizes",
-    nargs="+",
-    type=int,
-    default=[10, 20, 50, 100, 200, 500, 1000, 2000, 5000],
-    help="""Caches are a classic way to trade memory for performances.
-    Different base resolvers and traffic patterns have different
-    benefits from caches, this option allows testing the benefits of
-    various cache sizes (and thus amounts of memory used) on the cache
-    strategies. """,
+    "selector",
+    nargs="*",
+    default=["*:*:{10,20,50,100,200,500,1000,2000,5000}"],
+    help=f"""A generative selector expression, composed of 3 parts: 1.
+the parser (base), 2. the cache implementation ({', '.join(CACHES)})
+and 3. the cache size. For parser and cache `*` is an alias for stands
+in for "every value", a bracketed expression for an enumeration, and
+the selector can be repeated to explicitly list each configuration """
 )
 
 hitrates = sub.add_parser(
