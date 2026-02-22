@@ -98,7 +98,7 @@ def get_rules(parsers: List[str], regexes: Optional[io.IOBase]) -> Matchers:
 
 
 def run_stdout(args: argparse.Namespace) -> None:
-    lines = list(args.file)
+    lines = list(map(sys.intern, args.file))
     count = len(lines)
     uniques = len(set(lines))
     print(f"{args.file.name}: {count} lines, {uniques} unique ({uniques / count:.0%})")
@@ -131,7 +131,7 @@ def run_stdout(args: argparse.Namespace) -> None:
 
 
 def run_csv(args: argparse.Namespace) -> None:
-    lines = list(args.file)
+    lines = list(map(sys.intern, args.file))
     LEN = len(lines) * 1000
     rules = get_rules(args.bases, args.regexes)
 
@@ -288,7 +288,7 @@ def run_hitrates(args: argparse.Namespace) -> None:
             self.count += 1
             return r
 
-    lines = list(args.file)
+    lines = list(map(sys.intern, args.file))
     total = len(lines)
     uniques = len(set(lines))
     print(total, "lines", uniques, "uniques")
@@ -343,7 +343,7 @@ def worker(
 
 
 def run_threaded(args: argparse.Namespace) -> None:
-    lines = list(args.file)
+    lines = list(map(sys.intern, args.file))
     basic = BasicResolver(load_builtins())
     resolvers: List[Tuple[str, Resolver]] = [
         ("locking-lru", CachingResolver(basic, caching.Lru(CACHESIZE))),
