@@ -9,3 +9,6 @@ tmp/
 regexes.yaml
 _regexes.py
 doc/_build
+uv.lock
+ua-parser-rs/Cargo.lock
+ua-parser-rs/target

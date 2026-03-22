@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches:
   pull_request:
 
 permissions: {}
@@ -128,7 +129,7 @@ jobs:
     - run: python -mpip install pytest pyyaml
     - run: python -mpip install ./ua-parser-builtins
     # install rs accelerator if available, ignore if not
-    - run: python -mpip install ua-parser-rs || true
+    - run: python -mpip install ./ua-parser-rs || true
     # re2 is basically impossible to install from source so don't
     # bother, and suppress installation failure so the test does
     # not fail (re2 tests will just be skipped for versions /

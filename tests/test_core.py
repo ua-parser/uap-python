@@ -80,6 +80,8 @@ UA_FIELDS = {f.name for f in dataclasses.fields(UserAgent)}
         CORE_DIR / "tests" / "test_ua.yaml",
         CORE_DIR / "test_resources" / "firefox_user_agent_strings.yaml",
         CORE_DIR / "test_resources" / "pgts_browser_list.yaml",
+        CORE_DIR / "test_resources" / "opera_mini_user_agent_strings.yaml",
+        CORE_DIR / "test_resources" / "podcasting_user_agent_strings.yaml",
     ],
     ids=attrgetter("stem"),
 )

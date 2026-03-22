@@ -1,0 +1,26 @@
+name: rs checks
+
+on:
+  pull_request:
+  push:
+    branches:
+
+permissions: {}
+
+jobs:
+  rs-checks:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout working copy
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
+      with:
+        submodules: true
+        fetch-depth: 0
+        persist-credentials: false
+    - name: cargo check
+      run: cargo check --manifest-path ua-parser-rs/Cargo.toml
+    - name: cargo clippy  # don't run clippy if check fails
+      run: cargo clippy --manifest-path ua-parser-rs/Cargo.toml
+    - name: cargo fmt
+      if: always()
+      run: cargo fmt --check --manifest-path ua-parser-rs/Cargo.toml

@@ -2,6 +2,7 @@ name: Zizmor
 
 on:
   push:
+    branches:
   pull_request:
 
 permissions: {}
