@@ -1,0 +1,256 @@
+name: Wheels
+
+on:
+  pull_request:
+    types: [opened, reopened, labeled, synchronize]
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Push wheels to pypi'
+        type: boolean
+        default: false
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  py-wheels-matrix:
+    name: "generate build matrix"
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+          github.event_name == 'pull_request' &&
+          github.event.type == 'labeled' &&
+          github.event.label.name == 'check-wheels'
+      ) ||
+      (
+          github.event_name == 'pull_request' &&
+          github.event.type != 'labeled' &&
+          contains(github.event.pull_request.labels.*.name, 'check-wheels')
+      )
+    outputs:
+      matrix: ${{ steps.make-matrix.outputs.matrix }}
+    steps:
+      - id: make-matrix
+        shell: python
+        name: generate matrix
+        run: |
+          import itertools
+          import json
+          import os
+          import pprint
+
+          builder = {
+              ('linux', 'x86_64'): 'ubuntu-latest',
+              ('linux', 'aarch64'): 'ubuntu-24.04-arm',
+              ('musllinux', 'x86_64'): 'ubuntu-latest',
+              ('musllinux', 'aarch64'): 'ubuntu-24.04-arm',
+              ('macos', 'x86_64'): 'macos-15-intel',
+              ('macos', 'aarch64'): 'macos-latest',
+              ('windows', 'x86_64'): 'windows-latest',
+              ('windows', 'aarch64'): 'windows-11-arm',
+          }
+
+          matrix = [
+              d
+              for d in map(dict, itertools.product(
+                  (('python-version', v) for v in ["3.x", "3.14t", "pypy-3.11", "graalpy-25"]),
+                  (('arch', a) for a in ["x86_64", "aarch64"]),
+                  (('platform', p) for p in ["linux", "musllinux", "windows", "macos"])
+              ))
+              # on windows, only cpython has arm builds (?)
+              if d['python-version'].startswith('3.') \
+              or d['platform'] != 'windows' \
+              or d['arch'] != 'aarch64'
+          ]
+          for job in matrix:
+              match job['platform']:
+                  case 'linux':
+                    job['manylinux'] = 'auto'
+                    job['args'] = ' --zig'
+                  case 'mussllinux':
+                    job['manylinux'] = 'musllinux_1_2'
+
+              job['runs'] = builder[job['platform'], job['arch']]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'w') as f:
+              f.write("matrix=")
+              json.dump({'include': matrix}, f)
+              f.flush()
+
+  py-release-wheels:
+    needs: [py-wheels-matrix]
+    strategy:
+      matrix: ${{fromJson(needs.py-wheels-matrix.outputs.matrix)}}
+
+    runs-on: ${{ matrix.runs }}
+
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      # windows/arm doesn't have a rust toolchain by default
+      - if: matrix.platform == 'windows' && matrix.arch == 'aarch64'
+        uses: actions-rust-lang/setup-rust-toolchain@9d7e65c320fdb52dcd45ffaa68deb6c02c8754d9 # 1.12.0
+      - name: Build wheels
+        uses: PyO3/maturin-action@04ac600d27cdf7a9a280dadf7147097c42b757ad  # 1.50.1
+        with:
+          args: --release --out dist -m ua-parser-rs/Cargo.toml -i python ${{ matrix.args }}
+          sccache: 'true'
+          manylinux: ${{ matrix.manylinux }}
+      - name: Upload wheels
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # 7.0.0
+        with:
+          name: ua-parser-rs-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.python-version }}
+          path: dist/*
+          retention-days: 1
+          compression-level: 0
+
+  py-release-sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
+        with:
+          persist-credentials: false
+      - name: Build sdist
+        uses: PyO3/maturin-action@04ac600d27cdf7a9a280dadf7147097c42b757ad  # 1.50.1
+        with:
+          command: sdist
+          args: --out dist -m ua-parser-rs/Cargo.toml
+      - name: Upload sdist
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f  # 7.0.0
+        with:
+          name: wheels-sdist
+          path: dist
+
+  py-release-tests:
+    needs: py-release-wheels
+    
+    strategy:
+      matrix:
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+          - "3.14t"
+          - "pypy-3.11"
+          - "graalpy-25"
+        platform:
+          - linux
+          # probably requires a custom image of some sort
+          # - musllinux
+          - windows
+          - macos
+        arch:
+          - x86_64
+          - aarch64
+
+        exclude:
+          - platform: windows
+            python-version: 3.10
+            arch: aarch64
+          - platform: windows
+            arch: aarch64
+            python-version: pypy-3.11
+          - platform: windows
+            python-version: graalpy-25
+
+        include:
+          - wheel: "3.x"
+          - python-version: "3.14t"
+            wheel: "3.14t"
+          - python-version: "pypy-3.11"
+            wheel: "pypy-3.11"
+          - python-version: "graalpy-25"
+            wheel: "graalpy-25"
+
+          - runner: ubuntu-latest
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+          - platform: windows
+            runner: windows-latest
+          - platform: windows
+            arch: aarch64
+            runner: windows-11-arm
+          - platform: macos
+            runner: macos-latest
+          - platform: macos
+            arch: x86_64
+            runner: macos-15-intel
+          - opts: ""
+          - python-version: graalpy-25
+            opts: "--experimental-options --engine.CompileOnly='~tregex re'"
+
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout working copy
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
+        with:
+          submodules: true
+          persist-credentials: false
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - name: Retrieve wheel
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # 8.0.1
+        with:
+          name: ua-parser-rs-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.wheel }}
+          path: dist
+      - name: Update pip
+        run: python -mpip install --upgrade pip
+      - name: Maybe install libyaml-dev
+        if: startsWith(matrix.runs, 'ubuntu-latest')
+        run: |
+          # if binary wheels are not available for the current
+          # package install libyaml-dev so we can install pyyaml
+          # from source
+          if ! pip download --only-binary :all: pyyaml > /dev/null 2>&1; then
+              sudo apt install libyaml-dev
+          fi
+      - name: Install test dependencies
+        run: python -mpip install pytest pyyaml pytest-error-for-skips
+      - name: Install wheel
+        run: python -mpip install --only-binary ':all:' --no-index --find-links dist ua_parser_rs
+      - name: Install package
+        run: python -mpip install .
+      - name: Run tests
+        run: python ${{ matrix.opts }} -m pytest -v -Werror -Wignore::ImportWarning --doctest-glob="*.rst" -ra --error-for-skips -k '(-regex)'
+
+  py-release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [py-release-tests, py-release-sdist]
+    if: github.event.name == 'workflow_dispatch'
+    permissions:
+      id-token: write
+    environment: release
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # 8.0.1
+        with:
+          path: dist/
+          merge-multiple: true  # dump every wheel file in the same directory
+      - name: Publish to PyPI
+        if: (inputs.release)
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # 1.13.0
+        with:
+          verbose: true
+      - name: Publish to TestPyPI
+        if: (!inputs.release)
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # 1.13.0
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+          verbose: true
