@@ -196,7 +196,7 @@ def load_json(f: PathOrFile, loader: DataLoader = load_data) -> Matchers:
 
     """
     if isinstance(f, (str, os.PathLike)):
-        with open(f) as fp:
+        with open(f, "rb") as fp:
             regexes = json.load(fp)
     else:
         regexes = json.load(f)
@@ -224,7 +224,7 @@ else:
         instead.
         """
         if isinstance(path, (str, os.PathLike)):
-            with open(path) as fp:
+            with open(path, "rb") as fp:
                 regexes = load(fp, Loader=SafeLoader)  # type: ignore
         else:
             regexes = load(path, Loader=SafeLoader)  # type: ignore
