@@ -43,29 +43,29 @@ class Resolver:
     def __call__(self, ua: str, domains: Domain, /) -> PartialResult:
         user_agent = os = device = None
         if Domain.USER_AGENT in domains:
-            if m := self.ua.extract(ua):
+            if uam := self.ua.extract(ua):
                 user_agent = UserAgent(
-                    m.family,
-                    m.major,
-                    m.minor,
-                    m.patch,
-                    m.patch_minor,
+                    uam.family,
+                    uam.major,
+                    uam.minor,
+                    uam.patch,
+                    uam.patch_minor,
                 )
         if Domain.OS in domains:
-            if m := self.os.extract(ua):
+            if osm := self.os.extract(ua):
                 os = OS(
-                    m.family,
-                    m.major,
-                    m.minor,
-                    m.patch,
-                    m.patch_minor,
+                    osm.family,
+                    osm.major,
+                    osm.minor,
+                    osm.patch,
+                    osm.patch_minor,
                 )
         if Domain.DEVICE in domains:
-            if m := self.de.extract(ua):
+            if dem := self.de.extract(ua):
                 device = Device(
-                    m.family,
-                    m.brand,
-                    m.model,
+                    dem.family,
+                    dem.brand,
+                    dem.model,
                 )
         return PartialResult(
             domains=domains,
