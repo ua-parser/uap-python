@@ -18,6 +18,7 @@ from typing import (
     Deque,
     Dict,
     Iterable,
+    Iterator,
     List,
     Optional,
     Sequence,
@@ -98,28 +99,30 @@ def get_rules(parsers: List[str], regexes: Optional[io.IOBase]) -> Matchers:
 
 
 def parse_item(item: str, all: list[str] | None) -> list[str]:
-    if item == '*':
+    if item == "*":
         assert all
         return all
-    elif item.startswith('{'):
-        assert item.endswith('}')
-        return item[1:-1].split(',')
+    elif item.startswith("{"):
+        assert item.endswith("}")
+        return item[1:-1].split(",")
     else:
         return [item]
+
 
 def rules_to_parsers(args: argparse.Namespace) -> Iterator[tuple[str, str, int]]:
     seen = set()
     for selector in args.selector:
-        p, c, s = selector.split(':')
+        p, c, s = selector.split(":")
         for triplet in (
-            (pp, 'none' if ss == 0 else cc, ss)
-            for pp in parse_item(p, ['basic', 're2', 'regex', 'legacy'])
-            for cc in (parse_item(c, list(CACHES)) if CACHEABLE[pp] else ['none'])
-            for ss in (map(int, parse_item(s, None)) if cc != 'none' else [0])
+            (pp, "none" if ss == 0 else cc, ss)
+            for pp in parse_item(p, ["basic", "re2", "regex", "legacy"])
+            for cc in (parse_item(c, list(CACHES)) if CACHEABLE[pp] else ["none"])
+            for ss in (map(int, parse_item(s, None)) if cc != "none" else [0])
         ):
             if triplet not in seen:
                 seen.add(triplet)
                 yield triplet
+
 
 def run_stdout(args: argparse.Namespace) -> None:
     lines = list(map(sys.intern, args.file))
@@ -132,15 +135,14 @@ def run_stdout(args: argparse.Namespace) -> None:
     rules = get_rules([*{p for p, _, _ in parsers}], args.regexes)
 
     w = max(
-        math.ceil(3 + len(p) + len(c) + (s and math.log10(s)))
-        for p, c, s in parsers
+        math.ceil(3 + len(p) + len(c) + (s and math.log10(s))) for p, c, s in parsers
     )
     for p, c, n in parsers:
         name = "-".join(map(str, filter(None, (p, c != "none" and c, n))))
         print(f"{name:{w}}", end=": ", flush=True)
 
-        p = get_parser(p, c, n, rules)
-        t = run(p, lines)
+        parser = get_parser(p, c, n, rules)
+        t = run(parser, lines)
 
         secs = t / 1e9
         tpl = t / 1000 / len(lines)
@@ -159,8 +161,7 @@ def run_csv(args: argparse.Namespace) -> None:
     rules = get_rules([*{p for p, _, _ in parsers}], args.regexes)
     columns = {"size": ""}
     columns.update(
-        (f"{p}-{c}", p if c == "none" else f"{p}-{c}")
-        for p, c, _ in parsers
+        (f"{p}-{c}", p if c == "none" else f"{p}-{c}") for p, c, _ in parsers
     )
     w = csv.DictWriter(
         sys.stdout,
@@ -183,13 +184,15 @@ def run_csv(args: argparse.Namespace) -> None:
         # cache could be ignored as it should always be `"none"`
         for parser, cache, _ in ps:
             p = get_parser(parser, cache, 0, rules)
-            zeroes[f"{parser}-{cache}"] = run(p, linges) // LEN
+            zeroes[f"{parser}-{cache}"] = run(p, lines) // LEN
 
     # special cases for configurations where we can't have
     # cachesize lines, write the template row out directly
-    if all(p == 'legacy' for p, _, _ in parsers)\
-       or all(c == 'none' for _, c, _ in parsers)\
-       or all(s == 0 for _, _, s in parsers):
+    if (
+        all(p == "legacy" for p, _, _ in parsers)
+        or all(c == "none" for _, c, _ in parsers)
+        or all(s == 0 for _, _, s in parsers)
+    ):
         zeroes["size"] = 0
         w.writerow(zeroes)
         return
@@ -475,10 +478,10 @@ bench.add_argument(
     nargs="*",
     default=["*:*:{10,20,50,100,200,500,1000,2000,5000}"],
     help=f"""A generative selector expression, composed of 3 parts: 1.
-the parser (base), 2. the cache implementation ({', '.join(CACHES)})
+the parser (base), 2. the cache implementation ({", ".join(CACHES)})
 and 3. the cache size. For parser and cache `*` is an alias for stands
 in for "every value", a bracketed expression for an enumeration, and
-the selector can be repeated to explicitly list each configuration """
+the selector can be repeated to explicitly list each configuration """,
 )
 
 hitrates = sub.add_parser(
