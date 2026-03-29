@@ -106,6 +106,15 @@ jobs:
           - opts: ""
           - python-version: graalpy-25
             opts: "--experimental-options --engine.CompileOnly='~tregex re'"
+          - impl: cp
+          - python-version: "3.14t"
+            impl: cpt
+          - python-version: "pypy-3.11"
+            impl: "pypy-3.11"
+          - python-version: "graalpy-25"
+            impl: "graalpy-25"
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target-rs
     steps:
     - name: Checkout working copy
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
@@ -118,6 +127,20 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
+        cache: pip
+        cache-dependency-path: |
+          pyproject.toml
+          ua-parser-builtins/pyproject.toml
+          ua-parser-rs/pyproject.toml
+    - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7  # 5.0.4
+      with:
+        path: |
+          ${{ env.CARGO_TARGET_DIR }}
+          ~/.cargo/registry
+          ~/.cargo/git
+        key: rs-${{ runner.os }}-${{ matrix.impl }}-${{ hashFiles('ua-parser-rs/Cargo.toml', 'ua-parser-rs/**/*.rs') }}
+        restore-keys: |
+          rs-${{ runner.os }}-${{ matrix.impl }}-
     - run: python -mpip install --upgrade pip
     - run: |
         # if binary wheels are not available for the current
