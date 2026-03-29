@@ -16,78 +16,37 @@ __all__ = [
 ]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class UserAgent:
     """Browser ("user agent" aka the software responsible for the request)
     information parsed from the user agent string.
     """
 
-    __slots__ = ("family", "major", "minor", "patch", "patch_minor")
-    family: str
-    major: Optional[str]
-    minor: Optional[str]
-    patch: Optional[str]
-    patch_minor: Optional[str]
-
-    def __init__(
-        self,
-        family: str = "Other",
-        major: Optional[str] = None,
-        minor: Optional[str] = None,
-        patch: Optional[str] = None,
-        patch_minor: Optional[str] = None,
-    ) -> None:
-        object.__setattr__(self, "family", family)
-        object.__setattr__(self, "major", major)
-        object.__setattr__(self, "minor", minor)
-        object.__setattr__(self, "patch", patch)
-        object.__setattr__(self, "patch_minor", patch_minor)
+    family: str = "Other"
+    major: Optional[str] = None
+    minor: Optional[str] = None
+    patch: Optional[str] = None
+    patch_minor: Optional[str] = None
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class OS:
     """OS information parsed from the user agent string."""
 
-    __slots__ = ("family", "major", "minor", "patch", "patch_minor")
-    family: str
-    major: Optional[str]
-    minor: Optional[str]
-    patch: Optional[str]
-    patch_minor: Optional[str]
-
-    def __init__(
-        self,
-        family: str = "Other",
-        major: Optional[str] = None,
-        minor: Optional[str] = None,
-        patch: Optional[str] = None,
-        patch_minor: Optional[str] = None,
-    ) -> None:
-        object.__setattr__(self, "family", family)
-        object.__setattr__(self, "major", major)
-        object.__setattr__(self, "minor", minor)
-        object.__setattr__(self, "patch", patch)
-        object.__setattr__(self, "patch_minor", patch_minor)
+    family: str = "Other"
+    major: Optional[str] = None
+    minor: Optional[str] = None
+    patch: Optional[str] = None
+    patch_minor: Optional[str] = None
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Device:
     """Device information parsed from the user agent string."""
 
-    __slots__ = ("brand", "family", "model")
-    family: str
-    brand: Optional[str]
-    model: Optional[str]
-
-    def __init__(
-        self,
-        family: str = "Other",
-        brand: Optional[str] = None,
-        model: Optional[str] = None,
-    ) -> None:
-        object.__setattr__(self, "family", family)
-        object.__setattr__(self, "brand", brand)
-        object.__setattr__(self, "model", model)
+    family: str = "Other"
+    brand: Optional[str] = None
+    model: Optional[str] = None
 
 
 class Domain(Flag):
@@ -105,7 +64,7 @@ class Domain(Flag):
     ALL = USER_AGENT | OS | DEVICE
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class DefaultedResult:
     """Variant of :class:`Result` where attributes are set
     to a default value if their resolution failed.
@@ -120,7 +79,7 @@ class DefaultedResult:
     string: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Result:
     """Complete result.
 
@@ -152,7 +111,7 @@ class Result:
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class PartialResult:
     """Potentially partial (incomplete) result.
 
@@ -172,7 +131,6 @@ class PartialResult:
 
     """
 
-    __slots__ = ("device", "domains", "os", "string", "user_agent")
     domains: Domain
     user_agent: Optional[UserAgent]
     os: Optional[OS]
