@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm", "PyYaml"]
+requires = ["setuptools", "PyYaml"]
 build-backend = "setuptools.build_meta"
 
 [project]
