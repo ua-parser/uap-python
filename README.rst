@@ -26,8 +26,8 @@ Add ``ua-parser[regex]`` to your project's dependencies, or run
 
 to install in the current environment.
 
-ua-parser supports CPython 3.9 and newer, recent pypy (supporting
-3.10), and GraalPy 24.
+ua-parser supports CPython 3.10 and newer, recent pypy (supporting
+3.10), and GraalPy 25.
 
 .. note::
 
