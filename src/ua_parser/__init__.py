@@ -68,14 +68,7 @@ RegexResolver: Optional[_ResolverCtor] = None
 if importlib.util.find_spec("ua_parser_rs"):
     from .regex import Resolver as RegexResolver
 BestAvailableResolver: _ResolverCtor = next(
-    filter(
-        None,
-        (
-            RegexResolver,
-            Re2Resolver,
-            lambda m: CachingResolver(BasicResolver(m), Cache(2000)),
-        ),
-    )
+    filter(None, (RegexResolver, Re2Resolver, BasicResolver))
 )
 
 
@@ -97,7 +90,7 @@ class Parser:
         stack.
 
         """
-        return cls(BestAvailableResolver(m))
+        return cls(CachingResolver(BestAvailableResolver(m), Cache(2000)))
 
     def __init__(self, resolver: Resolver) -> None:
         self.resolver = resolver
