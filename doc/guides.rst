@@ -93,10 +93,9 @@ composing :class:`~ua_parser.Resolver` objects.
 The most basic such customisation is simply configuring caching away
 from the default setup.
 
-As an example, in the default configuration if |regex|_ is available
-the regex-based resolver is not cached, a user might consider the
-memory investment worth it and want to reconfigure the stack for a
-cached base.
+As an example, all resolvers are cached with an
+:class:`~ua_parser.caching.S3Fifo` of size 2000, a user's workload
+might lead them to favor a larger LRU.
 
 The process is uncomplicated as the APIs are designed to compose
 together.
@@ -112,7 +111,7 @@ the relevant :class:`Matchers` data::
 The next step is to instantiate the cache [#cache]_ suitably
 configured::
 
-    cache = ua_parser.Cache(1000)
+    cache = ua_parser.caching.Lru(10000)
 
 And compose the base resolver and cache together::
 
@@ -135,6 +134,11 @@ from here on::
    in. The only remaining member of the cast is
    :class:`~ua_parser.caching.Local`, which is also caching-related,
    and serves to use thread-local caches rather than a shared cache.
+
+   Although this does not remove the cache locks it avoids contention
+   on the locks, which can be useful when using a free-threaded
+   interpreter, especially when using the LRU cache as it has to
+   synchronise on hit.
 
 .. _builtin-resolvers:
 
