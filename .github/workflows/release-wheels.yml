@@ -72,7 +72,6 @@ jobs:
               match job['platform']:
                   case 'linux':
                     job['manylinux'] = 'auto'
-                    job['args'] = ' --zig'
                   case 'mussllinux':
                     job['manylinux'] = 'musllinux_1_2'
 
