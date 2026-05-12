@@ -72,7 +72,7 @@ jobs:
               match job['platform']:
                   case 'linux':
                     job['manylinux'] = 'auto'
-                    job['args'] = ' --zig'
+                    job['args'] = ' --zig'  # use zig instead of docker for manylinux cross-builds (see #315)
                   case 'mussllinux':
                     job['manylinux'] = 'musllinux_1_2'
 
