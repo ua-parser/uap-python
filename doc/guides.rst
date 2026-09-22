@@ -7,8 +7,8 @@ Guides
 Custom Rulesets
 ===============
 
-ua-parser defaults to the latest stable release of `ua-core`_ via
-`precompiled regexes.yaml`__.
+ua-parser defaults to whatever `ua-core`_ had at the start of a given
+month via `precompiled regexes.yaml`__.
 
 That is a suitable defaut, but there are plenty of reasons to use
 custom rulesets:
