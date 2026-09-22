@@ -12,25 +12,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         submodules: true
         fetch-depth: 0
         persist-credentials: false
     - name: ruff check
-      uses: astral-sh/ruff-action@57714a7c8a2e59f32539362ba31877a1957dded1  # 3.5.1
+      uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89  # v4.1.0
       with:
         version: "latest"
     - name: ruff format
       if: always()
-      uses: astral-sh/ruff-action@57714a7c8a2e59f32539362ba31877a1957dded1  # 3.5.1
+      uses: astral-sh/ruff-action@278981a28ce3188b1e39527901f38254bf3aac89  # v4.1.0
       with:
         version: "latest"
         args: format --check --diff
     - name: Set up Python
       id: setup_python
       if: always()
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
       with:
         python-version: "3.x"
     - name: Install mypy
@@ -50,12 +50,12 @@ jobs:
 
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         submodules: true
         persist-credentials: false
     - name: Set up Python
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
       with:
         python-version: "3.x"
     - name: Install dependency
@@ -66,14 +66,14 @@ jobs:
       run: |
         python -mbuild
     - name: Upload sdist
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # 6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       with:
         name: sdist
         path: dist/*.tar.gz
         retention-days: 1
 
     - name: Upload wheel
-      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # 6.0.0
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
       with:
         name: wheel
         path: dist/*.whl
@@ -117,13 +117,13 @@ jobs:
       CARGO_TARGET_DIR: ${{ github.workspace }}/target-rs
     steps:
     - name: Checkout working copy
-      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # 6.0.1
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       with:
         submodules: true
         fetch-depth: 0
         persist-credentials: false
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548  # 6.1.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
@@ -132,7 +132,7 @@ jobs:
           pyproject.toml
           ua-parser-builtins/pyproject.toml
           ua-parser-rs/pyproject.toml
-    - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7  # 5.0.4
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
       with:
         path: |
           ${{ env.CARGO_TARGET_DIR }}
@@ -161,7 +161,7 @@ jobs:
     - run: 'python -mpip install --only-binary :all: google-re2 || true'
     - name: download ${{ matrix.source }} artifact
       if: matrix.artifact
-      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # 7.0.0
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
       with:
         name: ${{ matrix.source }}
         path: dist/
