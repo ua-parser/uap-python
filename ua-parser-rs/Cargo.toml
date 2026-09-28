@@ -4,8 +4,8 @@ version = "0.1.5"
 edition = "2024"
 license = "Apache 2.0"
 description = "A native accelerator for uap-python"
-repository = "https://github.com/ua-parser/uap-rust/"
-homepage = "https://github.com/ua-parser/uap-rust/blob/main/ua-parser/"
+repository = "https://github.com/ua-parser/uap-python/"
+homepage = "https://github.com/ua-parser/uap-python/blob/master/ua-parser-rs/"
 authors = ["masklinn <uap@masklinn.net>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
