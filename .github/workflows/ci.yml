@@ -174,7 +174,8 @@ jobs:
   results:
     name: "CI Results"
     needs: ["checks", "test"]
+    if: always()
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-    - run: exit 0
+    - run: test "${{ needs.checks.result }}" = "success" && test "${{ needs.test.result }}" = "success"
