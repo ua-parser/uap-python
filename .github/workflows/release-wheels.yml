@@ -10,6 +10,11 @@ on:
         type: boolean
         default: false
         required: true
+      update:
+        description: "Update existing release"
+        type: boolean
+        default: false
+        required: true
 
 permissions: {}
 
@@ -162,6 +167,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
         with:
           verbose: true
+          skip-existing: ${{ inputs.update }}
       - name: Publish to TestPyPI
         if: (!inputs.release)
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33  # v1.14.2
